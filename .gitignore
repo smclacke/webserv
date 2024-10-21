@@ -37,3 +37,6 @@
 # Ignore `bin` dir
 bin/
 */bin/*
+
+# Ignore env
+.env
