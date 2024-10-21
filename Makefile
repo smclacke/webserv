@@ -1,7 +1,9 @@
 NAME:= webserv
 CC:= c++
-FLAGS:= -Wall -Wextra -Werror -std=c++11 -g -fsanitize=address
-OBJDIR := objects
+FLAGS := -std=c++11
+#FLAGS += -Wall -Wextra -Werror
+FLAGS += -g -fsanitize=address
+OBJDIR := objs
 TPP_FILES := web.tpp
 HEADER_FILES := web.hpp
 SRC_FILES := main.cpp
