@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/21 19:14:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/21 19:20:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ int	main()
 	// grab a connection from the queue
 	auto 	addrlen = sizeof(sockaddr);
 	int		connection = accept(sockfd, (struct sockaddr*)&sockaddr, (socklen_t*)&addrlen);
-	
 	if (connection < 0)
 	{
 		std::cout << "failed to grab connection\n";
@@ -59,17 +58,13 @@ int	main()
 	std::cout << "successfully made connection\n";
 	
 	// read fromm the connection
-	//char	buffer[100];
-	//auto	bytesRead = read(connection, buffer, 100); // bytesRead unused?
-	
-	char	buffer[1000];
-	size_t	bytesRead = read(connection, buffer, 1000);
-	std::cout << "read message from connection: " << buffer << "\n";
-	
+	char	buffer[100];
+	size_t	bytesRead = read(connection, buffer, 100); // unused bytesRead error?
+	std::cout << "read message from connection: " << buffer;
+
 	// send message to the connection
-	std::string	response = "nice chatting with you connection\n";
+	std::string	response = "nice chatting with you connection :) \n";
 	send(connection, response.c_str(), response.size(), 0);
-	//std::cout << "sent " << response << "\n";
 
 	// close the connections
 	close(connection);
