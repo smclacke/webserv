@@ -6,12 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:49:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 17:23:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEB_HPP
-#define WEB_HPP
+# define WEB_HPP
 
 // CPP includes
 #include <iomanip>
@@ -52,12 +52,12 @@
 
 /* classes */
 #include "webserv.hpp"
+#include "socket.hpp"
 
 /* parser */
 bool	validConf(char *arg);
 
 /* server */
 void	run();
-void	openSocket();
 
-#endif
+#endif /* WEB_HPP */
