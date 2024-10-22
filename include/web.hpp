@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 17:23:14 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 17:46:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@
 bool	validConf(char *arg);
 
 /* server */
-void	run();
+void	run(); // will take the instance of Webserv with parsed config info
+// poll();
 
 #endif /* WEB_HPP */

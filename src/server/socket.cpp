@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 17:29:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 17:35:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,8 @@ Socket::Socket(const Socket &socket)
 
 Socket::Socket(const Webserv &config)
 {
-	(void) config;
+	(void) config; // wll actually use ... somehow sometime
+
 	if (openSockets() < 0)
 		exit(EXIT_FAILURE); // need proper error handling?
 }
@@ -51,7 +52,7 @@ Socket::~Socket()
 
 /* methods */
 
-void	Socket::closeSockStuff()
+void	Socket::closeSockets()
 {
 	close(this->_connection);
 	close(this->_sockfd);
@@ -113,3 +114,4 @@ int		Socket::openSockets()
 
 	return 1; // success :)
 }
+
