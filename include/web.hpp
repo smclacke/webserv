@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 17:46:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 18:16:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,12 @@
 #include <utility>
 
 // Network includes
+#include <poll.h> //maybe actually C include?
 #include <netinet/in.h> // for sockaddr_in
 #include <sys/socket.h> // for socket functions
+#include <sys/msg.h> // check this out (poll)
+#include <sys/time.h> // check this out (poll)
+#include <sys/types.h> // check this out (poll)
 // # include <sys/select.h> // check this out
 // # include <arpa.inet.h> // check this out
 

@@ -23,10 +23,121 @@ kill -9 <PID> - alt if kill alone doesnt work
 #########################################################################
 
 
+**GENERAL**
+
+*blocking*
+
+- blocking refers to situation where a thread is waiting for an operation to complete before it ca proceed further
+	. this can lead to performance bottlesnecks, especially where the server needs to handle *multiple concurrent connections*
+	. when dealing with input/output (I/O) operations (reading from or writing to sockets) - blocking issues often arise
+	. traditionally, a thread will wait til data is available or write operation is done, waiting means the thread is inactive and server may struggle to handle other incoming requests
+	
+	solution: employ asynchronous I/O allowing server to initiate an I/O operation and continue with other tasks while waiting for operation to complete. a single thread can manage multiple connections simultaneously without being blocked
+
+	- asynchronous I/O can be done using different system calls like selec,t poll, epoll (linux)
+		. poll and epoll are simpler/better that select, but select is more portable (used across different platforms)
+
+*HTTP 1.1*
+
+- HTTP messages consist of a request or response line, headers, an empty line (CRLF or \r\n) and optional message body
+	example:
+		HTTP-message = start-line CRLF
+						*(field-line CRLF)
+						CRLF
+						[ message-body]
+
+		start0line 	 =	request-line /status-line 
+
+
+- client handshake request:
+	GET /chat HTTP/1.1
+	Host: example.com:8000
+	Upgrade: websocket
+	Connection: Upgrade
+	Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==
+	Sec-WebSocket-Version: 13
+
+	*if any header is not understood or is incorrect, the server should send a 400 ("Bad Request") response and immediately close the socket*
+
+
+- server handshake response:
+	HTTP/1.1 101 Switching Protocols
+	Upgrade: websocket
+	Connection: Upgrade
+	Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
+
+	- when the server receives the handshake request, is should send back a special response that indicates that the protocol will be changing from HTTP to WebSocket
+	
+	- server can additionally decide on extension/subprotocol requests here
+
+	*seemingly overcomplicated process exists so that it's obvious to client whether the server supports WebSockets. important since security issues might arise if server accepts WebSockets connection bet interprets the data as a HTTP request*
+
+	- if all good, handshake is complete and data can start being swapped
+
+
+- keeping track of clients
+	- server must keep track of clients' sockets so you don't keep handshaking again with clients who have already completed the handshake. *the same client IP address can try connecting multiple times*
+
+
+- exchanging data frames
+	- either client or server can choose to send a message at any time, ~WebSockets yay~
+		however, extractinginfo from "frames" of data is not always a good experience.
+		although all frames have same specific format, data going from client to server is masked using XOR encryption
+
+~ doc continues with these topics: ~
+	- format of data frames
+	- decoding payload length
+	- reading and unmasking data
+	- message fragmentation
+	- ping ponging
+	- closing the connection
+
+
+#########################################################################
+
+
+**POll**
+
+*from PDF*
+
+Your server must never block and the client can be bounced properly if necessary.
+•It must be non-blocking and use only 1 poll() (or equivalent) for all the I/O
+operations between the client and the server (listen included).
+•poll() (or equivalent) must check read and write at the same time.
+•You must never do a read or a write operation without going through poll() (or
+equivalent).
+•Checking the value of errno is strictly forbidden after a read or a write operation.
+•You don’t need to use poll() (or equivalent) before reading your configuration file
+
+
+------------------------------------------------------
+*poll monitor loop*
+------------------------------------------------------
+
+~~ source: https://www.ibm.com/docs/en/zos/2.4.0?topic=functions-poll-monitor-activity-file-descriptors-message-queues
+
+< int 	poll(void *listptr, nmsgsfds_t nmsgsfds, int timeout) >
+
+- multiplexing input/output over these fds:
+	. regular files
+	. terminal + pseudoterminal devices
+	. STREAMS-based files
+	.sockets
+	.message queues
+	.FIFOs
+	.pipes
+
+*The poll() function is not affected by the O_NONBLOCK flag.*
+
+
+
+#########################################################################
+
+
 **SOCKET_SERVER**
 
 
-***SOCKET***
+*SOCKET*
 
 < int socket(int domain, int type, int protocol); >
 
@@ -44,7 +155,7 @@ kill -9 <PID> - alt if kill alone doesnt work
  normally only one protocol available for each type, value 0 can be used
 
 
-***BIND***
+*BIND*
 
 once there's a socket, we need to use bind to assign an IP address and port to the socket
 
@@ -69,7 +180,7 @@ once there's a socket, we need to use bind to assign an IP address and port to t
 	addrlen - size() of addr
 
 
-***LISTEN***
+*LISTEN*
 
 marks a socket as passive (socket will be used to accept connections)
 
@@ -82,7 +193,7 @@ marks a socket as passive (socket will be used to accept connections)
 	backlog - maximum number of connections that will be queued before connections start being refused
 
 
-***ACCEPT*** 
+*ACCEPT*
 
 extracts an element from a queue of connections (the queue created by listen) for a socket 
 

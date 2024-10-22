@@ -6,11 +6,14 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 17:35:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 18:05:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../../include/web.hpp"
+
+
+// Webserv - > <vector> _servers - > _serverName, _host etc..
 
 /* constructors */
 
@@ -74,7 +77,9 @@ int		Socket::openSockets()
 	// htons to convert a number to network byte order
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = INADDR_ANY;
-	_sockaddr.sin_port = htons(9999);
+	_sockaddr.sin_port = htons(9999); 			// config._servers._port
+
+	// config._servers._host - don't know when/where this comes in but part of the config
 
 	if (bind(_sockfd, (struct sockaddr*)&_sockaddr, sizeof(_sockaddr)) < 0)
 		return (std::cout << "failed to bind to port 9999\n", -1);
