@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:25:39 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:25:53 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/22 15:50:42 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,4 +14,6 @@
 
 void run(void)
 {
+	openSocket();
+	// pollLoop();
 }

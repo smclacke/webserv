@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:28:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/22 15:49:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,9 +54,10 @@
 #include "webserv.hpp"
 
 /* parser */
-bool validConf(char *arg);
+bool	validConf(char *arg);
 
 /* server */
-void run(void);
+void	run();
+void	openSocket();
 
 #endif

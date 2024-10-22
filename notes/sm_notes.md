@@ -4,7 +4,9 @@
 **GIT**
 
 
-git push -u origin <branch>
+		<  git push -u origin <branch>  >
+
+-u = --set-upstream
 
 
 #########################################################################

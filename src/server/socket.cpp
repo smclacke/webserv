@@ -6,13 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 13:49:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 15:48:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../../include/web.hpp"
 
-void	basicSocket()
+void	openSocket()
 {
 	// create socket (IPv4, TCP)
 	int	sockfd = socket(AF_INET, SOCK_STREAM, 0);
