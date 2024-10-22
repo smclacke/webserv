@@ -1,12 +1,31 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         ::::::::             #
+#    Makefile                                           :+:    :+:             #
+#                                                      +:+                     #
+#    By: smclacke <smclacke@student.codam.nl>         +#+                      #
+#                                                    +#+                       #
+#    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
+#    Updated: 2024/10/22 13:49:34 by smclacke      ########   odam.nl          #
+#                                                                              #
+# **************************************************************************** #
+
 NAME:= webserv
 CC:= c++
+
 FLAGS := -std=c++11
 FLAGS += -Wall -Wextra -Werror
 FLAGS += -g -fsanitize=address
+
 OBJDIR := objs
 TPP_FILES := web.tpp
 HEADER_FILES := web.hpp
-SRC_FILES := main.cpp
+
+
+SRC_FILES := main.cpp			\
+			socket/basicSocket.cpp
+
+
 SRC := $(addprefix src/, $(SRC_FILES))
 HEADER := $(addprefix include/, $(HEADER_FILES) $(TPP_FILES))
 OBJS := $(SRC:%.cpp=$(OBJDIR)/%.o)
