@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/10/22 13:49:34 by smclacke      ########   odam.nl          #
+#    Updated: 2024/10/22 13:54:16 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -42,7 +42,7 @@ $(OBJS): $(OBJDIR)/%.o : %.cpp $(HEADER)
 
 run: $(NAME)
 	@printf "\033[1;33m---------\\n RUN $(NAME) \n---------\\n\033[0m"
-	@./$(NAME)
+	@./$(NAME) "!"
 
 clean:
 	@if [ -d "$(OBJDIR)" ]; then \

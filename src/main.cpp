@@ -6,21 +6,27 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 13:50:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 13:54:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../include/web.hpp"
 
-int	main()
+bool	validConf(char *arg)
 {
-	// add argc and argv
+	return arg[0] == '!' ? 0 : 1;
+}
 
-	// valid config argument
+int	main(int argc, char **argv)
+{
+	if (argc != 2 && !validConf(argv[1]))
+		exit (EXIT_FAILURE);
+
+
 	// parse config
 	
 	// continue...
 	
-	basicSocket();
+	//basicSocket();
 
 }
