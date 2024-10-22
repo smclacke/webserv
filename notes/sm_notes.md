@@ -1,5 +1,30 @@
 
-**SOCKET**
+#########################################################################
+
+**GIT**
+
+
+git push -u origin <branch>
+
+
+#########################################################################
+
+
+**CHECK PORTS AND KILL IF LEFT OPEN AND LISTENING**
+
+lsof -i :9999 - check open ports
+
+kill <PID> - get PID from lsof info
+kill -9 <PID> - alt if kill alone doesnt work
+
+
+#########################################################################
+
+
+**SOCKET_SERVER**
+
+
+***SOCKET***
 
 < int socket(int domain, int type, int protocol); >
 
@@ -17,7 +42,7 @@
  normally only one protocol available for each type, value 0 can be used
 
 
-**BIND**
+***BIND***
 
 once there's a socket, we need to use bind to assign an IP address and port to the socket
 
@@ -42,7 +67,7 @@ once there's a socket, we need to use bind to assign an IP address and port to t
 	addrlen - size() of addr
 
 
-**LISTEN**
+***LISTEN***
 
 marks a socket as passive (socket will be used to accept connections)
 
@@ -55,7 +80,7 @@ marks a socket as passive (socket will be used to accept connections)
 	backlog - maximum number of connections that will be queued before connections start being refused
 
 
-**ACCEPT** 
+***ACCEPT*** 
 
 extracts an element from a queue of connections (the queue created by listen) for a socket 
 
@@ -69,9 +94,3 @@ extracts an element from a queue of connections (the queue created by listen) fo
 
 
 
-**CHECK PORTS AND KILL IF LEFT OPEN AND LISTENING**
-
-lsof -i :9999 - check open ports
-
-kill <PID> - get PID from lsof info
-kill -9 <PID> - alt if kill alone doesnt work
