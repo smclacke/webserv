@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/21 19:20:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 13:41:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ int	main()
 	if (sockfd == -1)
 	{
 		std::cout << "failed to create socket\n";
-		exit (EXIT_FAILURE);
+		std::exit (EXIT_FAILURE);
 	}
 	std::cout << "successfully created socket\n";
 
@@ -33,7 +33,7 @@ int	main()
 	if (bind(sockfd, (struct sockaddr*)&sockaddr, sizeof(sockaddr)) < 0)
 	{
 		std::cout << "failed to bind to port 9999\n";
-		exit (EXIT_FAILURE);
+		std::exit (EXIT_FAILURE);
 	}
 	std::cout << "binding to port 9999 successful\n";
 
@@ -42,7 +42,7 @@ int	main()
 	if (listen(sockfd, 10) < 0)
 	{
 		std::cout << "failed to listen on socket\n";
-		exit (EXIT_FAILURE);
+		std::exit (EXIT_FAILURE);
 	}
 	std::cout << "listening successfully\n";
 
@@ -53,14 +53,15 @@ int	main()
 	if (connection < 0)
 	{
 		std::cout << "failed to grab connection\n";
-		exit (EXIT_FAILURE);
+		std::exit (EXIT_FAILURE);
 	}
 	std::cout << "successfully made connection\n";
 	
 	// read fromm the connection
 	char	buffer[100];
 	size_t	bytesRead = read(connection, buffer, 100); // unused bytesRead error?
-	std::cout << "read message from connection: " << buffer;
+	std::cout << "message from connection: " << buffer;
+	//std::cout << "bytesRead from connection: " << bytesRead << "\n";
 
 	// send message to the connection
 	std::string	response = "nice chatting with you connection :) \n";

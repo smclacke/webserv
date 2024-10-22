@@ -67,3 +67,11 @@ extracts an element from a queue of connections (the queue created by listen) fo
 		it expects a pointer to an int that will be the size of addr
 		after the function is executed, the int refered by addrlen will be set to the size of the peer address
 
+
+
+**CHECK PORTS AND KILL IF LEFT OPEN AND LISTENING**
+
+lsof -i :9999 - check open ports
+
+kill <PID> - get PID from lsof info
+kill -9 <PID> - alt if kill alone doesnt work
