@@ -8,4 +8,10 @@
 
 - STRUCTS + CLASSES :)
 
+- what poll() and why and how and poll loop
+
+
+
+ - header include libraries: 
+// later make decisions about what we actually use and remove unnecessary
 
