@@ -1,7 +1,7 @@
 NAME:= webserv
 CC:= c++
 FLAGS := -std=c++11
-#FLAGS += -Wall -Wextra -Werror
+FLAGS += -Wall -Wextra -Werror
 FLAGS += -g -fsanitize=address
 OBJDIR := objs
 TPP_FILES := web.tpp

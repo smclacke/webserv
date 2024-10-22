@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 13:41:29 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 13:45:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,9 @@ int	main()
 	
 	// read fromm the connection
 	char	buffer[100];
-	size_t	bytesRead = read(connection, buffer, 100); // unused bytesRead error?
+	size_t	bytesRead = read(connection, buffer, 100);
 	std::cout << "message from connection: " << buffer;
-	//std::cout << "bytesRead from connection: " << bytesRead << "\n";
+	std::cout << "bytesRead from connection: " << bytesRead << "\n";
 
 	// send message to the connection
 	std::string	response = "nice chatting with you connection :) \n";
