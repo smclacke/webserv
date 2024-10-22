@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:28:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/22 17:25:51 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,6 +52,7 @@
 
 /* classes */
 #include "webserv.hpp"
+#include "server.hpp"
 
 /* parser */
 bool validConf(char *arg);
