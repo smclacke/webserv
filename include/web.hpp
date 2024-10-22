@@ -6,53 +6,57 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 14:43:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/22 15:28:20 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEB_HPP
-# define WEB_HPP
+#define WEB_HPP
 
 // CPP includes
-# include <iomanip>
-# include <sstream>
-# include <fstream>
-# include <string>
-# include <limits>
-# include <cstring> // might not need
-# include <iostream> // for cout
-# include <cstdlib> // for exit() + EXIT_FAILURE
-# include <cstdio>
+#include <iomanip>
+#include <sstream>
+#include <fstream>
+#include <string>
+#include <limits>
+#include <cstring>	// might not need
+#include <iostream> // for cout
+#include <cstdlib>	// for exit() + EXIT_FAILURE
+#include <cstdio>
 
 // CPP containers
-# include <algorithm>
-# include <map>
-# include <set>
-# include <vector>
-# include <iterator>
-# include <list>
-# include <deque>
-# include <utility>
+#include <algorithm>
+#include <map>
+#include <set>
+#include <vector>
+#include <iterator>
+#include <list>
+#include <deque>
+#include <utility>
 
 // Network includes
-# include <netinet/in.h> // for sockaddr_in
-# include <sys/socket.h> // for socket functions
-//# include <sys/select.h> // check this out
-//# include <arpa.inet.h> // check this out
-
-
+#include <netinet/in.h> // for sockaddr_in
+#include <sys/socket.h> // for socket functions
+// # include <sys/select.h> // check this out
+// # include <arpa.inet.h> // check this out
 
 // C includes
-# include <unistd.h> // for read
-# include <stdio.h>
-# include <stdlib.h>
-# include <string.h>
-# include <fcntl.h>
-# include <time.h>
-# include <limits.h>
-# include <errno.h>
+#include <unistd.h> // for read
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <fcntl.h>
+#include <time.h>
+#include <limits.h>
+#include <errno.h>
 
+/* classes */
+#include "webserv.hpp"
 
-void		basicSocket();
+/* parser */
+bool validConf(char *arg);
+
+/* server */
+void run(void);
 
 #endif
