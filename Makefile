@@ -1,10 +1,33 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         ::::::::             #
+#    Makefile                                           :+:    :+:             #
+#                                                      +:+                     #
+#    By: smclacke <smclacke@student.codam.nl>         +#+                      #
+#                                                    +#+                       #
+#    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
+#    Updated: 2024/10/22 15:03:17 by smclacke      ########   odam.nl          #
+#                                                                              #
+# **************************************************************************** #
+
 NAME:= webserv
 CC:= c++
-FLAGS:= -Wall -Wextra -Werror -std=c++11 -g -fsanitize=address
-OBJDIR := objects
+
+FLAGS := -std=c++11
+FLAGS += -Wall -Wextra -Werror
+FLAGS += -g -fsanitize=address
+
+OBJDIR := objs
 TPP_FILES := web.tpp
 HEADER_FILES := web.hpp
-SRC_FILES := main.cpp
+
+
+SRC_FILES := main.cpp					\
+			server/socket.cpp			\
+			poll/pollLoop.cpp			\
+			#parser/
+
+
 SRC := $(addprefix src/, $(SRC_FILES))
 HEADER := $(addprefix include/, $(HEADER_FILES) $(TPP_FILES))
 OBJS := $(SRC:%.cpp=$(OBJDIR)/%.o)
@@ -21,7 +44,7 @@ $(OBJS): $(OBJDIR)/%.o : %.cpp $(HEADER)
 
 run: $(NAME)
 	@printf "\033[1;33m---------\\n RUN $(NAME) \n---------\\n\033[0m"
-	@./$(NAME)
+	@./$(NAME) "!"
 
 clean:
 	@if [ -d "$(OBJDIR)" ]; then \
