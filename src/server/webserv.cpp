@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:23:38 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/22 15:37:12 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 
 Webserv::Webserv(std::string input)
 {
+	(void) input;
 }
 
 Webserv::~Webserv(void)

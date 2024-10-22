@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/10/22 15:03:17 by smclacke      ########   odam.nl          #
+#    Updated: 2024/10/22 15:36:39 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,9 +23,11 @@ HEADER_FILES := web.hpp
 
 
 SRC_FILES := main.cpp					\
-			server/socket.cpp			\
+			parser/init.cpp				\
 			poll/pollLoop.cpp			\
-			#parser/
+			server/run.cpp				\
+			server/socket.cpp			\
+			server/webserv.cpp			\
 
 
 SRC := $(addprefix src/, $(SRC_FILES))
