@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 18:03:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 18:11:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,8 +70,76 @@ void Server::printServer(void)
 	}
 }
 
+/* setters */
+
+void Server::addLocation(s_location route)
+{
+	_location.push_back(route);
+}
+
+void Server::addErrorPage(s_ePage errorPage)
+{
+	_errorPage.push_back(errorPage);
+}
+
+void Server::setServerName(std::string serverName)
+{
+	_serverName = serverName;
+}
+
+void Server::setHost(std::string host)
+{
+	_host = host;
+}
+
+void Server::setPort(int port)
+{
+	_port = port;
+}
+
+void Server::setErrorPage(std::vector<s_ePage> errorPage)
+{
+	_errorPage = errorPage;
+}
+
+void Server::setClientMaxBodySize(size_t clientMaxBodySize)
+{
+	_clientMaxBodySize = clientMaxBodySize;
+}
+
+void Server::setLocation(std::vector<s_location> location)
+{
+	_location = location;
+}
+
 /* getters */
+
 std::string Server::getServerName(void) const
 {
-	return (_serverName);
+	return _serverName;
+}
+
+std::string Server::getHost(void) const
+{
+	return _host;
+}
+
+int Server::getPort(void) const
+{
+	return _port;
+}
+
+std::vector<s_ePage> Server::getErrorPage(void) const
+{
+	return _errorPage;
+}
+
+size_t Server::getClientMaxBodySize(void) const
+{
+	return _clientMaxBodySize;
+}
+
+std::vector<s_location> Server::getLocation(void) const
+{
+	return _location;
 }

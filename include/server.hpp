@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 17:58:07 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 18:11:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -61,11 +61,27 @@ public:
 	Server(void);
 	Server(std::ifstream server_block);
 	~Server(void);
-	void addLocation(s_location route);
 	void printServer(void);
+
+	/* add */
+	void addLocation(s_location route);
+	void addErrorPage(s_ePage errorPage);
+
+	/* setters */
+	void setServerName(std::string serverName);
+	void setHost(std::string host);
+	void setPort(int port);
+	void setErrorPage(std::vector<s_ePage> errorPage);
+	void setClientMaxBodySize(size_t clientMaxBodySize);
+	void setLocation(std::vector<s_location> location);
 
 	/* getters */
 	std::string getServerName(void) const;
+	std::string getHost(void) const;
+	int getPort(void) const;
+	std::vector<s_ePage> getErrorPage(void) const;
+	size_t getClientMaxBodySize(void) const;
+	std::vector<s_location> getLocation(void) const;
 };
 
 #endif /* SERVER_HPP */
