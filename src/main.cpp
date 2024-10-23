@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:27:28 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 12:46:46 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,16 +21,13 @@ int main(int argc, char **argv)
 	}
 	/* in case class is funcitonal */
 	{
-		if (argc != 2 && !validConf(argv[1]))
-			exit(EXIT_FAILURE);
-		try
-		{
-			Webserv server(argv[1]);
-		}
-		catch (std::exception &e)
-		{
-		}
+		if (!init(argc, argv))
+			return (EXIT_FAILURE);
+		if (argc == 1)
+			Webserv server;
+		else
+			Webserv server(std::string(argv[1]));
+		server.start();
 	}
-
-	return (EXIT_SUCCESS);
+	return (EXIT_SUCCESS)
 }

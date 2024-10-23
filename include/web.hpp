@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 17:25:51 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 12:43:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@
 #include "server.hpp"
 
 /* parser */
-bool validConf(char *arg);
+bool init(int argc, char **argv);
 
 /* server */
 void run(void);

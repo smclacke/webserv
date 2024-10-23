@@ -6,17 +6,32 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:37:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/23 12:46:07 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
-Webserv::Webserv(std::string input)
+/* constructors */
+
+/**
+ * @brief default constructor in case no config file was provided.
+ */
+Webserv::Webserv(void)
 {
-	(void) input;
+}
+
+Webserv::Webserv(std::string config)
+{
+	(void)config;
 }
 
 Webserv::~Webserv(void)
+{
+}
+
+/* member functions */
+
+bool Webserv::start(void)
 {
 }
