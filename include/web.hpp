@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/23 12:43:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 16:43:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,12 +50,22 @@
 #include <limits.h>
 #include <errno.h>
 
+/* enums and defines */
+enum e_config
+{
+	DEFAULT = 0,
+	SERVER_CONF = 1,
+	BAD_INPUT = 2
+};
+
 /* classes */
 #include "webserv.hpp"
 #include "server.hpp"
 
 /* parser */
-bool init(int argc, char **argv);
+e_config verifyInput(int ac, char **av);
+void initDefault(void);
+void initConf(std::string conf);
 
 /* server */
 void run(void);

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 12:46:07 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 16:26:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,6 @@ Webserv::~Webserv(void)
 
 /* member functions */
 
-bool Webserv::start(void)
+void Webserv::start(void)
 {
 }

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 12:56:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 17:20:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ Server::Server(void)
 
 Server::Server(std::ifstream server_block)
 {
+	(void)server_block;
 }
 
 Server::~Server()

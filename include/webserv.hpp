@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 12:45:35 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 16:27:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,11 @@ private:
 public:
 	/* constructors */
 	Webserv(void);
-	Webserv::Webserv(std::string config);
+	Webserv(std::string config);
 	~Webserv(void);
 
 	/* member functions */
-	bool start(void);
+	void start(void);
 };
 
 #endif /* WEBSERV_HPP */
