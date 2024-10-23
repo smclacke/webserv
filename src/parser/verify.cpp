@@ -6,11 +6,16 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 17:19:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/23 18:25:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
+
+bool check_location_brackets(std::ifstream &file, std::string line)
+{
+	return (true);
+}
 
 bool check_server_brackets(std::ifstream &file, std::string line)
 {
@@ -19,7 +24,15 @@ bool check_server_brackets(std::ifstream &file, std::string line)
 	{
 		while (std::getline(file, line))
 		{
-			if (line.find("}") != std::string::npos)
+			if (line.find("{") != std::string::npos)
+				return (false);
+			if (line.find("Location") != std::string::npos)
+			{
+				if (!check_location_brackets(file, line.substr(line.find("Location" + 8))))
+					return (false);
+				continue;
+			}
+			if (line.find("}") == std::string::npos)
 				return (true); // found closing bracket }
 		}
 		return (false);
