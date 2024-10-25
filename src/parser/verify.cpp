@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 18:25:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/25 15:30:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,17 @@
 
 bool check_location_brackets(std::ifstream &file, std::string line)
 {
-	return (true);
+	size_t pos = line.find("{");
+	if (pos != std::string::npos) // found {
+	{
+		while (std::getline(file, line))
+		{
+			if (line.find("}") == std::string::npos)
+				return (true); // found closing bracket }
+		}
+		return (false);
+	}
+	return (false);
 }
 
 bool check_server_brackets(std::ifstream &file, std::string line)
@@ -40,6 +50,7 @@ bool check_server_brackets(std::ifstream &file, std::string line)
 	return (false); // no opening bracket
 }
 
+/** checks if every server and location block has an opening and a closing bracket */
 e_config verifyInput(int ac, char **av)
 {
 	/** check if argc is greater  */
