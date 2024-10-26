@@ -20,6 +20,8 @@ kill <PID> - get PID from lsof info
 kill -9 <PID> - alt if kill alone doesnt work
 
 
+and if no PID but can't run, probably not being patient enough
+
 #########################################################################
 
 
@@ -107,7 +109,7 @@ operations between the client and the server (listen included).
 •You must never do a read or a write operation without going through poll() (or
 equivalent).
 •Checking the value of errno is strictly forbidden after a read or a write operation.
-•You don’t need to use poll() (or equivalent) before reading your configuration file
+•You don't need to use poll() (or equivalent) before reading your configuration file
 
 
 ------------------------------------------------------
@@ -130,6 +132,34 @@ equivalent).
 *The poll() function is not affected by the O_NONBLOCK flag.*
 
 
+
+#########################################################################
+
+
+**CLIENTS AND SERVERS**
+
+generally, all machines on the internet can be categorized as two types: servers and clients
+machines that provide services (e.g. web servers) to other machines are *servers*
+nachines used to connect to those services are *clients*
+
+// yahoo example:
+	- when you connect to www.yahoo.com to read a page, yahoo is providing a machine (probs cluster of large machines)
+	for use on the internet, to service your request. yahoo provides a *server*
+	- your machine, probs providing no services to anyone else on the internet, it is a user machine or *client*
+	- a machine can be both a server and a client, mostly tho machines are one or the other
+	- if running a browser, it will want to talk to the Web server on the server machine, Telnet application wants to talk to the Telnet
+	server, email app talks to email server etc.
+
+*server*
+	-	server component provides a function or service to one or many clients which initiate requests for such services
+	-	classified by the services they provide
+	e.g. web server serves web pages and a file server serves computer files
+	-	*the sharing of resources of a server constitutes a service*  
+	shared resources may be any server computer's software, electronic components, programs, data, processors and storage devices
+
+
+	*to formalize the data exchange even further, the server may implement an API, (application programming interface)*
+		this is an abstraction layer for accessing a service, by restricting communication to a specific content format, it facilitates parsing. by abstracting access, it facilitates cross-platform data exchange (no idea what this means)
 
 #########################################################################
 

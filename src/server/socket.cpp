@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 18:05:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/26 16:38:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,8 @@ void	Socket::closeSockets()
 }
 
 
-// will need to loop socketsSSS
+// will need to loop socketsSSS - std::vector<Server> _servers; I THINK
+
 int		Socket::openSockets()
 {
 
@@ -93,6 +94,7 @@ int		Socket::openSockets()
 
 
 
+	std::vector<Server> _servers;
 // not sure where/when you need to be
 
 	// grab a connection from the queue
@@ -113,7 +115,7 @@ int		Socket::openSockets()
 
 
 	// send message to the connection
-	std::string	response = "nice chatting with you connection :) \n";
+	std::string	response = "nice chatting with you connection :)";
 	send(_connection, response.c_str(), response.size(), 0);
 
 
