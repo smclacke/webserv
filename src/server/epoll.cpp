@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   poll.cpp                                           :+:    :+:            */
+/*   epoll.cpp                                          :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 17:24:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 19:48:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,3 +45,19 @@
  * 
  * 
  */
+
+// change close sockets, think it happens all here
+
+void	Socket::initEpoll(Socket &sock)
+{
+	// create socketEpoll(sock)
+
+	// while waitEpoll != err
+	
+	// loop getsocketnumber
+		// close getsocket
+		// epollctl(getepollfd, get socket etc...)
+		// close sock getepollfd
+
+}
+

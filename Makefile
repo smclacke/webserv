@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/10/22 17:32:12 by smclacke      ########   odam.nl          #
+#    Updated: 2024/10/28 19:33:13 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -24,7 +24,7 @@ HEADER_FILES := web.hpp
 
 SRC_FILES := main.cpp					\
 			parser/init.cpp				\
-			server/poll.cpp				\
+			server/epoll.cpp			\
 			server/run.cpp				\
 			server/socket.cpp			\
 			server/webserv.cpp			\

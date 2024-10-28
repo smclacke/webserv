@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 17:08:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 19:46:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@ class Socket
 
 		int		openSockets();
 		void	closeSockets();
+		void	initEpoll(Socket &sock);
 };
 
 

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:25:39 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/28 15:58:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 19:46:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,7 +66,7 @@ void run(void)
 
 	Socket	sock(servers);
 
-	// poll();
+	sock.initEpoll(sock);
 
 	sock.closeSockets();
 }

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 17:09:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 19:32:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,20 +75,46 @@ int		Socket::openSockets()
 	//std::cout << "successfully created socket\n";
 
 
+// !!!! understand this reuseable/nonblocking shit but doesnt work yet
+// allow socket descriptor to be reuseable
+//int	on = 1;
+//int	rc = setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, (char *)&on, sizeof(on));
+//if (rc == -1)
+//	return (std::cout << "failed to set socket option\n", -1);	
+
+
+// set socket to be nonblocking, all sockets for incoming connections be nonblocking since 
+// they inherit that state from the listening socket
+// setNonblocking(connection)
+//rc = ioctl(_sockfd, FIONBIO, (char *)&on); // FIONBIO?
+//if (rc == -1)
+//	return (std::cout << "failed to ioctl, setting socket to nonblocking\n", -1);	
+
+
 	// listen to port 9999 on any address
 	// htons to convert a number to network byte order
 	// address - location - path - root etc, same stuff?
 	// webserv->server->location->client_body_buffer_size - what do we do with you?
-	
+
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = INADDR_ANY;
 	_sockaddr.sin_port = htons(9999); 			// config._servers._port
-
 	// config._servers._host - don't know when/where this comes in but part of the config
 
+
+// !!!! understand this reuseable/nonblocking shit but doesnt work yet
+//rc = bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr));
+//if (rc == -1)
+//	return (std::cout << "failed to bind to port\n", -1);
+
+//rc = listen(_sockfd, 10); // why 32?
+//	return (std::cout << "listening failed\n", -1);
+	
+
+///////////////// older version of binding + litening
 	if (bind(_sockfd, (struct sockaddr*)&_sockaddr, sizeof(_sockaddr)) < 0)
 		return (std::cout << "failed to bind to port 9999\n", -1);
-	//std::cout << "binding to port 9999 successful\n";
+	std::cout << "binding to port 9999 successful\n";
 
 
 	// start listening, hold at most 10 connections in the queue
@@ -107,7 +133,6 @@ int		Socket::openSockets()
 	if (_connection < 0)
 		return (std::cout << "failed to grab connection\n", -1);
 		
-	//setNonblocking(connection)
 
 	std::cout << "successfully made connection\n";
 	

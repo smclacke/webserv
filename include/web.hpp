@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 17:15:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 19:44:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,7 @@
 #include <sys/time.h> // check this out (poll)
 #include <sys/types.h> // check this out (poll)
 #include <sys/epoll.h>
+#include <sys/ioctl.h> // for nonblocking stuff..
 // # include <sys/select.h> // check this out
 // # include <arpa.inet.h> // check this out
 
