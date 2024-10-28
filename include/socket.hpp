@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 15:52:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 17:08:12 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@ class Socket
 	private:
 		int					_sockfd;
 		int					_connection;
+		//std::vector<int>	_connections;
 		sockaddr_in			_sockaddr;
 		unsigned long		_addrlen;
 		

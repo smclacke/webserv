@@ -50,6 +50,23 @@ and if no PID but can't run, probably not being patient enough
 
 		start0line 	 =	request-line /status-line 
 
+	*HTPP/1.0* specification defined GET, HEAD, POST methods
+	*HTTP/1.1* specification added PUT, DELETE, CONNECT, OPTIONS, TRACE
+
+- get = requests the target resource transfer a representation of its state (HTTP status codes)
+		requests using GET should only retrieve data without making changes
+- head = asks for response identical to GET reuqest but without response body (only header)
+- post = submits entity to the specified resource, often causing a change in state or side 
+		effects on the server
+- put = requests target resource create or update its state with the state defined by the
+		submitted request, a distinction from POST is that the client specifies the target location on the server
+- delete = deletes specified resource
+- connect = establishes a tunnel to the server identifed by the target resource (?)
+- options = requests that the target resource transfer the HTTP methods that it supports 
+			can be used to check functionality of web server by requesting '*' instead of specific resource
+- trace = requests target resource transfer received request in response body
+			client can see what (if any) changes or additions have been made by intermediaries
+
 
 - client handshake request:
 	GET /chat HTTP/1.1
@@ -161,6 +178,7 @@ nachines used to connect to those services are *clients*
 	*to formalize the data exchange even further, the server may implement an API, (application programming interface)*
 		this is an abstraction layer for accessing a service, by restricting communication to a specific content format, it facilitates parsing. by abstracting access, it facilitates cross-platform data exchange (no idea what this means)
 
+
 #########################################################################
 
 
@@ -202,9 +220,9 @@ once there's a socket, we need to use bind to assign an IP address and port to t
 		using IP - sockaddr_in
 
 		struct sockaddr_in {
-		sa_family_t    sin_family; /* address family: AF_INET */
-		in_port_t      sin_port;   /* port in network byte order */
-		struct in_addr sin_addr;   /* internet address */
+		sa_family_t    sin_family; /* address family: AF_INET */ - domain
+		in_port_t      sin_port;   /* port in network byte order */ - port number
+		struct in_addr sin_addr;   /* internet address */ - address for socket e.g. inet_addr("127.0.0.1")
 		};
 
 	addrlen - size() of addr
@@ -235,5 +253,28 @@ extracts an element from a queue of connections (the queue created by listen) fo
 		it expects a pointer to an int that will be the size of addr
 		after the function is executed, the int refered by addrlen will be set to the size of the peer address
 
+*READ | RECV*
+
+receive a message from a socket
+only diferent between read() and recv() is presence of flags
+
+< ssize_t	recv(int sockfd, void *buf, size_t len, int flags) >
+< ssize_t	read(int sockfd, void *buf, size_t len) >
 
 
+
+*SETSOCKOPT*
+
+< int	setsockopt(int sockfd, int level, int option_name, const void *option_value, socklen_t option_len) >
+
+sets the option <option_name> argument, at the protocol level specified by the <level> argument, to the value <option_value> for socket sockfd
+
+
+*FCNT manipulate file descriptor*
+
+< int fcntl(int fd, int cmd, ... /* arg */) >
+
+performs one of the operation <cmd> on open file descriptor <fd>
+
+
+#########################################################################

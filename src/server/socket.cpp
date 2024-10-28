@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 15:52:48 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 17:09:03 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,12 +63,13 @@ void	Socket::closeSockets()
 
 
 // will need to loop socketsSSS - std::vector<Server> _servers; I THINK
+// handling multiple connections too... right now one int but needs to become array/vector of ints
 
 int		Socket::openSockets()
 {
 
 	// create socket (IPv4, TCP)
-	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	_sockfd = socket(AF_INET, SOCK_STREAM, 0); // listening socket
 	if (_sockfd == -1)
 		return (std::cout << "failed to create socket\n", -1);
 	//std::cout << "successfully created socket\n";
@@ -105,6 +106,9 @@ int		Socket::openSockets()
 	_connection = accept(_sockfd, (struct sockaddr*)&_sockaddr, (socklen_t*)&_addrlen);
 	if (_connection < 0)
 		return (std::cout << "failed to grab connection\n", -1);
+		
+	//setNonblocking(connection)
+
 	std::cout << "successfully made connection\n";
 	
 
