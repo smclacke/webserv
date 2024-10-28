@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/26 16:38:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/28 15:52:48 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,9 +24,9 @@ Socket::Socket(const Socket &socket)
 	*this = socket;
 }
 
-Socket::Socket(const Webserv &config)
+Socket::Socket(const Webserv &servers)
 {
-	(void) config; // wll actually use ... somehow sometime
+	(void) servers; // wll actually use ... somehow sometime
 
 	if (openSockets() < 0)
 		exit(EXIT_FAILURE); // need proper error handling?
@@ -76,6 +76,9 @@ int		Socket::openSockets()
 
 	// listen to port 9999 on any address
 	// htons to convert a number to network byte order
+	// address - location - path - root etc, same stuff?
+	// webserv->server->location->client_body_buffer_size - what do we do with you?
+	
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = INADDR_ANY;
 	_sockaddr.sin_port = htons(9999); 			// config._servers._port
@@ -94,7 +97,7 @@ int		Socket::openSockets()
 
 
 
-	std::vector<Server> _servers;
+	//std::vector<Server> _servers;
 // not sure where/when you need to be
 
 	// grab a connection from the queue
