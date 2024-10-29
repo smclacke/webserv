@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 18:11:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/29 17:01:51 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,15 +17,38 @@
 #include <string>
 #include <iostream>
 
-/*
-	location /files {
-		autoindex on;
-		allowed_methods GET;
-		root /var/www/files;
-		autoindex
- upload_dir /var/uploads-local;
-	}
-*/
+/**
+ * @note allowed_methods, GET POST DELETE are all default turned on
+ * if 1 is specified in the config file only that one will be turned on;
+ */
+
+// std::map<std::string, std::string> serverConfig = {
+// 	{"listen", ""},
+// 	{"server_name", ""},
+// 	{"client_max_body_size", ""},
+// 	{"error_page", ""},
+// 	{"Location", ""}};
+
+// std::map<std::string, std::string> locationConfig = {
+// 	{"allowed_methods", ""},
+// 	{"upload_dir", ""},
+// 	{"client_max_body_size", ""},
+// 	{"root", ""},
+// 	{"autoindex", ""},
+// 	{"index", ""},
+// 	{"cgi_path", ""},
+// 	{"cgi_ext", ""}};
+
+// location / files
+// {
+// 	autoindex on;
+// 	allowed_methods GET;
+// 	root / var / www / files;
+// 	autoindex
+// 				upload_dir /
+// 			var / uploads -
+// 		local;
+// }
 
 struct s_location
 {
@@ -34,6 +57,7 @@ struct s_location
 	size_t client_body_buffer_size;
 	bool allow_GET;
 	bool allow_POST;
+	bool allow_DELETE;
 	bool autoindex;
 	std::string upload_dir;
 	std::string index;
@@ -66,6 +90,9 @@ public:
 	/* add */
 	void addLocation(s_location route);
 	void addErrorPage(s_ePage errorPage);
+
+	/* init */
+	void initListen(std::string hostPort);
 
 	/* setters */
 	void setServerName(std::string serverName);

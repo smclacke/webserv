@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/23 16:45:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/29 17:50:33 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,18 +21,27 @@ int main(int argc, char **argv)
 	}
 	/* in case class is funcitonal */
 	{
-		e_config config = verifyInput(argc, argv);
-		if (config == BAD_INPUT)
-			return (EXIT_FAILURE);
 		try
 		{
-			if (config == DEFAULT)
-				initDefault();
-			if (config == SERVER_CONF)
-				initConf((std::string(argv[1])));
+			verifyInput(argc, argv);
+			std::string config = "";
+			if (argc == 2)
+				std::string config = std::string(argv[1]);
+			Webserv wserv(config);
+			Server first = wserv.getServer(0);
+			first.printServer();
 		}
-		catch (std::exception e)
+		catch (eConf &e)
 		{
+			std::cout << "Config-Error: line: " << e.line() << " error: " << e.what() << std::endl;
+		}
+		catch (std::runtime_error &e)
+		{
+			std::cout << "Error: " << e.what() << std::endl;
+		}
+		catch (std::logic_error &e)
+		{
+			std::cout << "Error: " << e.what() << std::endl;
 		}
 	}
 	return (EXIT_SUCCESS);

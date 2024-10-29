@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/23 17:54:11 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/29 17:27:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,14 @@ Webserv::Webserv(void)
 
 Webserv::Webserv(std::string config)
 {
+	if (config.empty())
+	{
+		Server default_server;
+		_servers.push_back(default_server);
+		return;
+	}
+	// parse config file
+	// if _server.size == 0 --> config file was empty --> add defualt server
 	(void)config;
 }
 

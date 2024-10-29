@@ -6,96 +6,97 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/25 15:30:13 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/29 17:51:38 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
-bool check_location_brackets(std::ifstream &file, std::string line)
+/**
+ * @brief checks if the location brackets are correct
+ */
+static void check_location_brackets(std::ifstream &file, std::string line, int *line_n)
 {
 	size_t pos = line.find("{");
 	if (pos != std::string::npos) // found {
 	{
 		while (std::getline(file, line))
 		{
-			if (line.find("}") == std::string::npos)
-				return (true); // found closing bracket }
+			(*line_n)++;
+			if (line.find("{") != std::string::npos)
+				throw eConf("unexpected \"{\" found", (*line_n));
+			if (line.find("}") != std::string::npos)
+				return;
 		}
-		return (false);
+		throw eConf("eof reached with no closing } for \"location\" keyword", (*line_n));
 	}
-	return (false);
+	throw eConf("no opening bracket after \"location\" keyword", (*line_n));
 }
 
-bool check_server_brackets(std::ifstream &file, std::string line)
+/**
+ * @brief checks if the server brackets are correct.
+ */
+static void check_server_brackets(std::ifstream &file, std::string line, int *line_n)
 {
-	size_t pos = line.find("{");
+	size_t pos = line.find("{");  // check if the server bracket has a {
 	if (pos != std::string::npos) // found {
 	{
 		while (std::getline(file, line))
 		{
-			if (line.find("{") != std::string::npos)
-				return (false);
-			if (line.find("Location") != std::string::npos)
+			(*line_n)++;
+			size_t pos = line.find("location");
+			if (pos != std::string::npos)
 			{
-				if (!check_location_brackets(file, line.substr(line.find("Location" + 8))))
-					return (false);
+				check_location_brackets(file, line.substr(pos + 8), line_n);
 				continue;
 			}
-			if (line.find("}") == std::string::npos)
-				return (true); // found closing bracket }
+			if (line.find("{") != std::string::npos)
+				throw eConf("unexpected \"{\" found", (*line_n));
+			if (line.find("}") != std::string::npos)
+				return;
 		}
-		return (false);
+		throw eConf("eof reached with no closing } for \"server\" keyword", (*line_n));
 	}
-	return (false); // no opening bracket
+	throw eConf("no opening bracket after \"server\" keyword", (*line_n));
 }
 
 /** checks if every server and location block has an opening and a closing bracket */
-e_config verifyInput(int ac, char **av)
+void verifyInput(int ac, char **av)
 {
-	/** check if argc is greater  */
-	if (ac > 2)
-	{
-		std::cerr << "Error: too many inputs, provide 1 *.conf file" << std::endl;
-		return (BAD_INPUT);
-	}
+	/* input checks */
 	if (ac == 1)
-		return (DEFAULT);
+		return;
+	if (ac > 2)
+		throw std::runtime_error("too many inputs, provide 1 *.conf file");
 	std::string filename = std::string(av[1]);
-	if (filename.substr(filename.length() - 5) != ".conf")
-	{
-		std::cerr << "Error: " << filename << " does not end with .conf" << std::endl;
-		return (BAD_INPUT);
-	}
-	/* check if file opens and existence of at least one server{} directive */
+	if (filename.length() < 5 || filename.substr(filename.length() - 5) != ".conf")
+		throw std::runtime_error("\"" + filename + "\" does not end with .conf");
 	std::ifstream file(filename);
 	if (!file.is_open())
-	{
-		std::cerr << "Error: unable to open file " << filename << std::endl;
-		return (BAD_INPUT);
-	}
-	e_config config = DEFAULT;
+		throw std::runtime_error("unable to open file: \"" + filename + "\"");
+
+	/* checks if the server and location directives have the appropiate brackets */
 	std::string line;
-	std::string server("server");
+	int line_n = 0; // keeps track of the line_number for accurate error outputs
 	while (std::getline(file, line))
 	{
-		line.erase(0, line.find_first_not_of(" \t\n\r\f\v"));
-		line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
-		if (line.empty() || line[0] == '#')
+		line_n++;
+		if (line.find('#') != std::string::npos)
+			line.erase(line.find('#'), std::string::npos);	  // erase # and what comes afer
+		line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // erase start whitespace
+		line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1); // erase back whitespace
+		if (line.empty())									  // skip empty lines
 			continue;
-		size_t pos = line.find(server);
-		if (pos != std::string::npos) // "server" keyword exists
+		if (line.find('}') != std::string::npos) // random closing bracket = bad
+			throw eConf("} bracket with no opening {", line_n);
+		size_t pos = line.find("server"); // check for server directive
+		if (pos != std::string::npos)	  // "server" keyword exists
 		{
-			if (check_server_brackets(file, line.substr(pos + 6)))
-			{
-				config = SERVER_CONF;
-				continue;
-			}
-			else
-				return (BAD_INPUT);
+			check_server_brackets(file, line.substr(pos + 6), (&line_n));
+			continue;
 		}
 		else
-			return (BAD_INPUT); // bad config - text input that is not server
+			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
-	return (config);
+	// eof reached - file should be ok :D
 }
