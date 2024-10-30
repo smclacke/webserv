@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 19:48:14 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:43:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@
 
 void	Socket::initEpoll(Socket &sock)
 {
+	(void) sock;
 	// create socketEpoll(sock)
 
 	// while waitEpoll != err

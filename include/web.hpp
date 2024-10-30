@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:23:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:34:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@
 void verifyInput(int ac, char **av);
 
 /* server */
-void	run(); // will take the instance of Webserv with parsed config info
-// poll();
+void	run(Webserv wserv);
+
 
 #endif /* WEB_HPP */

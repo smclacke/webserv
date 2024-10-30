@@ -362,3 +362,88 @@ Each instance can accept multiple client connections, each handled through separ
 This setup allows for modular and scalable server architecture.
 
 #########################################################################
+
+//// moving all these notes out of cpp files
+
+/**
+ * CLASS WEBSERV -
+ * 
+ * 	std::vector<Server>	_servers
+ * 	Webserv(std::string config)
+ * 
+ * getserver(size_t index)
+ * getserver(std::string name)
+ * 
+ * 
+ * CLASS SERVER -
+ * 
+ * 	std::string _serverName
+ * 	std::string _host
+ * 	int		_port
+ * // error page stuff
+ * size_t	_clientMaxBodySize
+ * std::vector<s_locaiton> 	_location
+ * 
+ * // setters inc: servername, host, pot, errorpage, clientmaxbodysize, location
+ * Server(std::ifstream server_block);
+ * 
+ * 
+ * STRUCT LOCATION -
+ * 
+ * 	std::string path
+ * 	std::stirng root
+ * 	size_t client_body_buffer_size
+ * 	bools  = allow_GET allow_POST autoindex
+ * std::string upload_dir
+ * std::string index
+ * std::string cgi_ext
+ * std::string cgi_path
+ * 
+ * 
+ * CONFIG EXAMPLE:
+ * 	
+ * 
+ * 	location /files
+ * 	autoindex on
+ * 	alowed_methods GET
+ * 	root /var/www/files
+ * 	autoindex
+ * 	upload_dir /var/uploads-local 
+ * 
+ */
+
+ 	//size_t additional_servers = 3;
+	//for (size_t i = 0; i < additional_servers; ++i)
+	//{
+	//	Server nServer;
+	//	wserv.addServer(nServer);
+	//}
+	//std::cout << "Created: " << wserv.getServerCount() << " servers" << std::endl;
+	//Server getServer = wserv.getServer(0);
+	//getServer.printServer();
+
+// server	serv_instance;
+
+//while (vector<servers>)
+	// serv_instance = getserver(i)
+	//_sockaddr.sin_port = serv_instance.getPort
+	// sockfd = socket etc...
+
+	//THEN
+	// while serv.connections....
+/*
+Server serv;
+
+while (vector<servers>)
+{
+	serv = webserv.getserver(0);
+	_sockaddr.sin_port =serv.getPort; 
+}
+
+*/
+
+// loopServers
+//  -> per server - opensockets 
+//	-> while opening sockets, listen for connections
+
+#########################################################################

@@ -6,12 +6,17 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:05:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:42:59 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SOCKET_HPP
 # define SOCKET_HPP
+
+# include "webserv.hpp"
+# include "server.hpp"
+
+class Webserv;
 
 class Socket
 {
@@ -25,7 +30,6 @@ class Socket
 		
 	public:
 		Socket();
-		Socket(const Socket &socket); // why? nned?
 		Socket(const Webserv &servers);
 		Socket	&operator=(const Socket &Socket);
 		~Socket();

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:09:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:39:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
+#include "socket.hpp"
 
 /**
  * @note allowed_methods, GET POST DELETE are all default turned on
@@ -80,6 +81,8 @@ private:
 	std::vector<s_ePage> _errorPage;
 	size_t _clientMaxBodySize; // in megaBytes
 	std::vector<s_location> _location;
+	Socket		_serverSocket;
+	Socket		_clientSocket;
 
 public:
 	Server(void);
