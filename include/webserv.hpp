@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:01:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:59:03 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ public:
 	void addServer(Server &server);
 
 	/* getters */
+	std::vector<Server> &getallServer();
 	size_t getServerCount(void) const;
 	Server &getServer(size_t index);
 	Server &getServer(std::string name);

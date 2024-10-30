@@ -6,11 +6,11 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:09:19 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 16:32:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/web.hpp"
+#include "../../include/server.hpp"
 
 /**
  * @brief	data filler for testing
@@ -33,6 +33,8 @@ Server::Server(void)
 						 "/uploads",
 						 "index.html",
 						 ".php", "/usr/bin/php-cgi"});
+	Socket _clientSocket(eSocket::Client);
+	Socket _serverSocket(eSocket::Server);
 }
 
 Server::Server(std::ifstream server_block)
@@ -147,6 +149,16 @@ void Server::setLocation(std::vector<s_location> location)
 	_location = location;
 }
 
+void Server::setServerSocket(Socket serverSocket)
+{
+	_serverSocket = serverSocket;
+}
+
+void Server::setClientSocket(Socket clientSocket)
+{
+	_clientSocket = clientSocket;
+}
+
 /* getters */
 const std::string &Server::getServerName(void) const
 {
@@ -176,4 +188,14 @@ const size_t &Server::getClientMaxBodySize(void) const
 const std::vector<s_location> &Server::getLocation(void) const
 {
 	return _location;
+}
+
+const Socket &Server::getServerSocket(void) const
+{
+	return _serverSocket;
+}
+
+const Socket &Server::getClientSocket(void) const
+{
+	return _clientSocket;
 }

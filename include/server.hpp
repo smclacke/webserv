@@ -6,16 +6,18 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:09:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 16:31:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SERVER_HPP
 #define SERVER_HPP
 
+#include "web.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
+#include "socket.hpp"
 
 /**
  * @note allowed_methods, GET POST DELETE are all default turned on
@@ -80,6 +82,8 @@ private:
 	std::vector<s_ePage> _errorPage;
 	size_t _clientMaxBodySize; // in megaBytes
 	std::vector<s_location> _location;
+	Socket _serverSocket;
+	Socket _clientSocket;
 
 public:
 	Server(void);
@@ -102,6 +106,8 @@ public:
 	void setErrorPage(std::vector<s_ePage> errorPage);
 	void setClientMaxBodySize(size_t clientMaxBodySize);
 	void setLocation(std::vector<s_location> location);
+	void setServerSocket(Socket serverSocket);
+	void setClientSocket(Socket clientSocket);
 
 	/* getters */
 	std::string const &getServerName(void) const;
@@ -110,6 +116,8 @@ public:
 	const std::vector<s_ePage> &getErrorPage(void) const;
 	const size_t &getClientMaxBodySize(void) const;
 	const std::vector<s_location> &getLocation(void) const;
+	const Socket &getServerSocket(void) const;
+	const Socket &getClientSocket(void) const;
 };
 
 #endif /* SERVER_HPP */
