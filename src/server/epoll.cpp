@@ -6,11 +6,45 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:43:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 17:55:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
+
+
+/* constructors an' that */
+
+Epoll::Epoll() {}
+
+
+// copy constructor disappeared ...
+
+Epoll &Epoll::operator=(const Epoll &epoll)
+{
+	if (this != &epoll)
+	{
+		//this->
+	}
+	return *this;
+}
+
+Epoll::~Epoll()
+{
+
+}
+
+
+/* methods */
+
+void	Epoll::initEpoll()
+{
+	
+}
+
+
+
+// CHECK NOTES THEN MOVE
 
 /**
  * monitoring serveral sockets
@@ -48,17 +82,17 @@
 
 // change close sockets, think it happens all here
 
-void	Socket::initEpoll(Socket &sock)
-{
-	(void) sock;
-	// create socketEpoll(sock)
+//void	Socket::initEpoll(Socket &sock)
+//{
+//	(void) sock;
+//	// create socketEpoll(sock)
 
-	// while waitEpoll != err
+//	// while waitEpoll != err
 	
-	// loop getsocketnumber
-		// close getsocket
-		// epollctl(getepollfd, get socket etc...)
-		// close sock getepollfd
+//	// loop getsocketnumber
+//		// close getsocket
+//		// epollctl(getepollfd, get socket etc...)
+//		// close sock getepollfd
 
-}
+//}
 

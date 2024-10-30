@@ -6,49 +6,36 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:37:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 17:39:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
-/* constructors */
+/* constructors an' that */
 
 Socket::Socket() {}
 
-Socket::Socket(eSocket type)
+Socket::Socket(const Server &serv_instance, eSocket type) : _connection(0), _maxConnections(10)
 {
+	
 	if (type == eSocket::Client)
 	{
-		// do client socket things
-		// open socket for client
+		// if openSocket() < 0 throw
+		openClientSocket(serv_instance);
+
 	}
 	else if (type == eSocket::Server)
 	{
-		// do server socket things
-		// open socket for server
+		// if openSocket() < 0 throw
+		openServerSocket(serv_instance);
+
 	}
 	//else
 		// throw
 }
 
-// dont need
-//Socket::Socket(const Webserv &servers)
-//{
-//	(void)servers; // wll actually use ... somehow sometime
-
-//	/*
-//		for (servers[i]) i < getServerCount
-//		{
-//			// get server + any other necessary data
-//			servers[i]._clientSocket -
-//			servers[i]._serverSocket -
-//			if (openSockets() < 0) // take servers[i]
-//				exit(EXIT_FAILURE); // need proper error handling
-//		}
-
-//	*/
-//}
+// copy constructor disappeared ...
 
 Socket &Socket::operator=(const Socket &socket)
 {
@@ -57,7 +44,8 @@ Socket &Socket::operator=(const Socket &socket)
 		// clear all attributes || set to 0
 
 		this->_sockfd = socket._sockfd;
-		this->_connection = socket._connection;
+		this->_maxConnections = socket._maxConnections;
+		//this->_connection = socket._connection; // copy vector of connections
 		this->_sockaddr = socket._sockaddr;
 		this->_addrlen = socket._addrlen;
 	}
@@ -70,18 +58,62 @@ Socket::~Socket()
 	// || set back to 0
 }
 
+
 /* methods */
 
-void Socket::closeSockets()
+void Socket::closeSockets() // or socket for each instance of socket
 {
-	close(this->_connection);
+	//close(this->_connection); // close the vector of connections
 	close(this->_sockfd);
 }
 
-// handle multiple connections -> change hpp
-// opening clientSocket OR serverSocket, then pass to epoll()
-int Socket::openSockets()
+
+// !! if fail throw for like everything !!
+int	Socket::openServerSocket(const Server &serv_instance)
 {
+
+	// create socket
+	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
+	
+	
+	// set non-blocking
+	//
+
+	_sockaddr.sin_family = AF_INET;
+	_sockaddr.sin_addr.s_addr = INADDR_ANY; // listen port 9999 on any address - change later
+	_sockaddr.sin_port = serv_instance.getPort();
+
+
+	// bind
+	bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr));
+
+	
+	// listen
+	for (size_t i = 0; i < _maxConnections; i++)
+	{
+		listen(_sockfd, _connections[i]);
+		
+		// grab one for queue: so yay or nee for loop?
+		// accept
+		_addrlen = sizeof(_sockaddr);
+		_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen);
+		if (_connection >= 0)
+			std::cout << "successfully made connection\n";
+	}
+
+}
+
+
+int Socket::openClientSocket(const Server &serv_instance)
+{
+ // check - no bind? no accept?
+ 
+	// socket
+	// connect
+	// listen
+	
+
+
 	// create socket (IPv4, TCP)
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0); // listening socket
 	if (_sockfd == -1)

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:22:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 17:43:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,6 +59,7 @@
 /* classes */
 #include "webserv.hpp"
 #include "server.hpp"
+#include "epoll.hpp"
 #include "socket.hpp"
 #include "error.hpp"
 
@@ -73,6 +74,6 @@ enum class eSocket
 void verifyInput(int ac, char **av);
 
 /* server */
-void run(Webserv wserv);
+
 
 #endif /* WEB_HPP */

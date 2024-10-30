@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:37:45 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 17:39:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,25 +21,30 @@ enum class eSocket;
 
 class Socket
 {
-private:
-	int _sockfd;
-	int _connection;
-	// std::vector<int>	_connections;
-	sockaddr_in _sockaddr;
-	unsigned long _addrlen;
+	private:
+		int					_sockfd;
+		int					_maxConnections;
+		int 				_connection; // for grabbing one from queue
+		std::vector<int>	_connections;
+		sockaddr_in 		_sockaddr;
+		unsigned long		_addrlen;
+		
 
-public:
-	Socket();
-	Socket(eSocket type);
-	//Socket(const Webserv &servers); // dont need
-	Socket &operator=(const Socket &Socket);
-	~Socket();
+	public:
+		Socket();
+		Socket(const Server &serv_instance, eSocket type);
+		// copy constructor disappeared
+		Socket &operator=(const Socket &Socket);
+		~Socket();
 
-	/* methods */
+		/* getters */
 
-	int openSockets();
-	void closeSockets();
-	void initEpoll(Socket &sock);
+		/* setters */
+
+		/* methods */
+		int openClientSocket(const Server &sev_instance);
+		int openServerSocket(const Server &sev_instance);
+		void closeSockets(); // not sure where you will be yet
 };
 
 #endif /* SOCKET_HPP */
