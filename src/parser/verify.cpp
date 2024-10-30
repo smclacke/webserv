@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:47:06 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:11:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,14 @@ static void check_location_brackets(std::ifstream &file, std::string line, int &
 		while (std::getline(file, line))
 		{
 			++line_n;
+			if (line.empty())
+				continue;
 			if (line.find("{") != std::string::npos)
 				throw eConf("unexpected \"{\" found", line_n);
 			if (line.find("}") != std::string::npos)
 				return;
+			if (line.back() != ';')
+				throw eConf("line: \"" + line + "\" must end with ';'", line_n);
 		}
 		throw eConf("eof reached with no closing } for \"location\" keyword", line_n);
 	}
@@ -44,6 +48,8 @@ static void check_server_brackets(std::ifstream &file, std::string line, int &li
 		while (std::getline(file, line))
 		{
 			++line_n;
+			if (line.empty())
+				continue;
 			size_t pos = line.find("location");
 			if (pos != std::string::npos)
 			{
@@ -54,6 +60,8 @@ static void check_server_brackets(std::ifstream &file, std::string line, int &li
 				throw eConf("unexpected \"{\" found", line_n);
 			if (line.find("}") != std::string::npos)
 				return;
+			if (line.back() != ';')
+				throw eConf("line: \"" + line + "\" must end with ';'", line_n);
 		}
 		throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
 	}

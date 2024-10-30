@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:22:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:45:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,7 +70,9 @@ enum class eSocket
 };
 
 /* parser */
+void lineStrip(std::string &line);
 void verifyInput(int ac, char **av);
+Server parseServer(std::ifstream &file, int &line_n);
 
 /* server */
 void run(Webserv wserv);

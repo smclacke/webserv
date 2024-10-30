@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:59:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 17:46:44 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,27 @@ Webserv::Webserv(std::string config)
 		_servers.push_back(default_server);
 		return;
 	}
-	// parse config file
-	// if _server.size == 0 --> config file was empty --> add defualt server
+	std::ifstream file(config);
+	if (!file.is_open())
+		throw std::runtime_error("unable to open file: \"" + config + "\"");
+	std::string line;
+	int line_n = 0; // keeps track of the line_number for accurate error outputs
+	while (std::getline(file, line))
+	{
+		++line_n;
+		lineStrip(line);
+		if (line.empty()) // skip empty lines
+			continue;
+		size_t pos = line.find("server"); // check for server directive
+		if (pos != std::string::npos)	  // "server" keyword exists
+		{
+			Server nServer = parseServer(file, line_n);
+			_servers.push_back(nServer);
+			continue;
+		}
+		else
+			throw eConf("line : \"" + line + "\": not recognized", line_n);
+	}
 	(void)config;
 }
 

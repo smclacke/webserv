@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:31:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:38:05 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ struct s_location
 	std::string path;
 	std::string root;
 	size_t client_body_buffer_size;
+	bool custom_method;
 	bool allow_GET;
 	bool allow_POST;
 	bool allow_DELETE;
@@ -88,7 +89,6 @@ private:
 public:
 	Server(void);
 	Server &operator=(const Server &rhs);
-	Server(std::ifstream server_block);
 	~Server(void);
 	void printServer(void);
 
@@ -96,8 +96,11 @@ public:
 	void addLocation(s_location route);
 	void addErrorPage(s_ePage errorPage);
 
-	/* init */
-	void initListen(std::string hostPort);
+	/* directives */
+	void parseServerName(std::stringstream &value);
+	void parseListen(std::stringstream &value);
+	void parseErrorPage(std::stringstream &value);
+	void parseClientMaxBody(std::stringstream &value);
 
 	/* setters */
 	void setServerName(std::string serverName);

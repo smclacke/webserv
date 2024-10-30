@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:32:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:47:22 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@ Server::Server(void)
 	_location.push_back({"/",
 						 "root",
 						 1,
+						 false,
 						 true,
 						 true,
 						 true,
@@ -35,18 +36,6 @@ Server::Server(void)
 						 ".php", "/usr/bin/php-cgi"});
 	Socket _clientSocket(eSocket::Client);
 	Socket _serverSocket(eSocket::Server);
-}
-
-Server::Server(std::ifstream server_block)
-{
-	(void)server_block;
-	std::string line;
-	while (std::getline(server_block, line))
-	{
-		if (line.find("}") != std::string::npos)
-			break;
-		// keymap
-	}
 }
 
 Server &Server::operator=(const Server &rhs)
@@ -95,6 +84,28 @@ void Server::printServer(void)
 	}
 }
 
+/* directives */
+
+void Server::parseServerName(std::stringstream &value)
+{
+	(void)value;
+}
+
+void Server::parseListen(std::stringstream &value)
+{
+	(void)value;
+}
+
+void Server::parseErrorPage(std::stringstream &value)
+{
+	(void)value;
+}
+
+void Server::parseClientMaxBody(std::stringstream &value)
+{
+	(void)value;
+}
+
 /* setters */
 
 void Server::addLocation(s_location route)
@@ -105,18 +116,6 @@ void Server::addLocation(s_location route)
 void Server::addErrorPage(s_ePage errorPage)
 {
 	_errorPage.push_back(errorPage);
-}
-
-void Server::initListen(std::string hostPort)
-{
-	hostPort.erase(hostPort.find_first_not_of(" \t\n\r\f\v") + 1);
-	hostPort.erase(hostPort.find_last_not_of(" \t\n\r\f\v;") + 1);
-	std::istringstream ss(hostPort);
-	std::string host, port;
-	std::getline(ss, host, ':');
-	std::getline(ss, port);
-	_host = host;
-	_port = std::stoi(port);
 }
 
 void Server::setServerName(std::string serverName)
