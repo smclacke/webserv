@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/29 17:01:51 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 14:59:09 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,12 +103,12 @@ public:
 	void setLocation(std::vector<s_location> location);
 
 	/* getters */
-	std::string getServerName(void) const;
-	std::string getHost(void) const;
-	int getPort(void) const;
-	std::vector<s_ePage> getErrorPage(void) const;
-	size_t getClientMaxBodySize(void) const;
-	std::vector<s_location> getLocation(void) const;
+	std::string const &getServerName(void) const;
+	const std::string &getHost(void) const;
+	const int &getPort(void) const;
+	const std::vector<s_ePage> &getErrorPage(void) const;
+	const size_t &getClientMaxBodySize(void) const;
+	const std::vector<s_location> &getLocation(void) const;
 };
 
 #endif /* SERVER_HPP */

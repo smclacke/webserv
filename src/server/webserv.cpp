@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/29 17:27:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 14:50:56 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,11 @@ Webserv::~Webserv(void)
 
 void Webserv::start(void)
 {
+}
+
+size_t Webserv::getServerCount(void) const
+{
+	return (_servers.size());
 }
 
 Server &Webserv::getServer(size_t index)
