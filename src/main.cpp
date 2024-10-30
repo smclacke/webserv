@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:06:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:11:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,9 +27,9 @@ int main(int argc, char **argv)
 			std::string config = "";
 			if (argc == 2)
 				std::string config = std::string(argv[1]);
-			Webserv wserv(config);
-			size_t server_count = 3;
-			for (size_t i = 0; i < server_count; ++i)
+			Webserv wserv(config); // will create 1 default server if there is no config
+			size_t additional_servers = 3;
+			for (size_t i = 0; i < additional_servers; ++i)
 			{
 				Server nServer;
 				wserv.addServer(nServer);
