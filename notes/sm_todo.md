@@ -1,17 +1,13 @@
 
 
-- how does julius want to add dirs to srcs?
+- struct vector location - what is this for? location of server...
+	locations in config same as this?
+	what do i do with this?
 
-- how does julius want to work with header(s)
+- server and socket are the same right? also for both of us... check this
 
-- do we need to work out/worry about how erroring hanging now? maybe good idea before doing too much writing
+- look into multiple sockets , how handle, how work, what
+	std::vector<Server> _servers;
 
-- STRUCTS + CLASSES :)
-
-- what poll() and why and how and poll loop
-
-
-
- - header include libraries: 
-// later make decisions about what we actually use and remove unnecessary
+- server + client stuff - get this clear
 
