@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 14:54:58 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:01:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,10 +30,15 @@ public:
 	~Webserv(void);
 
 	/* member functions */
+	void start(void);
+
+	/* Setters */
+	void addServer(Server &server);
+
+	/* getters */
 	size_t getServerCount(void) const;
 	Server &getServer(size_t index);
 	Server &getServer(std::string name);
-	void start(void);
 };
 
 #endif /* WEBSERV_HPP */

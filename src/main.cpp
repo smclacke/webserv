@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/29 17:50:33 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:06:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,8 +28,15 @@ int main(int argc, char **argv)
 			if (argc == 2)
 				std::string config = std::string(argv[1]);
 			Webserv wserv(config);
-			Server first = wserv.getServer(0);
-			first.printServer();
+			size_t server_count = 3;
+			for (size_t i = 0; i < server_count; ++i)
+			{
+				Server nServer;
+				wserv.addServer(nServer);
+			}
+			std::cout << "Created: " << wserv.getServerCount() << " servers" << std::endl;
+			Server getServer = wserv.getServer(0);
+			getServer.printServer();
 		}
 		catch (eConf &e)
 		{

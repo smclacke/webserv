@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 14:59:09 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:09:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,7 @@ private:
 
 public:
 	Server(void);
+	Server &operator=(const Server &rhs);
 	Server(std::ifstream server_block);
 	~Server(void);
 	void printServer(void);

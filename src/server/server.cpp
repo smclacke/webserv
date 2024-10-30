@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 14:59:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:09:19 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,20 @@ Server::Server(std::ifstream server_block)
 			break;
 		// keymap
 	}
+}
+
+Server &Server::operator=(const Server &rhs)
+{
+	if (this != &rhs)
+	{
+		_serverName = rhs._serverName;
+		_host = rhs._host;
+		_port = rhs._port;
+		_errorPage = rhs._errorPage;
+		_clientMaxBodySize = rhs._clientMaxBodySize;
+		_location = rhs._location;
+	}
+	return *this;
 }
 
 Server::~Server()
