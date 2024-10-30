@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:25:39 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/28 19:46:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:12:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,9 @@
 void run(void)
 {
 	Webserv			servers("input"); // will be passed to run from main
-	// Webserv instance <servers> -> std::vector<Server> _servers: 
+	// Webserv std::vector<Server> _servers: 
+
+	// epoll first then assign servers and socket to the instance of epoll()
 
 	Socket	sock(servers);
 

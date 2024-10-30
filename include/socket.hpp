@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 19:46:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:05:15 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ class Socket
 		
 	public:
 		Socket();
-		Socket(const Socket &socket);
+		Socket(const Socket &socket); // why? nned?
 		Socket(const Webserv &servers);
 		Socket	&operator=(const Socket &Socket);
 		~Socket();

@@ -6,30 +6,61 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 19:32:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:15:57 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 # include "../../include/web.hpp"
 
 
-// Webserv - > <vector> _servers - > _serverName, _host etc..
-
 /* constructors */
 
 Socket::Socket() {}
 
+// need? - maybe for giving sockets to epoll
 Socket::Socket(const Socket &socket)
 {
 	*this = socket;
 }
 
+
+// server	serv_instance;
+
+//while (vector<servers>)
+	// serv_instance = getserver(i)
+	//_sockaddr.sin_port = serv_instance.getPort
+	// sockfd = socket etc...
+
+	//THEN
+	// while serv.connections....
+/*
+Server serv;
+
+while (vector<servers>)
+{
+	serv = webserv.getserver(0);
+	_sockaddr.sin_port =serv.getPort; 
+}
+
+*/
+
+// loopServers
+//  -> per server - opensockets 
+//	-> while opening sockets, listen for connections
 Socket::Socket(const Webserv &servers)
 {
 	(void) servers; // wll actually use ... somehow sometime
 
-	if (openSockets() < 0)
-		exit(EXIT_FAILURE); // need proper error handling?
+	/*
+		for (servers[i])
+		{
+			// get server + any other necessary data
+			if (openSockets() < 0) // take servers[i]
+				exit(EXIT_FAILURE); // need proper error handling
+		}
+	
+	*/
+
 }
 
 Socket	&Socket::operator=(const Socket &socket)
@@ -62,9 +93,7 @@ void	Socket::closeSockets()
 }
 
 
-// will need to loop socketsSSS - std::vector<Server> _servers; I THINK
-// handling multiple connections too... right now one int but needs to become array/vector of ints
-
+// handling multiple connections right now one int but needs to become array/vector of ints
 int		Socket::openSockets()
 {
 
@@ -121,8 +150,6 @@ int		Socket::openSockets()
 	if (listen(_sockfd, 10) < 0)
 		return (std::cout << "failed to listen on socket\n", -1);
 	std::cout << "listening successfully\n";
-
-
 
 	//std::vector<Server> _servers;
 // not sure where/when you need to be
