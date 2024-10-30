@@ -6,12 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:34:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 16:22:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEB_HPP
-# define WEB_HPP
+#define WEB_HPP
 
 // CPP includes
 #include <iomanip>
@@ -35,12 +35,12 @@
 #include <utility>
 
 // Network includes
-#include <poll.h> //maybe actually C include? - might not need if sys/epoll
+#include <poll.h>		//maybe actually C include? - might not need if sys/epoll
 #include <netinet/in.h> // for sockaddr_in
 #include <sys/socket.h> // for socket functions
-#include <sys/msg.h> // check this out (poll)
-#include <sys/time.h> // check this out (poll)
-#include <sys/types.h> // check this out (poll)
+#include <sys/msg.h>	// check this out (poll)
+#include <sys/time.h>	// check this out (poll)
+#include <sys/types.h>	// check this out (poll)
 #include <sys/epoll.h>
 #include <sys/ioctl.h> // for nonblocking stuff..
 // # include <sys/select.h> // check this out
@@ -63,12 +63,16 @@
 #include "error.hpp"
 
 /* enums, defines and errors */
+enum class eSocket
+{
+	Client = 1,
+	Server = 2
+};
 
 /* parser */
 void verifyInput(int ac, char **av);
 
 /* server */
-void	run(Webserv wserv);
-
+void run(Webserv wserv);
 
 #endif /* WEB_HPP */
