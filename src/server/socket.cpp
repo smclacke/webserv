@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:39:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:38:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,19 +16,19 @@
 
 Socket::Socket() {}
 
-Socket::Socket(const Server &serv_instance, eSocket type) : _connection(0), _maxConnections(10)
+Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _connection(0)
 {
 	
 	if (type == eSocket::Client)
 	{
 		// if openSocket() < 0 throw
-		openClientSocket(serv_instance);
+		openClientSocket(servInstance);
 
 	}
 	else if (type == eSocket::Server)
 	{
 		// if openSocket() < 0 throw
-		openServerSocket(serv_instance);
+		openServerSocket(servInstance);
 
 	}
 	//else
@@ -63,13 +63,14 @@ Socket::~Socket()
 
 void Socket::closeSockets() // or socket for each instance of socket
 {
-	//close(this->_connection); // close the vector of connections
+	//close(this->_connection); // need you?
+	//close(this->_connections); // close the vector of connections
 	close(this->_sockfd);
 }
 
 
 // !! if fail throw for like everything !!
-int	Socket::openServerSocket(const Server &serv_instance)
+int	Socket::openServerSocket(const Server &servInstance)
 {
 
 	// create socket
@@ -81,7 +82,7 @@ int	Socket::openServerSocket(const Server &serv_instance)
 
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = INADDR_ANY; // listen port 9999 on any address - change later
-	_sockaddr.sin_port = serv_instance.getPort();
+	_sockaddr.sin_port = servInstance.getPort();
 
 
 	// bind
@@ -89,74 +90,59 @@ int	Socket::openServerSocket(const Server &serv_instance)
 
 	
 	// listen
-	for (size_t i = 0; i < _maxConnections; i++)
-	{
-		listen(_sockfd, _connections[i]);
-		
-		// grab one for queue: so yay or nee for loop?
-		// accept
-		_addrlen = sizeof(_sockaddr);
-		_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen);
-		if (_connection >= 0)
-			std::cout << "successfully made connection\n";
-	}
+	listen(_sockfd, _maxConnections);
+	
+	// accept
+	_addrlen = sizeof(_sockaddr);
+
+
+	// breaks here
+
+	_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen);
+	std::cout << "successfully made connection\n";
+
+
+	// read fromm the connection
+	char	buffer[100];
+	size_t	bytesRead = read(_connection, buffer, 100);
+	std::cout << "message from connection: " << buffer;
+	std::cout << "bytesRead from connection: " << bytesRead << "\n";
+
+
+	// send message to the connection
+	std::string	response = "nice chatting with you connection :) \n";
+	send(_connection, response.c_str(), response.size(), 0);
+
+	
+	return 1;
 
 }
 
 
-int Socket::openClientSocket(const Server &serv_instance)
+int Socket::openClientSocket(const Server &servInstance)
 {
- // check - no bind? no accept?
+ // check - no bind? no accept? listen??
  
-	// socket
-	// connect
-	// listen
-	
+	// create socket
+	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
-
-	// create socket (IPv4, TCP)
-	_sockfd = socket(AF_INET, SOCK_STREAM, 0); // listening socket
-	if (_sockfd == -1)
-		return (std::cout << "failed to create socket\n", -1);
-	// std::cout << "successfully created socket\n";
-
-	// set socket to non-blocking
-
-	// listen to port 9999 on any address
-	// htons to convert a number to network byte order
+	// set non-blocking for client too?
 
 	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = INADDR_ANY;
-	_sockaddr.sin_port = htons(9999);
+	_sockaddr.sin_addr.s_addr = INADDR_ANY; // listen port 9999 on any address - change later
+	_sockaddr.sin_port = servInstance.getPort();
 
-	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
-		return (std::cout << "failed to bind to port 9999\n", -1);
-	std::cout << "binding to port 9999 successful\n";
+	// listen?
+	listen(_sockfd, _maxConnections);
 
-	// start listening, hold at most 10 connections in the queue
-	if (listen(_sockfd, 10) < 0)
-		return (std::cout << "failed to listen on socket\n", -1);
-	std::cout << "listening successfully\n";
-
-	// grab a connection from the queue
+	// accept
 	_addrlen = sizeof(_sockaddr);
 	_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen);
-	if (_connection < 0)
-		return (std::cout << "failed to grab connection\n", -1);
-
 	std::cout << "successfully made connection\n";
 
-	// unncessary bit, leaving for testing
 
-	// read fromm the connection
-	// char	buffer[100];
-	// size_t	bytesRead = read(_connection, buffer, 100);
-	//(void) bytesRead;
-	// std::cout << "message from connection: " << buffer;
+	// connect!
 
-	//// send message to the connection
-	// std::string	response = "nice chatting with you connection :)";
-	// send(_connection, response.c_str(), response.size(), 0);
 
 	return 1; // success :)
 }

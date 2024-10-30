@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:55:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:18:46 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ Webserv::~Webserv(void)
 
 void Webserv::run()
 {
+	// or just creating an epoll instance, we see
 	_epoll.initEpoll();
 
 

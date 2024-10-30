@@ -6,12 +6,14 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:55:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:00:57 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
+/* initEPoll or just create the instance and init everything there? */
+/* need constructor with param? */
 
 /* constructors an' that */
 

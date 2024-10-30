@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:51:41 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:18:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 #include "epoll.hpp"
 
 class Server;
+class Epoll;
 
 class Webserv
 {

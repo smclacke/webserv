@@ -6,15 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:53:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:38:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EPOLL_HPP
 #define EPOLL_HPP
 
-#include "webserv.hpp"
-#include "server.hpp"
 
 class Webserv;
 enum class eSocket;
@@ -22,11 +20,14 @@ enum class eSocket;
 class Epoll
 {
 	private:
-		//event
-		// op
-		// fd
-		
-		
+		//int					_epfd;
+		//int					_op;
+		//int					_fd;
+		//int					_nb; // for create but maybe not necessary
+		//int					_maxevents;
+		//int					_timeout;
+		//struct epoll_event	*_event;
+		//struct epoll_event	*_events;
 
 	public:
 		Epoll();
@@ -40,7 +41,6 @@ class Epoll
 
 		///* methods */
 		void	initEpoll();
-		// event
 
 };
 
