@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/10/28 19:33:13 by smclacke      ########   odam.nl          #
+#    Updated: 2024/10/30 15:23:41 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,18 +14,21 @@ NAME:= webserv
 CC:= c++
 
 FLAGS := -std=c++11
-FLAGS += -Wall -Wextra -Werror
+#FLAGS += -Wall -Wextra -Werror
 FLAGS += -g -fsanitize=address
 
 OBJDIR := objs
 TPP_FILES := web.tpp
-HEADER_FILES := web.hpp
+HEADER_FILES := error.hpp server.hpp web.hpp  webserv.hpp
 
 
 SRC_FILES := main.cpp					\
+			parser/error.cpp			\
 			parser/init.cpp				\
+			parser/verify.cpp			\
 			server/epoll.cpp			\
 			server/run.cpp				\
+			server/server.cpp			\
 			server/socket.cpp			\
 			server/webserv.cpp			\
 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/28 19:44:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:23:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,10 +58,14 @@
 
 /* classes */
 #include "webserv.hpp"
+#include "server.hpp"
 #include "socket.hpp"
+#include "error.hpp"
+
+/* enums, defines and errors */
 
 /* parser */
-bool	validConf(char *arg);
+void verifyInput(int ac, char **av);
 
 /* server */
 void	run(); // will take the instance of Webserv with parsed config info

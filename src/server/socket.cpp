@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:15:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:25:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ void	Socket::closeSockets()
 	close(this->_connection);
 	close(this->_sockfd);
 }
+
 
 
 // handling multiple connections right now one int but needs to become array/vector of ints

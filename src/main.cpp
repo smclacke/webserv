@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/22 15:27:28 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 15:11:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,16 +21,35 @@ int main(int argc, char **argv)
 	}
 	/* in case class is funcitonal */
 	{
-		if (argc != 2 && !validConf(argv[1]))
-			exit(EXIT_FAILURE);
 		try
 		{
-			Webserv server(argv[1]);
+			verifyInput(argc, argv);
+			std::string config = "";
+			if (argc == 2)
+				std::string config = std::string(argv[1]);
+			Webserv wserv(config); // will create 1 default server if there is no config
+			size_t additional_servers = 3;
+			for (size_t i = 0; i < additional_servers; ++i)
+			{
+				Server nServer;
+				wserv.addServer(nServer);
+			}
+			std::cout << "Created: " << wserv.getServerCount() << " servers" << std::endl;
+			Server getServer = wserv.getServer(0);
+			getServer.printServer();
 		}
-		catch (std::exception &e)
+		catch (eConf &e)
 		{
+			std::cout << "Config-Error: line: " << e.line() << " error: " << e.what() << std::endl;
+		}
+		catch (std::runtime_error &e)
+		{
+			std::cout << "Error: " << e.what() << std::endl;
+		}
+		catch (std::logic_error &e)
+		{
+			std::cout << "Error: " << e.what() << std::endl;
 		}
 	}
-
 	return (EXIT_SUCCESS);
 }
