@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:32:31 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 16:37:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ private:
 public:
 	Socket();
 	Socket(eSocket type);
-	Socket(const Webserv &servers);
+	//Socket(const Webserv &servers); // dont need
 	Socket &operator=(const Socket &Socket);
 	~Socket();
 

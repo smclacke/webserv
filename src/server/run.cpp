@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:25:39 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:54:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 16:38:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,12 +14,15 @@
 
 void run(Webserv wserv)
 {
+	
 	// epoll first then assign servers and socket to the instance of epoll()
 	// initEpoll()
 
-	Socket sock(wserv);
 
 	// assign sockets/servers to Epoll monitoring
 
-	sock.closeSockets();
+
+
+	// will need to clean everything up at some point
+	//sock.closeSockets();
 }

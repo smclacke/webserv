@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:32:36 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/30 16:37:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,29 +21,34 @@ Socket::Socket(eSocket type)
 	if (type == eSocket::Client)
 	{
 		// do client socket things
+		// open socket for client
 	}
-	else
+	else if (type == eSocket::Server)
 	{
 		// do server socket things
+		// open socket for server
 	}
+	//else
+		// throw
 }
 
-Socket::Socket(const Webserv &servers)
-{
-	(void)servers; // wll actually use ... somehow sometime
+// dont need
+//Socket::Socket(const Webserv &servers)
+//{
+//	(void)servers; // wll actually use ... somehow sometime
 
-	/*
-		for (servers[i]) i < getServerCount
-		{
-			// get server + any other necessary data
-			servers[i]._clientSocket -
-			servers[i]._serverSocket -
-			if (openSockets() < 0) // take servers[i]
-				exit(EXIT_FAILURE); // need proper error handling
-		}
+//	/*
+//		for (servers[i]) i < getServerCount
+//		{
+//			// get server + any other necessary data
+//			servers[i]._clientSocket -
+//			servers[i]._serverSocket -
+//			if (openSockets() < 0) // take servers[i]
+//				exit(EXIT_FAILURE); // need proper error handling
+//		}
 
-	*/
-}
+//	*/
+//}
 
 Socket &Socket::operator=(const Socket &socket)
 {
@@ -73,8 +78,8 @@ void Socket::closeSockets()
 	close(this->_sockfd);
 }
 
-// handling multiple connections
-// opening clientSocket + serverSocket, then pass to epoll()
+// handle multiple connections -> change hpp
+// opening clientSocket OR serverSocket, then pass to epoll()
 int Socket::openSockets()
 {
 	// create socket (IPv4, TCP)
