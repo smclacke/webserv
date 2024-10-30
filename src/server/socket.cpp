@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 18:38:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/30 18:53:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,15 +70,20 @@ void Socket::closeSockets() // or socket for each instance of socket
 
 
 // !! if fail throw for like everything !!
+
+// A process that waits passively for requests from clients, processes the work specified,
+// and returns the result to the client that originated the request.
 int	Socket::openServerSocket(const Server &servInstance)
 {
 
 	// create socket
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 	
-	
-	// set non-blocking
-	//
+
+	// set non-blocking for client too?
+	int	flags = fcntl(_sockfd, F_GETFL, 0);
+	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK);
+
 
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = INADDR_ANY; // listen port 9999 on any address - change later
@@ -119,6 +124,7 @@ int	Socket::openServerSocket(const Server &servInstance)
 }
 
 
+// A process that initiates a service request.
 int Socket::openClientSocket(const Server &servInstance)
 {
  // check - no bind? no accept? listen??
@@ -127,6 +133,8 @@ int Socket::openClientSocket(const Server &servInstance)
 	_sockfd = socket(AF_INET, SOCK_STREAM, 0);
 
 	// set non-blocking for client too?
+	int	flags = fcntl(_sockfd, F_GETFL, 0);
+	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK);
 
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = INADDR_ANY; // listen port 9999 on any address - change later
