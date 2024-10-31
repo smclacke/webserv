@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/31 16:46:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/31 17:25:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,23 +16,28 @@
 
 Socket::Socket() {}
 
-Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10),  _reuseaddr(1)
+
+Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _connection(0), _reuseaddr(1)
 {
 	
 	if (type == eSocket::Client)
 	{
-		// if openSocket() < 0 throw
-		openClientSocket(servInstance);
+		if (openClientSocket(servInstance) < 0)
+			std::cout << "open client socket error\n\n"; // add throw
+		else
+			std::cout << "client socket setup successful\n\n";
 
 	}
 	else if (type == eSocket::Server)
 	{
-		// if openSocket() < 0 throw
-		openServerSocket(servInstance);
+		if (openServerSocket(servInstance) < 0)
+			std::cout << "open server socket error\n\n"; // add throw
+		else
+			std::cout << "server socket setup successful\n\n";
 
 	}
 	//else
-		// throw
+		// throw - incorrect contructor parameter
 }
 
 // copy constructor disappeared ...
@@ -78,12 +83,10 @@ int	Socket::openServerSocket(const Server &servInstance)
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		return (std::cout << "error socketing sock\n", -1);
 	
-	// to re-bind iwthout TIME_WAIT issues
+
+	// to re-bind without TIME_WAIT issues
 	setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)); // can fail, need to check return types
 
-	// set non-blocking -> check the application of this
-	int	flags = fcntl(_sockfd, F_GETFL, 0); // this can fail!
-	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK); // this can also fail
 
 
 	_sockaddr.sin_family = AF_INET;
@@ -99,16 +102,21 @@ int	Socket::openServerSocket(const Server &servInstance)
 	// listen, (set up queue for incoming connections)
 	if (listen(_sockfd, 10) < 0)
 		return (std::cout << "error listening for connections\n", -1);
-	std::cout << "listening successfully \n";
+	std::cout << "listening successfully\n";
 		
 	auto addrlen = sizeof(_sockaddr);
 
 	// accept
-	int	connection;
-	if ((connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *) &addrlen)) < 0)
+	if ((_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&addrlen)) < 0)
 		return (std::cout << "error  accepting connection\n", -1);
 	std::cout << "successfully made connection\n";
 	
+	//// set non-blocking -> check the application of this
+	// connection and socket non blocking ja?
+	int flags = fcntl(_connection, F_GETFL, 0); // this can fail
+	fcntl(_connection, F_GETFL, 0); // this can fail
+	flags = fcntl(_sockfd, F_GETFL, 0); // this can fail
+	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK); // this can also fail
 
 	// read fromm the connection
 	char	buffer[100];
