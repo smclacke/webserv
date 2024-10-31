@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/31 17:25:01 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/31 19:18:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), 
 		if (openClientSocket(servInstance) < 0)
 			std::cout << "open client socket error\n\n"; // add throw
 		else
-			std::cout << "client socket setup successful\n\n";
+			std::cout << "\n\nclient socket setup successful\n\n";
 
 	}
 	else if (type == eSocket::Server)
@@ -33,7 +33,7 @@ Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), 
 		if (openServerSocket(servInstance) < 0)
 			std::cout << "open server socket error\n\n"; // add throw
 		else
-			std::cout << "server socket setup successful\n\n";
+			std::cout << "\n\nserver socket setup successful\n\n";
 
 	}
 	//else
@@ -59,8 +59,10 @@ Socket &Socket::operator=(const Socket &socket)
 
 Socket::~Socket()
 {
+	closeSockets();
 	// clear all attributes (e.g. _addrlen.clear())
 	// || set back to 0
+	
 }
 
 
@@ -68,9 +70,17 @@ Socket::~Socket()
 
 void Socket::closeSockets() // or socket for each instance of socket
 {
-	//close(this->_connection); // need you?
 	//close(this->_connections); // close the vector of connections
-	close(this->_sockfd);
+	if (_connection > 0)
+	{
+		close(this->_connection);
+		this->_connection = 0;
+	}
+	if (_sockfd > 0)
+	{
+		close(this->_sockfd);
+		this->_sockfd = 0;
+	}
 }
 
 
@@ -85,13 +95,15 @@ int	Socket::openServerSocket(const Server &servInstance)
 	
 
 	// to re-bind without TIME_WAIT issues
-	setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)); // can fail, need to check return types
-
-
+	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
+		return (std::cout << "error setsockopt sock\n", -1);
+		
 
 	_sockaddr.sin_family = AF_INET;
+	//_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	_sockaddr.sin_port = servInstance.getPort();
+	//_sockaddr.sin_port = servInstance.getPort();
+	_sockaddr.sin_port = htons(servInstance.getPort());
 
 
 	// bind
@@ -102,8 +114,10 @@ int	Socket::openServerSocket(const Server &servInstance)
 	// listen, (set up queue for incoming connections)
 	if (listen(_sockfd, 10) < 0)
 		return (std::cout << "error listening for connections\n", -1);
-	std::cout << "listening successfully\n";
+	std::cout << "listening successfully on port - " << servInstance.getPort() << " \n";
 		
+	sleep(3);
+	
 	auto addrlen = sizeof(_sockaddr);
 
 	// accept
@@ -113,24 +127,30 @@ int	Socket::openServerSocket(const Server &servInstance)
 	
 	//// set non-blocking -> check the application of this
 	// connection and socket non blocking ja?
-	int flags = fcntl(_connection, F_GETFL, 0); // this can fail
-	fcntl(_connection, F_GETFL, 0); // this can fail
-	flags = fcntl(_sockfd, F_GETFL, 0); // this can fail
-	fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK); // this can also fail
+	
+	//int flags = fcntl(_connection, F_GETFL, 0); // this can fail
+	//fcntl(_connection, F_GETFL, 0); // this can fail
+	//flags = fcntl(_sockfd, F_GETFL, 0); // this can fail
+	//fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK); // this can also fail
 
 	// read fromm the connection
 	char	buffer[100];
-	read(_connection, buffer, 100); // can read fail here?
-	std::cout << "message read by server: " << buffer;
+	if (read(_connection, buffer, sizeof(buffer) - 1) < 0)
+		return (std::cout << "error reading from server\n", -1);
+	buffer[99] = '\0';
+	std::cout << "read by server: <" << buffer << ">\n";
 	
 	
 	// send message to the connection
-	std::string	response = "response message :) \n";
-	send(_connection, response.c_str(), response.size(), 0);
-	std::cout << "sent: " << response << " from server socket\n";
+	std::string	response = "response message from server";
+	if (send(_connection, response.c_str(), response.size(), 0) < 0)
+		return (std::cout << "error sending from server\n", -1);
+	std::cout << "sent from server: <" << response << ">\n";
+	
+	//shutdown(_sockfd, SHUT_RDWR);
 
-	close(_connection);
-	close(_sockfd);
+	//close(_connection);
+	//close(_sockfd);
 
 	return 1;
 }
@@ -141,31 +161,34 @@ int	Socket::openServerSocket(const Server &servInstance)
 int Socket::openClientSocket(const Server &servInstance)
 {
 
-	// create socket
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		return (std::cout << "error socketing sock\n", -1);
 
-
 	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	_sockaddr.sin_port = servInstance.getPort();
+	_sockaddr.sin_addr.s_addr = inet_addr(servInstance.getHost().c_str());
+	_sockaddr.sin_port = htons(servInstance.getPort());
+
 	_addrlen = sizeof(_sockaddr);
 
-	int status;
-	if ((status = connect(_sockfd, (struct sockaddr *) &_sockaddr, _addrlen)) < 0)
+	if ((connect(_sockfd, (struct sockaddr *) &_sockaddr, _addrlen)) < 0)
 		return (std::cout << "error connecting to server socket\n", -1);
-	std::cout << "client connected successfully\n";
+	std::cout << "client connected successfully to port - " << servInstance.getPort() << " \n";
 	
 	char	buffer[100];
 	std::string	message = "message from client";
 	
-	send(_sockfd, message.c_str(), message.size(), 0);
-	std::cout << "sent: <" << message << "> from client socket\n";
+	if (send(_sockfd, message.c_str(), message.size(), 0) < 0)
+		return (std::cout << "error sending from client\n", -1);
+		
+	std::cout << "sent from client: <" << message << ">\n";
 
-	read(_sockfd, buffer, 100);
-	std::cout << "message read by client: <" << buffer << ">";
+	if (read(_sockfd, buffer, sizeof(buffer) - 1) < 0)
+		return (std::cout << "error reading from client\n", -1);
+	buffer[99] = '\0';
+	std::cout << "read by client: <" << buffer << ">\n";
 
-	close(_sockfd);
+	//shutdown(_sockfd, SHUT_RDWR);
+	//close(_sockfd);
 	
 
 	return 1;

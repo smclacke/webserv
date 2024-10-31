@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:43:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/10/31 18:12:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,7 @@
 #include <sys/ioctl.h> // for nonblocking stuff..
 // # include <sys/select.h> // check this out
 // # include <arpa.inet.h> // check this out
+#include <arpa/inet.h>
 
 // C includes
 #include <unistd.h> // for read
