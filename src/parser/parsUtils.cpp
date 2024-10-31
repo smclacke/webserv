@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 12:38:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 16:32:58 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,21 +24,49 @@ void lineStrip(std::string &line)
 	line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
 }
 
-static void findLocationDirective(std::string &line, int &line_n, s_location &loc)
-{
-	(void)line;
-	(void)line_n;
-	(void)loc;
-}
-
 static s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
 {
 	(void)file;
 	s_location loc;
+	std::stringstream ss(line);
+	std::string location;
+	std::string path;
+	std::string bracket;
+	std::string unexpected;
+
+	ss >> location;
+	ss >> path;
+	ss >> bracket;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	if (location != "location")
+		throw eConf("location directive not clear", line_n);
+	if (*path.begin() != '/')
+		throw eConf("Path does not start with /", line_n);
+	if (bracket != "{")
+		throw eConf("Unexpected value found: \'" + unexpected + "\' expeted: { ", line_n);
+	loc.path = path;
+
+	while (std::getline(file, line))
+	{
+		++line_n;
+		if (line.empty())
+			continue;
+
+		if (line.find('}') != std::string::npos)
+			break;
+		findLocationDirective(line, line_n, loc);
+	}
+
 	// parse line  for location route
 	// loop through file and get the line -> findLocationDirective on the line
 	// set each directive to the correct thingie in loc
-	findLocationDirective(line, line_n, loc);
+	if (loc.accepted_methods.size() == 0)
+	{
+		loc.accepted_methods.push_back(eHttpMethod::GET);
+		loc.accepted_methods.push_back(eHttpMethod::POST);
+		loc.accepted_methods.push_back(eHttpMethod::DELETE);
+	}
 	return (loc);
 }
 

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 13:40:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 16:52:49 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,17 +30,23 @@ Server::Server(void)
 	_port = 8080;
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
-	_location.push_back({"/",
-						 "root",
-						 1,
-						 false,
-						 true,
-						 true,
-						 true,
-						 true,
-						 "/uploads",
-						 "index.html",
-						 ".php", "/usr/bin/php-cgi"});
+	s_location loc;
+	loc.path = "/";
+	loc.root = "/var/www/html";
+	loc.client_body_buffer_size = (1 * 1024 * 1024);
+	loc.accepted_methods.push_back(eHttpMethod::GET);
+	loc.accepted_methods.push_back(eHttpMethod::POST);
+	loc.accepted_methods.push_back(eHttpMethod::DELETE);
+	loc.redir_url = "/new-route";
+	loc.redirect_status = 301;
+	loc.index_files.push_back("index.html");
+	loc.index_files.push_back("index.htm");
+	loc.autoindex = true;
+	loc.upload_dir = "/uploads";
+	loc.index = "index.html";
+	loc.cgi_ext = ".php";
+	loc.cgi_path = "/usr/bin/php-cgi";
+	_location.push_back(loc);
 	Socket _clientSocket(eSocket::Client);
 	Socket _serverSocket(eSocket::Server);
 }
@@ -80,17 +86,41 @@ void Server::printServer(void)
 		std::cout << "  Path: " << location.path << std::endl;
 		std::cout << "  Root: " << location.root << std::endl;
 		std::cout << "  Client Body Buffer Size: " << location.client_body_buffer_size << std::endl;
-		std::cout << "  Allow GET: " << (location.allow_GET ? "Yes" : "No") << std::endl;
-		std::cout << "  Allow POST: " << (location.allow_POST ? "Yes" : "No") << std::endl;
-		std::cout << "  Allow DELETE: " << (location.allow_DELETE ? "Yes" : "No") << std::endl;
+		std::cout << "  Accepted methods: ";
+		for (auto it = location.accepted_methods.begin(); it != location.accepted_methods.end(); ++it)
+		{
+			std::cout << HttpMethodToString.at(*it) << ", ";
+		}
+		std::cout << std::endl;
+
+		std::cout << "  Redirect URL: " << (location.redir_url.empty() ? "None" : location.redir_url) << std::endl;
+		std::cout << "  Redirect Status: " << (location.redirect_status ? std::to_string(location.redirect_status) : "None") << std::endl;
+
+		std::cout << "  Index Files: ";
+		if (!location.index_files.empty())
+		{
+			for (const auto &file : location.index_files)
+			{
+				std::cout << file;
+				if (&file != &location.index_files.back())
+				{
+					std::cout << ", ";
+				}
+			}
+		}
+		else
+		{
+			std::cout << "None";
+		}
+		std::cout << std::endl;
+
 		std::cout << "  Autoindex: " << (location.autoindex ? "Yes" : "No") << std::endl;
-		std::cout << "  Upload Dir: " << location.upload_dir << std::endl;
-		std::cout << "  Index: " << location.index << std::endl;
-		std::cout << "  CGI Ext: " << location.cgi_ext << std::endl;
-		std::cout << "  CGI Path: " << location.cgi_path << std::endl;
+		std::cout << "  Upload Dir: " << (location.upload_dir.empty() ? "None" : location.upload_dir) << std::endl;
+		std::cout << "  Index: " << (location.index.empty() ? "None" : location.index) << std::endl;
+		std::cout << "  CGI Ext: " << (location.cgi_ext.empty() ? "None" : location.cgi_ext) << std::endl;
+		std::cout << "  CGI Path: " << (location.cgi_path.empty() ? "None" : location.cgi_path) << std::endl;
 	}
 }
-
 /* directives */
 
 void Server::parseServerName(std::stringstream &ss, int line_n)
@@ -137,6 +167,34 @@ void Server::parseListen(std::stringstream &ss, int line_n)
 		throw eConf("Invalid port format. Expected 4 digits", line_n);
 	setPort(std::stoi(portStr));
 }
+
+/**
+ * alternative for parseListen in case of data types change:
+
+void Server::parseListen(std::stringstream &ss, int line_n)
+{
+	std::string value;
+	std::string unexpected;
+	ss >> value;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	size_t colonPos = value.find(':');
+	if (colonPos == std::string::npos)
+		throw eConf("Invalid listen directive: missing \':\'", line_n);
+	std::string host = value.substr(0, colonPos);
+	std::string portStr = value.substr(colonPos + 1);
+
+	// checking the host IP for validity
+	if (inet_pton(AF_INET, host.c_str(), &_host) <= 0) // Use inet_pton to convert IP
+		throw eConf("Invalid host format. Expected 0.0.0.0", line_n);
+
+	// checking the port number for validity
+	if (portStr.length() != 4 || !std::all_of(portStr.begin(), portStr.end(), ::isdigit))
+		throw eConf("Invalid port format. Expected 4 digits", line_n);
+	_port = ntohs(static_cast<in_port_t>(std::stoi(portStr))); // Convert to network byte order
+}
+
+ */
 
 void Server::parseErrorPage(std::stringstream &ss, int line_n)
 {

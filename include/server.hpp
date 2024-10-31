@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 13:39:16 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 16:39:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,7 +43,7 @@
 
 // location / files
 // {
-//	location
+//
 // 	allowed_methods;
 // 	root
 // 	autoindex
@@ -53,15 +53,37 @@
 //
 // }
 
+enum class eHttpMethod
+{
+	GET,
+	POST,
+	DELETE,
+	PUT,
+	HEAD,
+	OPTIONS,
+	PATCH,
+	INVALID // For unrecognized methods
+};
+
+const std::map<eHttpMethod, std::string> HttpMethodToString = {
+	{eHttpMethod::GET, "GET"},
+	{eHttpMethod::POST, "POST"},
+	{eHttpMethod::DELETE, "DELETE"},
+	{eHttpMethod::PUT, "PUT"},
+	{eHttpMethod::HEAD, "HEAD"},
+	{eHttpMethod::OPTIONS, "OPTIONS"},
+	{eHttpMethod::PATCH, "PATCH"},
+};
+
 struct s_location
 {
 	std::string path;
 	std::string root;
 	size_t client_body_buffer_size;
-	bool custom_method;
-	bool allow_GET;
-	bool allow_POST;
-	bool allow_DELETE;
+	std::list<eHttpMethod> accepted_methods; // in case of no methods enable GET POST DELETE
+	std::string redir_url;
+	int redirect_status; // 301, 301...
+	std::list<std::string> index_files;
 	bool autoindex;
 	std::string upload_dir;
 	std::string index;
