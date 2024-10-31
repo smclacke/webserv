@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 18:46:46 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 12:38:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
+#include <functional>
 
 /**
  * @brief removes whitespace and anything that comes after a # from line
@@ -23,23 +24,21 @@ void lineStrip(std::string &line)
 	line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
 }
 
-static std::map<std::string, void (Server::*)(std::stringstream &)> dirMap = {
-	{"server_name", &Server::parseServerName},
-	{"listen", &Server::parseListen},
-	{"error_page", &Server::parseErrorPage},
-	{"client_max_body_size", &Server::parseClientMaxBody}};
-
-static void findLocationDirective(std::string &line, int &line_n)
+static void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 {
 	(void)line;
 	(void)line_n;
+	(void)loc;
 }
 
 static s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
 {
 	(void)file;
 	s_location loc;
-	findLocationDirective(line, line_n);
+	// parse line  for location route
+	// loop through file and get the line -> findLocationDirective on the line
+	// set each directive to the correct thingie in loc
+	findLocationDirective(line, line_n, loc);
 	return (loc);
 }
 
@@ -52,9 +51,16 @@ static void findServerDirective(Server &serv, std::string &line, int line_n)
 	ss >> directive;
 	if (directive.empty())
 		throw eConf("No directive found in line", line_n);
+
+	std::map<std::string, std::function<void(Server &, std::stringstream &, int)>> dirMap = {
+		{"server_name", &Server::parseServerName},
+		{"listen", &Server::parseListen},
+		{"error_page", &Server::parseErrorPage},
+		{"client_max_body", &Server::parseClientMaxBody},
+	};
 	if (dirMap.find(directive) == dirMap.end())
 		throw eConf("Invalid directive found: " + directive, line_n);
-	(serv.*dirMap[directive])(ss);
+	dirMap[directive](serv, ss, line_n);
 }
 
 Server parseServer(std::ifstream &file, int &line_n)

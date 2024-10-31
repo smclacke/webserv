@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 18:47:22 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 12:38:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,24 +86,61 @@ void Server::printServer(void)
 
 /* directives */
 
-void Server::parseServerName(std::stringstream &value)
+void Server::parseServerName(std::stringstream &ss, int line_n)
 {
-	(void)value;
+	std::string name;
+	std::string unexpected;
+	ss >> name;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	setServerName(name);
 }
 
-void Server::parseListen(std::stringstream &value)
+void Server::parseListen(std::stringstream &ss, int line_n)
 {
-	(void)value;
+	std::string value;
+	std::string unexpected;
+	ss >> value;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	size_t colonPos = value.find(':');
+	if (colonPos == std::string::npos)
+		throw eConf("Invalid listen directive: missing \':\'", line_n);
+	std::string host = value.substr(0, colonPos);
+	std::string portStr = value.substr(colonPos + 1);
+
+	// checking the host IP for validity
+	std::istringstream ipStream(host);
+	std::string part;
+	int partCount = 0;
+	while (std::getline(ipStream, part, '.'))
+	{
+		if (part.empty() || part.length() > 3 || !std::all_of(part.begin(), part.end(), ::isdigit))
+			throw eConf("Invalid host format. Expected 0.0.0.0", line_n);
+		int num = std::stoi(part);
+		if (num < 0 || num > 255)
+			throw eConf("Invalid host format. Each part must be between 0 and 255", line_n);
+		partCount++;
+	}
+	if (partCount != 4)
+		throw eConf("Invalid host format. Expected 4 parts", line_n);
+	setHost(host);
+	// checking the port number for validity
+	if (portStr.length() != 4 || !std::all_of(portStr.begin(), portStr.end(), ::isdigit))
+		throw eConf("Invalid port format. Expected 4 digits", line_n);
+	setPort(std::stoi(portStr));
 }
 
-void Server::parseErrorPage(std::stringstream &value)
+void Server::parseErrorPage(std::stringstream &ss, int line_n)
 {
-	(void)value;
+	(void)ss;
+	(void)line_n;
 }
 
-void Server::parseClientMaxBody(std::stringstream &value)
+void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 {
-	(void)value;
+	(void)ss;
+	(void)line_n;
 }
 
 /* setters */
