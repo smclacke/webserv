@@ -6,11 +6,18 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 12:38:42 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 13:40:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server.hpp"
+
+enum class SizeUnit
+{
+	kilobytes = 1,
+	megabytes = 2,
+	gigabytes = 3
+};
 
 /**
  * @brief	data filler for testing
@@ -133,14 +140,42 @@ void Server::parseListen(std::stringstream &ss, int line_n)
 
 void Server::parseErrorPage(std::stringstream &ss, int line_n)
 {
-	(void)ss;
-	(void)line_n;
+	std::string error_code;
+	std::string path;
+	std::string unexpected;
+	ss >> error_code;
+	ss >> path;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+
+	if (error_code.length() != 3 || !std::all_of(error_code.begin(), error_code.end(), ::isdigit))
+		throw eConf("Invalid error code format. Expected 3 digits", line_n);
+
+	s_ePage nErrorPage;
+	nErrorPage.code = std::stoi(error_code);
+	nErrorPage.path = path;
 }
 
 void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 {
-	(void)ss;
-	(void)line_n;
+	std::string size;
+	std::string unexpected;
+	ss >> size;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+
+	size_t maxBodySize = 0;
+	if (size.empty() || !std::all_of(size.begin(), size.end() - 1, ::isdigit))
+		throw eConf("Invalid size format. Expected a number followed by K, M, or G", line_n);
+	if (size.back() == 'K' || size.back() == 'k')
+		maxBodySize = std::stoi(size.substr(0, size.length() - 1)) * 1024;
+	else if (size.back() == 'M' || size.back() == 'm')
+		maxBodySize = std::stoi(size.substr(0, size.length() - 1)) * 1024 * 1024;
+	else if (size.back() == 'G' || size.back() == 'g')
+		maxBodySize = std::stoi(size.substr(0, size.length() - 1)) * 1024 * 1024 * 1024;
+	else
+		throw eConf("No size identifier found(m/g/k)", line_n);
+	setClientMaxBodySize(maxBodySize);
 }
 
 /* setters */

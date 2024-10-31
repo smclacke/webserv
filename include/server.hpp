@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 12:21:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/10/31 13:39:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ private:
 	std::string _host;
 	int _port;
 	std::vector<s_ePage> _errorPage;
-	size_t _clientMaxBodySize; // in megaBytes
+	size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
 	std::vector<s_location> _location;
 	Socket _serverSocket;
 	Socket _clientSocket;
