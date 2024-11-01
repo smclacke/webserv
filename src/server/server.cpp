@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:58:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 16:10:51 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,22 @@ Server::Server(std::ifstream &file, int &line_n)
 
 Server::~Server()
 {
+}
+
+/* member functions */
+
+/**
+ * @brief finds if the HHTP methods exists
+ * @return invalid if it doesnt exist otherwise the Method
+ */
+eHttpMethod Server::allowedHttpMethod(std::string &str)
+{
+	if (str.empty())
+		return (eHttpMethod::INVALID);
+	auto it = StringToHttpMethod.find(str);
+	if (it == StringToHttpMethod.end())
+		return (eHttpMethod::INVALID);
+	return (it->second);
 }
 
 void Server::printServer(void)

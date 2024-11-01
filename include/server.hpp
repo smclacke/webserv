@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:47:45 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 16:07:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,8 @@ enum class eHttpMethod
 	PUT,
 	HEAD,
 	OPTIONS,
-	PATCH
+	PATCH,
+	INVALID
 };
 
 const std::map<eHttpMethod, std::string> HttpMethodToString = {
@@ -89,6 +90,9 @@ public:
 	Server &operator=(const Server &rhs);
 	Server(std::ifstream &file, int &line_n);
 	~Server(void);
+
+	/* Member functions */
+	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 
 	/* add */
