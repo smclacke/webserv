@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 16:39:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 12:20:51 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,40 +19,6 @@
 #include <iostream>
 #include "socket.hpp"
 
-/**
- * @note allowed_methods, GET POST DELETE are all default turned on
- * if 1 is specified in the config file only that one will be turned on;
- */
-
-// std::map<std::string, std::string> serverConfig = {
-// 	{"listen", ""},
-// 	{"server_name", ""},
-// 	{"client_max_body_size", ""},
-// 	{"error_page", ""},
-// 	{"Location", ""}};
-
-// std::map<std::string, std::string> locationConfig = {
-// 	{"allowed_methods", ""},
-// 	{"upload_dir", ""},
-// 	{"client_max_body_size", ""},
-// 	{"root", ""},
-// 	{"autoindex", ""},
-// 	{"index", ""},
-// 	{"cgi_path", ""},
-// 	{"cgi_ext", ""}};
-
-// location / files
-// {
-//
-// 	allowed_methods;
-// 	root
-// 	autoindex
-// 	index
-//	upload_dir
-//	client_max_body_size
-//
-// }
-
 enum class eHttpMethod
 {
 	GET,
@@ -61,8 +27,7 @@ enum class eHttpMethod
 	PUT,
 	HEAD,
 	OPTIONS,
-	PATCH,
-	INVALID // For unrecognized methods
+	PATCH
 };
 
 const std::map<eHttpMethod, std::string> HttpMethodToString = {
@@ -75,20 +40,30 @@ const std::map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::PATCH, "PATCH"},
 };
 
+const std::map<std::string, eHttpMethod> StringToHttpMethod = {
+	{"GET", eHttpMethod::GET},
+	{"POST", eHttpMethod::POST},
+	{"DELETE", eHttpMethod::DELETE},
+	{"PUT", eHttpMethod::PUT},
+	{"HEAD", eHttpMethod::HEAD},
+	{"OPTIONS", eHttpMethod::OPTIONS},
+	{"PATCH", eHttpMethod::PATCH},
+};
+
 struct s_location
 {
-	std::string path;
-	std::string root;
-	size_t client_body_buffer_size;
-	std::list<eHttpMethod> accepted_methods; // in case of no methods enable GET POST DELETE
-	std::string redir_url;
-	int redirect_status; // 301, 301...
-	std::list<std::string> index_files;
-	bool autoindex;
-	std::string upload_dir;
-	std::string index;
-	std::string cgi_ext;
-	std::string cgi_path;
+	std::string path = "/";
+	std::string root = "/var/www/html";		 // Default to standard web root
+	size_t client_body_buffer_size = 8192;	 // Default buffer size, 8 KB
+	std::list<eHttpMethod> accepted_methods; // Default: will be set to GET, POST, DELETE in parseLocation if empty
+	std::string redir_url = "";				 // No redirection by default
+	int redirect_status = 0;				 // No redirection status by default (0 indicates no redirect)
+	std::list<std::string> index_files;		 // Standard index files set in parsing if none are found
+	bool autoindex = false;					 // Directory listing off by default
+	std::string upload_dir = "/tmp/uploads"; // Default upload directory
+	std::string index = "index.html";		 // Primary index file if directory is requested
+	std::string cgi_ext = "";				 // No default CGI extension
+	std::string cgi_path = "";				 // No default CGI path
 };
 
 struct s_ePage

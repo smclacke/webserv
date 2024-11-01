@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 16:32:58 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 12:31:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,22 +50,29 @@ static s_location parseLocation(std::ifstream &file, std::string &line, int &lin
 	while (std::getline(file, line))
 	{
 		++line_n;
+		lineStrip(line);
 		if (line.empty())
 			continue;
 
 		if (line.find('}') != std::string::npos)
+		{
+			if (line.size() != 1)
+				throw("Unexpected text with closing }", line_n);
 			break;
+		}
 		findLocationDirective(line, line_n, loc);
 	}
-
-	// parse line  for location route
-	// loop through file and get the line -> findLocationDirective on the line
-	// set each directive to the correct thingie in loc
+	/* assigning defaults in case of no directives */
 	if (loc.accepted_methods.size() == 0)
 	{
 		loc.accepted_methods.push_back(eHttpMethod::GET);
 		loc.accepted_methods.push_back(eHttpMethod::POST);
 		loc.accepted_methods.push_back(eHttpMethod::DELETE);
+	}
+	if (loc.index_files.size() == 0)
+	{
+		loc.index_files.push_back("index.html");
+		loc.index_files.push_back("index.htm");
 	}
 	return (loc);
 }
@@ -80,15 +87,15 @@ static void findServerDirective(Server &serv, std::string &line, int line_n)
 	if (directive.empty())
 		throw eConf("No directive found in line", line_n);
 
-	std::map<std::string, std::function<void(Server &, std::stringstream &, int)>> dirMap = {
+	std::map<std::string, std::function<void(Server &, std::stringstream &, int)>> SerdirMap = {
 		{"server_name", &Server::parseServerName},
 		{"listen", &Server::parseListen},
 		{"error_page", &Server::parseErrorPage},
 		{"client_max_body", &Server::parseClientMaxBody},
 	};
-	if (dirMap.find(directive) == dirMap.end())
+	if (SerdirMap.find(directive) == SerdirMap.end())
 		throw eConf("Invalid directive found: " + directive, line_n);
-	dirMap[directive](serv, ss, line_n);
+	SerdirMap[directive](serv, ss, line_n);
 }
 
 Server parseServer(std::ifstream &file, int &line_n)
@@ -102,7 +109,11 @@ Server parseServer(std::ifstream &file, int &line_n)
 		if (line.empty())
 			continue;
 		if (line.find('}') != std::string::npos)
+		{
+			if (line.size() != 1)
+				throw("Unexpected text with closing }", line_n);
 			return (serv);
+		}
 		size_t pos = line.find("location");
 		if (pos != std::string::npos)
 		{

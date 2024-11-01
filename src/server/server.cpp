@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 16:52:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 10:54:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,11 @@ Server::Server(void)
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
-	loc.path = "/";
-	loc.root = "/var/www/html";
-	loc.client_body_buffer_size = (1 * 1024 * 1024);
 	loc.accepted_methods.push_back(eHttpMethod::GET);
 	loc.accepted_methods.push_back(eHttpMethod::POST);
 	loc.accepted_methods.push_back(eHttpMethod::DELETE);
-	loc.redir_url = "/new-route";
-	loc.redirect_status = 301;
 	loc.index_files.push_back("index.html");
 	loc.index_files.push_back("index.htm");
-	loc.autoindex = true;
-	loc.upload_dir = "/uploads";
 	loc.index = "index.html";
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
