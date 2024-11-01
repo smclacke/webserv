@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 13:22:21 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 14:08:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,9 @@ static void findServerDirective(Server &serv, std::string &line, int line_n)
 	SerdirMap[directive](serv, ss, line_n);
 }
 
+/**
+ * @note move to Server file
+ */
 Server parseServer(std::ifstream &file, int &line_n)
 {
 	Server serv;
@@ -117,7 +120,10 @@ Server parseServer(std::ifstream &file, int &line_n)
 		size_t pos = line.find("location");
 		if (pos != std::string::npos)
 		{
-			serv.addLocation(parseLocation(file, line, line_n));
+			s_location loc = parseLocation(file, line, line_n);
+			if (loc.client_body_buffer_size > serv.getClientMaxBodySize())
+				throw eConf("client_body_buffer_size exceeds server's maximum size limit", line_n);
+			serv.addLocation(loc);
 			continue;
 		}
 		findServerDirective(serv, line, line_n);

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 12:20:51 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 14:09:59 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ struct s_location
 	std::list<eHttpMethod> accepted_methods; // Default: will be set to GET, POST, DELETE in parseLocation if empty
 	std::string redir_url = "";				 // No redirection by default
 	int redirect_status = 0;				 // No redirection status by default (0 indicates no redirect)
-	std::list<std::string> index_files;		 // Standard index files set in parsing if none are found
+	std::list<std::string> index_files;		 // Standard index files
 	bool autoindex = false;					 // Directory listing off by default
 	std::string upload_dir = "/tmp/uploads"; // Default upload directory
 	std::string index = "index.html";		 // Primary index file if directory is requested
