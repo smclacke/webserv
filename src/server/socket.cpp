@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 16:01:45 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 16:08:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,7 +146,7 @@ int	Socket::openServerSocket(const Server &servInstance)
 		char	buffer[1000];
 		std::string	request;
 		ssize_t bytesRead;
-		while (bytesRead = read(_connection, buffer, sizeof(buffer) - 1) > 0)
+		while ((bytesRead = read(_connection, buffer, sizeof(buffer) - 1)) > 0)
 		{
 			buffer[bytesRead] = '\0';
 			request += buffer;	
@@ -154,22 +154,28 @@ int	Socket::openServerSocket(const Server &servInstance)
 		
 		if (bytesRead < 0)
 		{
-			if (errno == EWOULDBLOCK || errno == EAGAIN)
-			{
-				std::cout << "no data available to read\n";
-				continue ;
-			}
-			return (std::cout << "error reading from server\n", -1);
+			if (errno != EWOULDBLOCK || errno != EAGAIN)
+				std::cout << "error reading from server\n";
+			
+			close(_connection);
+			continue ; // no data available, try next connection
 		}
-		buffer[99] = '\0';
-		std::cout << "read by server: <" << buffer << ">\n";
-		
-		// send response message to the connection
-		std::string	response = "response message from server";
-		if (send(_connection, response.c_str(), response.size(), 0) < 0)
-			return (std::cout << "error sending from server\n", -1);
+		std::cout << "received request: " << request << "\n";
 
-		std::cout << "sent from server: <" << response << ">\n";
+		// send HTTP response
+		std::string	response = 
+			"HTTP/1.1 200 OK\r\n"
+			"Content-Type: text/plain\r\n"
+			"Content-Length: 27\r\n"
+			"Connection: close\r\n"
+			"\r\n"
+			"response message from server";
+
+		// send response message to the connection
+		if (send(_connection, response.c_str(), response.size(), 0) < 0)
+			std::cout << "error sending from server\n";
+		else
+			std::cout << "sent response from server \n";
 	}
 
 	return 1;
