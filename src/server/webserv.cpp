@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:46:44 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:44:03 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ Webserv::Webserv(void)
 
 Webserv::Webserv(std::string config)
 {
+	std::cout << "config: " << config << std::endl;
 	if (config.empty())
 	{
 		Server default_server;
@@ -42,10 +43,9 @@ Webserv::Webserv(std::string config)
 		lineStrip(line);
 		if (line.empty()) // skip empty lines
 			continue;
-		size_t pos = line.find("server"); // check for server directive
-		if (pos != std::string::npos)	  // "server" keyword exists
+		if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
 		{
-			Server nServer = parseServer(file, line_n);
+			Server nServer = Server(file, line_n);
 			_servers.push_back(nServer);
 			continue;
 		}

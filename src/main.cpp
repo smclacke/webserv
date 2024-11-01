@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 13:57:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:43:36 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ int main(int argc, char **argv)
 			verifyInput(argc, argv);
 			std::string config = "";
 			if (argc == 2)
-				std::string config = std::string(argv[1]);
+				config = std::string(argv[1]);
 			Webserv wserv(config);
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{

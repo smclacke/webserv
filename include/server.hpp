@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 14:09:59 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:47:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ struct s_location
 	std::string path = "/";
 	std::string root = "/var/www/html";		 // Default to standard web root
 	size_t client_body_buffer_size = 8192;	 // Default buffer size, 8 KB
-	std::list<eHttpMethod> accepted_methods; // Default: will be set to GET, POST, DELETE in parseLocation if empty
+	std::list<eHttpMethod> allowed_methods;	 // Default: will be set to GET, POST, DELETE in parseLocation if empty
 	std::string redir_url = "";				 // No redirection by default
 	int redirect_status = 0;				 // No redirection status by default (0 indicates no redirect)
 	std::list<std::string> index_files;		 // Standard index files
@@ -87,6 +87,7 @@ private:
 public:
 	Server(void);
 	Server &operator=(const Server &rhs);
+	Server(std::ifstream &file, int &line_n);
 	~Server(void);
 	void printServer(void);
 

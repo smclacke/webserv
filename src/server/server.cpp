@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 13:21:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:58:32 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,9 +31,9 @@ Server::Server(void)
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
-	loc.accepted_methods.push_back(eHttpMethod::GET);
-	loc.accepted_methods.push_back(eHttpMethod::POST);
-	loc.accepted_methods.push_back(eHttpMethod::DELETE);
+	loc.allowed_methods.push_back(eHttpMethod::GET);
+	loc.allowed_methods.push_back(eHttpMethod::POST);
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);
 	loc.index_files.push_back("index.html");
 	loc.index_files.push_back("index.htm");
 	loc.index = "index.html";
@@ -58,6 +58,36 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
+Server::Server(std::ifstream &file, int &line_n)
+{
+	std::string line;
+	while (std::getline(file, line))
+	{
+		++line_n;
+		lineStrip(line);
+		if (line.empty())
+			continue;
+		if (line.find('}') != std::string::npos)
+		{
+			if (line.size() != 1)
+				throw eConf("Unexpected text with closing }", line_n);
+			return;
+		}
+		size_t pos = line.find("location");
+		if (pos != std::string::npos)
+		{
+			s_location loc = parseLocation(file, line, line_n);
+			if (loc.client_body_buffer_size > this->_clientMaxBodySize)
+				throw eConf("client_body_buffer_size exceeds server's maximum size limit", line_n);
+			this->addLocation(loc);
+			continue;
+		}
+		findServerDirective(*this, line, line_n);
+	}
+	throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
+	return;
+}
+
 Server::~Server()
 {
 }
@@ -80,7 +110,7 @@ void Server::printServer(void)
 		std::cout << "  Root: " << location.root << std::endl;
 		std::cout << "  Client Body Buffer Size: " << location.client_body_buffer_size << std::endl;
 		std::cout << "  Accepted methods: ";
-		for (auto it = location.accepted_methods.begin(); it != location.accepted_methods.end(); ++it)
+		for (auto it = location.allowed_methods.begin(); it != location.allowed_methods.end(); ++it)
 		{
 			std::cout << HttpMethodToString.at(*it) << ", ";
 		}
@@ -114,6 +144,7 @@ void Server::printServer(void)
 		std::cout << "  CGI Path: " << (location.cgi_path.empty() ? "None" : location.cgi_path) << std::endl;
 	}
 }
+
 /* directives */
 
 void Server::parseServerName(std::stringstream &ss, int line_n)
@@ -213,6 +244,7 @@ void Server::parseErrorPage(std::stringstream &ss, int line_n)
 	s_ePage nErrorPage;
 	nErrorPage.code = std::stoi(error_code);
 	nErrorPage.path = path;
+	this->addErrorPage(nErrorPage);
 }
 
 void Server::parseClientMaxBody(std::stringstream &ss, int line_n)

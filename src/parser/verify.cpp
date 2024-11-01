@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 18:11:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:12:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,14 +23,13 @@ static void check_location_brackets(std::ifstream &file, std::string line, int &
 		while (std::getline(file, line))
 		{
 			++line_n;
+			lineStrip(line);
 			if (line.empty())
 				continue;
 			if (line.find("{") != std::string::npos)
 				throw eConf("unexpected \"{\" found", line_n);
 			if (line.find("}") != std::string::npos)
 				return;
-			if (line.back() != ';')
-				throw eConf("line: \"" + line + "\" must end with ';'", line_n);
 		}
 		throw eConf("eof reached with no closing } for \"location\" keyword", line_n);
 	}
@@ -48,6 +47,7 @@ static void check_server_brackets(std::ifstream &file, std::string line, int &li
 		while (std::getline(file, line))
 		{
 			++line_n;
+			lineStrip(line);
 			if (line.empty())
 				continue;
 			size_t pos = line.find("location");
@@ -60,8 +60,6 @@ static void check_server_brackets(std::ifstream &file, std::string line, int &li
 				throw eConf("unexpected \"{\" found", line_n);
 			if (line.find("}") != std::string::npos)
 				return;
-			if (line.back() != ';')
-				throw eConf("line: \"" + line + "\" must end with ';'", line_n);
 		}
 		throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
 	}
@@ -94,8 +92,11 @@ void verifyInput(int ac, char **av)
 			continue;
 		if (line.find('}') != std::string::npos) // random closing bracket = bad
 			throw eConf("} bracket with no opening {", line_n);
-		size_t pos = line.find("server"); // check for server directive
-		if (pos != std::string::npos)	  // "server" keyword exists
+		size_t pos;
+		pos = line.find("Server");
+		if (pos == std::string::npos)
+			pos = line.find("server"); // check for server directive
+		if (pos != std::string::npos)  // "server" keyword exists
 		{
 			check_server_brackets(file, line.substr(pos + 6), line_n);
 			continue;

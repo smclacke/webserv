@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 13:17:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:54:10 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.root = root;
 }
-static void parseClientBodyBufferSize(std::stringstream &ss, int line_n, s_location &loc)
+static void parseClientMaxBodySize(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string size;
 	std::string unexpected;
@@ -55,28 +55,20 @@ static void parseAcceptedMethods(std::stringstream &ss, int line_n, s_location &
 		if (it == StringToHttpMethod.end())
 			throw eConf("Invalid HTTP method found: " + method, line_n);
 		eHttpMethod e_method = it->second;
-		if (std::find(loc.accepted_methods.begin(), loc.accepted_methods.end(), e_method) != loc.accepted_methods.end())
+		if (std::find(loc.allowed_methods.begin(), loc.allowed_methods.end(), e_method) != loc.allowed_methods.end())
 			throw eConf("Double directive declared: " + method, line_n);
-		loc.accepted_methods.push_back(e_method);
+		loc.allowed_methods.push_back(e_method);
 	}
 }
 
-static void parseRedirectUrl(std::stringstream &ss, int line_n, s_location &loc)
-{
-	std::string url;
-	std::string unexpected;
-	if (!(ss >> url))
-		throw eConf("No value provided for directive", line_n);
-	if (ss >> unexpected)
-		throw eConf("Unexpected value found: " + unexpected, line_n);
-	loc.redir_url = url;
-}
-
-static void parseRedirectStatus(std::stringstream &ss, int line_n, s_location &loc)
+static void parseReturn(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string numb;
+	std::string new_route;
 	std::string unexpected;
 	if (!(ss >> numb))
+		throw eConf("No value provided for directive", line_n);
+	if (!(ss >> new_route))
 		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
@@ -85,6 +77,7 @@ static void parseRedirectStatus(std::stringstream &ss, int line_n, s_location &l
 	if (numb.size() != 3 && numb.at(0) != '3')
 		throw eConf("Invalid redirect_status format. Expected 300,301,302..", line_n);
 	loc.redirect_status = std::stoi(numb);
+	loc.redir_url = new_route;
 }
 
 static void parseIndexFiles(std::stringstream &ss, int line_n, s_location &loc)
@@ -145,7 +138,12 @@ static void parseCgiExt(std::stringstream &ss, int line_n, s_location &loc)
 		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
-	if (ext.empty() || ext.size() < 2 || ext[0] != '.')
+	if (!ext.empty() && ext.front() == '"' && ext.back() == '"')
+	{
+		ext.erase(0, 1);
+		ext.erase(ext.size() - 1, 1);
+	}
+	if (ext.empty() || ext.size() < 2 || ext.at(0) != '.')
 		throw eConf("Invalid cgi extension(must start with .): " + ext, line_n);
 	loc.cgi_ext = ext;
 }
@@ -163,8 +161,6 @@ static void parseCgiPath(std::stringstream &ss, int line_n, s_location &loc)
 
 void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 {
-	if (line.back() == ';')
-		line.pop_back();
 	std::stringstream ss(line);
 	std::string directive;
 	ss >> directive;
@@ -173,10 +169,9 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 
 	auto dirMap = std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>>{
 		{"root", parseRoot},
-		{"client_body_buffer_size", parseClientBodyBufferSize},
-		{"accepted_methods", parseAcceptedMethods},
-		{"redirect_url", parseRedirectUrl},
-		{"redirect_status", parseRedirectStatus},
+		{"client_max_body_size", parseClientMaxBodySize},
+		{"allowed_methods", parseAcceptedMethods},
+		{"return", parseReturn},
 		{"index_files", parseIndexFiles},
 		{"autoindex", parseAutoindex},
 		{"upload_dir", parseUploadDir},
@@ -187,6 +182,59 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 	if (dirMap.find(directive) == dirMap.end())
 		throw eConf("Invalid directive found: " + directive, line_n);
 	dirMap[directive](ss, line_n, loc);
+}
+
+s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
+{
+	(void)file;
+	s_location loc;
+	std::stringstream ss(line);
+	std::string location;
+	std::string path;
+	std::string bracket;
+	std::string unexpected;
+
+	ss >> location;
+	ss >> path;
+	ss >> bracket;
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	if (location != "location")
+		throw eConf("location directive not clear", line_n);
+	if (*path.begin() != '/')
+		throw eConf("Path does not start with /", line_n);
+	if (bracket != "{")
+		throw eConf("Unexpected value found: \'" + unexpected + "\' expeted: { ", line_n);
+	loc.path = path;
+
+	while (std::getline(file, line))
+	{
+		++line_n;
+		lineStrip(line);
+		if (line.empty())
+			continue;
+
+		if (line.find('}') != std::string::npos)
+		{
+			if (line.size() != 1)
+				throw eConf("Unexpected text with closing }", line_n);
+			break;
+		}
+		findLocationDirective(line, line_n, loc);
+	}
+	/* assigning defaults in case of no directives */
+	if (loc.allowed_methods.size() == 0)
+	{
+		loc.allowed_methods.push_back(eHttpMethod::GET);
+		loc.allowed_methods.push_back(eHttpMethod::POST);
+		loc.allowed_methods.push_back(eHttpMethod::DELETE);
+	}
+	if (loc.index_files.size() == 0)
+	{
+		loc.index_files.push_back("index.html");
+		loc.index_files.push_back("index.htm");
+	}
+	return (loc);
 }
 
 /*

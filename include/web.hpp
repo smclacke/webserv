@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/31 16:51:05 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:19:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,8 +74,9 @@ enum class eSocket
 /* parser */
 void lineStrip(std::string &line);
 void verifyInput(int ac, char **av);
-Server parseServer(std::ifstream &file, int &line_n);
 void findLocationDirective(std::string &line, int &line_n, s_location &loc);
+void findServerDirective(Server &serv, std::string &line, int line_n);
+s_location parseLocation(std::ifstream &file, std::string &line, int &line_n);
 
 /* server */
 void run(Webserv wserv);
