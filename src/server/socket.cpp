@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/31 19:18:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 14:13:24 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,20 +20,20 @@ Socket::Socket() {}
 Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _connection(0), _reuseaddr(1)
 {
 	
-	if (type == eSocket::Client)
-	{
-		if (openClientSocket(servInstance) < 0)
-			std::cout << "open client socket error\n\n"; // add throw
-		else
-			std::cout << "\n\nclient socket setup successful\n\n";
-
-	}
-	else if (type == eSocket::Server)
+	if (type == eSocket::Server)
 	{
 		if (openServerSocket(servInstance) < 0)
 			std::cout << "open server socket error\n\n"; // add throw
 		else
 			std::cout << "\n\nserver socket setup successful\n\n";
+
+	}
+	else if (type == eSocket::Client)
+	{
+		if (openClientSocket(servInstance) < 0)
+			std::cout << "open client socket error\n\n"; // add throw
+		else
+			std::cout << "\n\nclient socket setup successful\n\n";
 
 	}
 	//else
@@ -59,6 +59,7 @@ Socket &Socket::operator=(const Socket &socket)
 
 Socket::~Socket()
 {
+	// freeaddrinfo
 	closeSockets();
 	// clear all attributes (e.g. _addrlen.clear())
 	// || set back to 0
@@ -146,11 +147,6 @@ int	Socket::openServerSocket(const Server &servInstance)
 	if (send(_connection, response.c_str(), response.size(), 0) < 0)
 		return (std::cout << "error sending from server\n", -1);
 	std::cout << "sent from server: <" << response << ">\n";
-	
-	//shutdown(_sockfd, SHUT_RDWR);
-
-	//close(_connection);
-	//close(_sockfd);
 
 	return 1;
 }
@@ -187,9 +183,6 @@ int Socket::openClientSocket(const Server &servInstance)
 	buffer[99] = '\0';
 	std::cout << "read by client: <" << buffer << ">\n";
 
-	//shutdown(_sockfd, SHUT_RDWR);
-	//close(_sockfd);
-	
 
 	return 1;
 }

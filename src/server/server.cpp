@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/31 19:11:42 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 14:10:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ Server::Server(void)
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
-	_port = 9999;
+	_port = 8080;
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	_location.push_back({"/",
