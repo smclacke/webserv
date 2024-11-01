@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 12:54:29 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 13:17:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,8 @@ static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string root;
 	std::string unexpected;
-	ss >> root;
+	if (!(ss >> root))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.root = root;
@@ -26,7 +27,8 @@ static void parseClientBodyBufferSize(std::stringstream &ss, int line_n, s_locat
 {
 	std::string size;
 	std::string unexpected;
-	ss >> size;
+	if (!(ss >> size))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 
@@ -63,7 +65,8 @@ static void parseRedirectUrl(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string url;
 	std::string unexpected;
-	ss >> url;
+	if (!(ss >> url))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.redir_url = url;
@@ -73,7 +76,8 @@ static void parseRedirectStatus(std::stringstream &ss, int line_n, s_location &l
 {
 	std::string numb;
 	std::string unexpected;
-	ss >> numb;
+	if (!(ss >> numb))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	if (numb.empty() || !std::all_of(numb.begin(), numb.end(), ::isdigit))
@@ -86,9 +90,12 @@ static void parseRedirectStatus(std::stringstream &ss, int line_n, s_location &l
 static void parseIndexFiles(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string file;
+	if (!(ss >> file))
+		throw eConf("No value provided for directive", line_n);
 	while (ss >> file)
 	{
-		loc.index_files.push_back(file);
+		if (!file.empty())
+			loc.index_files.push_back(file);
 	}
 }
 
@@ -96,10 +103,11 @@ static void parseAutoindex(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string status;
 	std::string unexpected;
-	ss >> status;
+	if (!(ss >> status))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
-	if (status.empty() || status != "on" || status != "off")
+	if (status.empty() || (status != "on" && status != "off"))
 		throw eConf("Not a valid autoindex value(on,off): ", line_n);
 	if (status == "on")
 		loc.autoindex = true;
@@ -111,7 +119,8 @@ static void parseUploadDir(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string dir;
 	std::string unexpected;
-	ss >> dir;
+	if (!(ss >> dir))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.upload_dir = dir;
@@ -121,7 +130,8 @@ static void parseIndex(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string index;
 	std::string unexpected;
-	ss >> index;
+	if (!(ss >> index))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.index = index;
@@ -131,7 +141,8 @@ static void parseCgiExt(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string ext;
 	std::string unexpected;
-	ss >> ext;
+	if (!(ss >> ext))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	if (ext.empty() || ext.size() < 2 || ext[0] != '.')
@@ -143,7 +154,8 @@ static void parseCgiPath(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string path;
 	std::string unexpected;
-	ss >> path;
+	if (!(ss >> path))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.cgi_path = path;

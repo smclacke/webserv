@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 12:31:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 13:22:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,7 @@ static s_location parseLocation(std::ifstream &file, std::string &line, int &lin
 		if (line.find('}') != std::string::npos)
 		{
 			if (line.size() != 1)
-				throw("Unexpected text with closing }", line_n);
+				throw eConf("Unexpected text with closing }", line_n);
 			break;
 		}
 		findLocationDirective(line, line_n, loc);
@@ -111,7 +111,7 @@ Server parseServer(std::ifstream &file, int &line_n)
 		if (line.find('}') != std::string::npos)
 		{
 			if (line.size() != 1)
-				throw("Unexpected text with closing }", line_n);
+				throw eConf("Unexpected text with closing }", line_n);
 			return (serv);
 		}
 		size_t pos = line.find("location");

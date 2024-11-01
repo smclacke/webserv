@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 10:54:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 13:21:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,10 @@ void Server::parseServerName(std::stringstream &ss, int line_n)
 {
 	std::string name;
 	std::string unexpected;
-	ss >> name;
+	if (!(ss >> name))
+		throw eConf("No value provided for directive", line_n);
+	if (name.empty())
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	setServerName(name);
@@ -130,9 +133,12 @@ void Server::parseListen(std::stringstream &ss, int line_n)
 {
 	std::string value;
 	std::string unexpected;
-	ss >> value;
+	if (!(ss >> value))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
+	if (value.empty())
+		throw eConf("No value provided for directive", line_n);
 	size_t colonPos = value.find(':');
 	if (colonPos == std::string::npos)
 		throw eConf("Invalid listen directive: missing \':\'", line_n);
@@ -194,8 +200,10 @@ void Server::parseErrorPage(std::stringstream &ss, int line_n)
 	std::string error_code;
 	std::string path;
 	std::string unexpected;
-	ss >> error_code;
-	ss >> path;
+	if (!(ss >> error_code))
+		throw eConf("No value provided for error_code", line_n);
+	if (!(ss >> path))
+		throw eConf("No value provided for path", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 
@@ -211,7 +219,9 @@ void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 {
 	std::string size;
 	std::string unexpected;
-	ss >> size;
+
+	if (!(ss >> size))
+		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 
