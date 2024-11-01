@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:33:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 17:19:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,15 @@ enum class eSocket;
 class Socket
 {
 	private:
-		int					_sockfd;
-		size_t				_maxConnections;
-		int 				_connection; // for grabbing one from queue
-		std::vector<int>	_connections;
-		sockaddr_in 		_sockaddr;
-		socklen_t			_addrlen;
+		int						_sockfd;
+		size_t					_maxConnections;
+		int 					_connection; // for grabbing one from queue
+		std::vector<int>		_connections;
+		struct sockaddr_in 		_sockaddr;
+		socklen_t				_addrlen;
+		int						_reuseaddr; // for re-binding to port while preivous
+									// connection is still in TIME_WAIT state
 		//int					_readSocks; // no. sockets ready for reading
-		int					_reuseaddr; // for re-binding to port while preivous
-										// connection is still in TIME_WAIT state
 		
 
 	public:
