@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/31 17:21:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:33:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Socket
 		int 				_connection; // for grabbing one from queue
 		std::vector<int>	_connections;
 		sockaddr_in 		_sockaddr;
-		unsigned long		_addrlen;
+		socklen_t			_addrlen;
 		//int					_readSocks; // no. sockets ready for reading
 		int					_reuseaddr; // for re-binding to port while preivous
 										// connection is still in TIME_WAIT state

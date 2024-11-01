@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 14:13:24 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:32:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,58 +94,69 @@ int	Socket::openServerSocket(const Server &servInstance)
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		return (std::cout << "error socketing sock\n", -1);
 	
+	// set to non-blocking socket mode
+	int flags = fcntl(_sockfd, F_GETFL, 0);
+	if (flags == -1 || fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		close(_sockfd);
+		return (std::cout << "error setting nonblocking\n", -1);
+	}
 
 	// to re-bind without TIME_WAIT issues
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
 		return (std::cout << "error setsockopt sock\n", -1);
-		
 
 	_sockaddr.sin_family = AF_INET;
-	//_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	//_sockaddr.sin_port = servInstance.getPort();
 	_sockaddr.sin_port = htons(servInstance.getPort());
-
 
 	// bind
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
 		return (std::cout << "error binding sock\n", -1);
 
-	
-	// listen, (set up queue for incoming connections)
-	if (listen(_sockfd, 10) < 0)
+	// listen for incoming connections, (set up queue for incoming connections)
+	if (listen(_sockfd, 10) < 0) // use _maxConnections
 		return (std::cout << "error listening for connections\n", -1);
-	std::cout << "listening successfully on port - " << servInstance.getPort() << " \n";
-		
-	sleep(3);
-	
-	auto addrlen = sizeof(_sockaddr);
 
-	// accept
-	if ((_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&addrlen)) < 0)
-		return (std::cout << "error  accepting connection\n", -1);
+	std::cout << "listening successfully on port - " << servInstance.getPort() << " \n";
+	
+	_addrlen = sizeof(_sockaddr);
+	
+	// accept connection
+	if ((_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen)) < 0)
+	{
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+			return (std::cout << "no connections available right now \n", -1);
+		else
+			return (std::cout << "error accepting connection\n", -1);
+	}
+
+	// set connection to nonblocking
+	flags = fcntl(_connection, F_GETFL, 0);
+	if (flags == -1 || fcntl(_connection, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		close(_connection);	
+		close(_sockfd);
+		return (std::cout << "error setting connection to nonblocking \n", -1);	
+	}
 	std::cout << "successfully made connection\n";
 	
-	//// set non-blocking -> check the application of this
-	// connection and socket non blocking ja?
-	
-	//int flags = fcntl(_connection, F_GETFL, 0); // this can fail
-	//fcntl(_connection, F_GETFL, 0); // this can fail
-	//flags = fcntl(_sockfd, F_GETFL, 0); // this can fail
-	//fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK); // this can also fail
 
-	// read fromm the connection
+	// read from the connection
 	char	buffer[100];
+
 	if (read(_connection, buffer, sizeof(buffer) - 1) < 0)
 		return (std::cout << "error reading from server\n", -1);
 	buffer[99] = '\0';
 	std::cout << "read by server: <" << buffer << ">\n";
 	
-	
-	// send message to the connection
+	// send response message to the connection
 	std::string	response = "response message from server";
 	if (send(_connection, response.c_str(), response.size(), 0) < 0)
+	{
+		close(_sockfd); // need?
 		return (std::cout << "error sending from server\n", -1);
+	}
 	std::cout << "sent from server: <" << response << ">\n";
 
 	return 1;
@@ -157,6 +168,7 @@ int	Socket::openServerSocket(const Server &servInstance)
 int Socket::openClientSocket(const Server &servInstance)
 {
 
+	// create client socket
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		return (std::cout << "error socketing sock\n", -1);
 
@@ -164,25 +176,56 @@ int Socket::openClientSocket(const Server &servInstance)
 	_sockaddr.sin_addr.s_addr = inet_addr(servInstance.getHost().c_str());
 	_sockaddr.sin_port = htons(servInstance.getPort());
 
+	// set to non-blocking socket mode
+	int flags = fcntl(_sockfd, F_GETFL, 0);
+	if (flags == -1 || fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		close(_sockfd);
+		return (std::cout << "error setting client socket to nonblocking\n", -1);
+	}
+
 	_addrlen = sizeof(_sockaddr);
-
+	
+	// attempt to connect
 	if ((connect(_sockfd, (struct sockaddr *) &_sockaddr, _addrlen)) < 0)
-		return (std::cout << "error connecting to server socket\n", -1);
-	std::cout << "client connected successfully to port - " << servInstance.getPort() << " \n";
+	{
+		if (errno == EINPROGRESS)
+			std::cout << "connection in progress... \n";
+		// can add select()	or similar, for now assume immediat success
+		else
+		{
+			close(_sockfd);
+			return (std::cout << "error connecting to server from client\n", -1);
+		}
+	}
+	else 
+		std::cout << "client connected successfully to port - " << servInstance.getPort() << " \n";
 	
-	char	buffer[100];
+	// send message to server socket 
 	std::string	message = "message from client";
-	
 	if (send(_sockfd, message.c_str(), message.size(), 0) < 0)
+	{
+		close(_sockfd);
 		return (std::cout << "error sending from client\n", -1);
-		
+	}
 	std::cout << "sent from client: <" << message << ">\n";
+	
+	// read response from server
+	char	buffer[100];
 
-	if (read(_sockfd, buffer, sizeof(buffer) - 1) < 0)
-		return (std::cout << "error reading from client\n", -1);
+	ssize_t bytesRead = read(_sockfd, buffer, sizeof(buffer) - 1);
+	if (bytesRead < 0)
+	{
+		if (errno == EWOULDBLOCK || errno == EAGAIN)
+			return (std::cout << "no data available to read\n", -1);
+		else
+		{
+			close(_sockfd);
+			return (std::cout << "error reading from client\n", -1);
+		}
+	}
 	buffer[99] = '\0';
 	std::cout << "read by client: <" << buffer << ">\n";
-
 
 	return 1;
 }
