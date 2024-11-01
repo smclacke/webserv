@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/31 18:12:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:50:57 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,7 @@
 // # include <sys/select.h> // check this out
 // # include <arpa.inet.h> // check this out
 #include <arpa/inet.h>
+#include <sys/select.h> // for select()
 
 // C includes
 #include <unistd.h> // for read

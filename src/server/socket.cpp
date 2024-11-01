@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:32:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/01 16:01:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,44 +120,57 @@ int	Socket::openServerSocket(const Server &servInstance)
 
 	std::cout << "listening successfully on port - " << servInstance.getPort() << " \n";
 	
-	_addrlen = sizeof(_sockaddr);
-	
-	// accept connection
-	if ((_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen)) < 0)
-	{
-		if (errno == EWOULDBLOCK || errno == EAGAIN)
-			return (std::cout << "no connections available right now \n", -1);
-		else
+	while (true)
+	{	
+		// accept connection
+		_addrlen = sizeof(_sockaddr);
+		_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen);
+		if (_connection < 0)
+		{
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+				continue ;
 			return (std::cout << "error accepting connection\n", -1);
-	}
+		}
 
-	// set connection to nonblocking
-	flags = fcntl(_connection, F_GETFL, 0);
-	if (flags == -1 || fcntl(_connection, F_SETFL, flags | O_NONBLOCK) < 0)
-	{
-		close(_connection);	
-		close(_sockfd);
-		return (std::cout << "error setting connection to nonblocking \n", -1);	
-	}
-	std::cout << "successfully made connection\n";
-	
+		// set connection to nonblocking
+		flags = fcntl(_connection, F_GETFL, 0);
+		if (flags == -1 || fcntl(_connection, F_SETFL, flags | O_NONBLOCK) < 0)
+		{
+			close(_connection);	
+			continue ;
+		}
 
-	// read from the connection
-	char	buffer[100];
+		std::cout << "successfully made connection\n";
 
-	if (read(_connection, buffer, sizeof(buffer) - 1) < 0)
-		return (std::cout << "error reading from server\n", -1);
-	buffer[99] = '\0';
-	std::cout << "read by server: <" << buffer << ">\n";
-	
-	// send response message to the connection
-	std::string	response = "response message from server";
-	if (send(_connection, response.c_str(), response.size(), 0) < 0)
-	{
-		close(_sockfd); // need?
-		return (std::cout << "error sending from server\n", -1);
+		// read from the connection
+		char	buffer[1000];
+		std::string	request;
+		ssize_t bytesRead;
+		while (bytesRead = read(_connection, buffer, sizeof(buffer) - 1) > 0)
+		{
+			buffer[bytesRead] = '\0';
+			request += buffer;	
+		}
+		
+		if (bytesRead < 0)
+		{
+			if (errno == EWOULDBLOCK || errno == EAGAIN)
+			{
+				std::cout << "no data available to read\n";
+				continue ;
+			}
+			return (std::cout << "error reading from server\n", -1);
+		}
+		buffer[99] = '\0';
+		std::cout << "read by server: <" << buffer << ">\n";
+		
+		// send response message to the connection
+		std::string	response = "response message from server";
+		if (send(_connection, response.c_str(), response.size(), 0) < 0)
+			return (std::cout << "error sending from server\n", -1);
+
+		std::cout << "sent from server: <" << response << ">\n";
 	}
-	std::cout << "sent from server: <" << response << ">\n";
 
 	return 1;
 }
@@ -184,22 +197,34 @@ int Socket::openClientSocket(const Server &servInstance)
 		return (std::cout << "error setting client socket to nonblocking\n", -1);
 	}
 
-	_addrlen = sizeof(_sockaddr);
-	
 	// attempt to connect
+	_addrlen = sizeof(_sockaddr);
 	if ((connect(_sockfd, (struct sockaddr *) &_sockaddr, _addrlen)) < 0)
 	{
 		if (errno == EINPROGRESS)
+		{
 			std::cout << "connection in progress... \n";
-		// can add select()	or similar, for now assume immediat success
+			fd_set	writefds;
+			FD_ZERO(&writefds);
+			FD_SET(_sockfd, &writefds);
+			struct timeval	tv;
+			tv.tv_sec = 5; // timeout for 5 seconds
+			tv.tv_usec = 0;
+
+			int	result = select(_sockfd + 1, nullptr, &writefds, nullptr, &tv);
+			if (result <= 0)
+			{
+				close (_sockfd);
+				return (std::cout <<"error or timeout waiting for connection\n", -1);
+			}
+		}
 		else
 		{
 			close(_sockfd);
 			return (std::cout << "error connecting to server from client\n", -1);
 		}
 	}
-	else 
-		std::cout << "client connected successfully to port - " << servInstance.getPort() << " \n";
+	std::cout << "client connected successfully to port - " << servInstance.getPort() << " \n";
 	
 	// send message to server socket 
 	std::string	message = "message from client";
@@ -212,12 +237,11 @@ int Socket::openClientSocket(const Server &servInstance)
 	
 	// read response from server
 	char	buffer[100];
-
 	ssize_t bytesRead = read(_sockfd, buffer, sizeof(buffer) - 1);
 	if (bytesRead < 0)
 	{
 		if (errno == EWOULDBLOCK || errno == EAGAIN)
-			return (std::cout << "no data available to read\n", -1);
+			return (std::cout << "no data available to read\n", 0);
 		else
 		{
 			close(_sockfd);
