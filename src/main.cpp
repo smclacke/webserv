@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 17:45:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/04 16:14:26 by eugene        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ int main(int argc, char **argv)
 			std::string config = "";
 			if (argc == 2)
 				std::string config = std::string(argv[1]);
-			Webserv wserv(config); // will create 1 default server if there is no config
+			Webserv wserv(config);
 			wserv.run();
 		}
 		catch (eConf &e)

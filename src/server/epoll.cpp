@@ -6,44 +6,80 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 18:00:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/04 16:12:55 by eugene        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
-
-/* initEPoll or just create the instance and init everything there? */
-/* need constructor with param? */
 
 /* constructors an' that */
 
 Epoll::Epoll() {}
 
 
-// copy constructor disappeared ...
+Epoll::Epoll(const Epoll &copy)
+{
+	*this = copy;
+}
 
 Epoll &Epoll::operator=(const Epoll &epoll)
 {
 	if (this != &epoll)
 	{
-		//this->
+		this->_epfd = epoll._epfd;
+		//this->_sockfd = epoll._sockfd;
 	}
 	return *this;
 }
 
-Epoll::~Epoll()
-{
-
-}
+Epoll::~Epoll() {}
 
 
 /* methods */
 
 void	Epoll::initEpoll()
 {
-	
+	//_epfd = epoll_create(0);
+	//_event->events = EPOLLIN;
+	//_event->data.fd = _sockfd;
+	//epoll_ctl(_epfd, EPOLL_CTL_ADD, _sockfd, &_event);
 }
+// Server class has client and server sockets, use those?
+void	Epoll::monitor()
+{
+	//while (true)
+	//{
+	//	//_events[MAX_EVENTS];
+	//	_numEvents = epoll_wait(_epfd, events, MAX_EVENTS, -1);
+		
+	//	for (int i = 0; i < _numEvents; ++i)
+	//	{
+	//		if (_events[i].data.fd == _sockfd)
+	//		{	
+	//			// accept connection
+	//			_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, &_addrlen);
+	//			if (_connection < 0)
+	//			{
+	//				if (errno == EWOULDBLOCK || errno == EAGAIN)
+	//					continue ;
+	//				std::cerr << "error accepting connection\n";
+	//				continue ;
+	//			}
+	//			// TODO: set connection to non-blocking
 
+	//			// add client to epoll (need to check this in connection with opening the client socket)
+	//			_clientEvent.events = EPOLLIN;
+	//			_clientEvent.data.fd = _sockfd; // client fd - how to separate ...
+	//			epoll_ctl(_epfd, EPOLL_CTL_ADD, _sockfd, &_clientEvent);
+				
+	//		}
+	//		else	
+	//			// handle data from client socket
+	//			// client_fd = events[i].data.fd;
+	//			// read and process data
+	//	}
+	//}
+}
 
 
 // CHECK NOTES THEN MOVE

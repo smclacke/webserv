@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 18:00:01 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/04 16:42:23 by eugene        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,10 +16,8 @@
 
 Socket::Socket() {}
 
-
-Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _connection(0), _reuseaddr(1)
+Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _connection(0), _reuseaddr(1), _flags(0)
 {
-	
 	if (type == eSocket::Server)
 	{
 		if (openServerSocket(servInstance) < 0)
@@ -41,18 +39,26 @@ Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), 
 }
 
 // copy constructor disappeared ...
+Socket::Socket(const Socket &copy)
+{
+	*this = copy;
+}
 
 Socket &Socket::operator=(const Socket &socket)
 {
 	if (this != &socket)
 	{
-		// clear all attributes || set to 0
-
 		this->_sockfd = socket._sockfd;
 		this->_maxConnections = socket._maxConnections;
+		this->_connection = socket._connection;
 		//this->_connection = socket._connection; // copy vector of connections
 		this->_sockaddr = socket._sockaddr;
 		this->_addrlen = socket._addrlen;
+		this->_reuseaddr = socket._reuseaddr;
+		this->_buffer[BUFFER_SIZE] = socket._buffer[BUFFER_SIZE];
+		this->_request = socket._request;
+		this->_bytesRead = socket._bytesRead;
+		this->_bufferSize = socket._bufferSize;
 	}
 	return *this;
 }
@@ -60,7 +66,7 @@ Socket &Socket::operator=(const Socket &socket)
 Socket::~Socket()
 {
 	// freeaddrinfo
-	closeSockets();
+	closeSocket();
 	// clear all attributes (e.g. _addrlen.clear())
 	// || set back to 0
 	
@@ -69,7 +75,7 @@ Socket::~Socket()
 
 /* methods */
 
-void Socket::closeSockets() // or socket for each instance of socket
+void Socket::closeSocket() 
 {
 	//close(this->_connections); // close the vector of connections
 	if (_connection > 0)
@@ -84,6 +90,21 @@ void Socket::closeSockets() // or socket for each instance of socket
 	}
 }
 
+// will get this function from Julius at some point
+static std::string generateHttpResponse(const std::string &message)
+{
+	size_t	contentLength = message.size();
+	std::ostringstream	response;
+	response	<< "HTPP/1.1 200 OK\r\n"
+				<< "Content-Type: text/plain\r\n"
+				<< "Content-Length: " << contentLength << "\r\n"
+				<< "Connection : close\r\n"
+				<< "\r\n"
+				<< message;
+	
+	return response.str();
+}
+
 
 // A process that waits passively for requests from clients, processes the work specified,
 // and returns the result to the client that originated the request.
@@ -95,8 +116,8 @@ int	Socket::openServerSocket(const Server &servInstance)
 		return (std::cout << "error socketing sock\n", -1);
 	
 	// set to non-blocking socket mode
-	int flags = fcntl(_sockfd, F_GETFL, 0);
-	if (flags == -1 || fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
+	_flags = fcntl(_sockfd, F_GETFL, 0);
+	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		close(_sockfd);
 		return (std::cout << "error setting nonblocking\n", -1);
@@ -112,7 +133,8 @@ int	Socket::openServerSocket(const Server &servInstance)
 	_sockaddr.sin_port = htons(servInstance.getPort());
 
 	// bind
-	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
+	_addrlen = sizeof(_sockaddr);
+	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
 		close(_sockfd);
 		return (std::cout << "error binding sock\n", -1);
@@ -127,10 +149,11 @@ int	Socket::openServerSocket(const Server &servInstance)
 
 	std::cout << "listening successfully on port - " << servInstance.getPort() << " \n";
 	
+	// epoll comes in here
+
 	while (true)
 	{	
 		// accept connection
-		_addrlen = sizeof(_sockaddr);
 		_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, &_addrlen);
 		if (_connection < 0)
 		{
@@ -140,46 +163,28 @@ int	Socket::openServerSocket(const Server &servInstance)
 			continue ;
 		}
 
-		// i thought i needed nonblocking on connection but this breaks it
-		// set connection to nonblocking
-		//int flags2 = fcntl(_connection, F_GETFL, 0);
-		//if (flags2 == -1 || fcntl(_connection, F_SETFL, flags2 | O_NONBLOCK) < 0)
-		//{
-		//	close(_connection);	
-		//	continue ;
-		//}
-
 		std::cout << "successfully made connection\n";
 
 		// read from the connection
-		char	buffer[1000];
-		std::string	request;
-		ssize_t bytesRead;
-		while ((bytesRead = read(_connection, buffer, sizeof(buffer) - 1)) > 0)
+		_bufferSize = sizeof(_buffer);
+		while ((_bytesRead = read(_connection, _buffer, _bufferSize - 1)) > 0)
 		{
-			buffer[bytesRead] = '\0';
-			request += buffer;
-			if (request.find("\r\n\r\n") != std::string::npos)
+			_buffer[_bytesRead] = '\0';
+			_request += _buffer;
+			if (_request.find("\r\n\r\n") != std::string::npos)
 				break ; // end of HTTP request
 		}
 		
-		if (bytesRead < 0 && errno != EWOULDBLOCK && errno != EAGAIN)
+		if (_bytesRead < 0 && errno != EWOULDBLOCK && errno != EAGAIN)
 			std::cerr << "error reading from connection\n";
 
-		if (!request.empty())
+		if (!_request.empty())
 		{
-			std::cout << "received request: " << request << "\n";
+			std::cout << "received request: " << _request << "\n";
 
 			// send HTTP response
-			std::string	response = 
-				"HTTP/1.1 200 OK\r\n"
-				"Content-Type: text/plain\r\n"
-				"Content-Length: 27\r\n"
-				"Connection: close\r\n"
-				"\r\n"
-				"response message from server!";
-				
-			if (send(_connection, response.c_str(), response.size(), 0) < 0)
+			std::string	_response = generateHttpResponse(std::string("get me on your browser"));
+			if (send(_connection, _response.c_str(), _response.size(), 0) < 0)
 				std::cerr << "error snding response to client\n";
 		}
 		else
@@ -195,7 +200,6 @@ int	Socket::openServerSocket(const Server &servInstance)
 // connect to server sockt instead of bind
 int Socket::openClientSocket(const Server &servInstance)
 {
-
 	// create client socket
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		return (std::cout << "error socketing sock\n", -1);
@@ -206,8 +210,8 @@ int Socket::openClientSocket(const Server &servInstance)
 	inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr);
 
 	// set to non-blocking socket mode
-	int flags = fcntl(_sockfd, F_GETFL, 0);
-	if (flags == -1 || fcntl(_sockfd, F_SETFL, flags | O_NONBLOCK) < 0)
+	_flags = fcntl(_sockfd, F_GETFL, 0);
+	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		close(_sockfd);
 		return (std::cout << "error setting client socket to nonblocking\n", -1);
@@ -222,26 +226,15 @@ int Socket::openClientSocket(const Server &servInstance)
 	}
 	std::cout << "client connected successfully to port - " << servInstance.getPort() << " \n";
 	
-	// send message to server socket 
-	std::string message = "GET / HTTP/1.1\r\nHost: " + servInstance.getHost() + "\r\nConnection: close\r\n\r\n";
-	if (send(_sockfd, message.c_str(), message.size(), 0) < 0)
-	{
-		close(_sockfd);
-		return (std::cout << "error sending from client\n", -1);
-	}
+	// add to epoll (here?)
 	
-	// read response from server
-	char	buffer[100];
-	ssize_t bytesRead;
-	while ((bytesRead = read(_sockfd, buffer, sizeof(buffer) - 1)) > 0)
-	{
-		buffer[bytesRead] = '\0';
-		std::cout << "received response: " << buffer;
-	}
-	if (bytesRead < 0)
-		std::cerr << "error reading reponse\n";
-	buffer[99] = '\0';
-	std::cout << "read by client: <" << buffer << ">\n";
-	
+	//// send message to server socket 
+	//std::string message = "GET / HTTP/1.1\r\nHost: " + servInstance.getHost() + "\r\nConnection: close\r\n\r\n";
+	//if (send(_sockfd, message.c_str(), message.size(), 0) < 0)
+	//{
+	//	close(_sockfd);
+	//	return (std::cout << "error sending from client\n", -1);
+	//}
+
 	return 1;
 }

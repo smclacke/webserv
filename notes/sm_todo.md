@@ -119,3 +119,151 @@ Implement Edge-triggered Mode: If you want to optimize further, you can use edge
 Error Handling: Ensure robust error handling throughout your implementation.
 Testing: Thoroughly test with multiple simultaneous clients to ensure stability.
 
+
+----------- another explanation
+
+If you want to manage both server and client sockets using a single epoll instance, you can do this by adding both the server socket (for accepting incoming connections) and the client socket (for communication with the server) to the same epoll loop.
+Steps to Use One epoll for Both Server and Client
+
+    Create a single epoll instance.
+    Add both the server and client sockets to the epoll instance.
+    Handle events for both sockets in the same event loop.
+
+Here's how you can modify your code:
+Step 1: Modify the Server Initialization
+
+You'll create the epoll instance in your server's openServerSocket function and manage the client socket from there.
+Step 2: Update the Code
+
+Below is a modified version of your server function to manage both server and client sockets using a single epoll instance:
+
+cpp
+
+int Socket::openServerSocket(const Server &servInstance)
+{
+    // Create listening socket
+    if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+        return (std::cout << "error socketing sock\n", -1);
+
+    // Set to non-blocking socket mode
+    _flags = fcntl(_sockfd, F_GETFL, 0);
+    if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
+    {
+        close(_sockfd);
+        return (std::cout << "error setting nonblocking\n", -1);
+    }
+
+    // Allow reuse of the address
+    if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
+        return (std::cout << "error setsockopt sock\n", -1);
+
+    memset(&_sockaddr, 0, sizeof(_sockaddr));
+    _sockaddr.sin_family = AF_INET;
+    _sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+    _sockaddr.sin_port = htons(servInstance.getPort());
+
+    // Bind
+    _addrlen = sizeof(_sockaddr);
+    if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
+    {
+        close(_sockfd);
+        return (std::cout << "error binding sock\n", -1);
+    }
+
+    // Listen for incoming connections
+    if (listen(_sockfd, _maxConnections) < 0)
+    {
+        close(_sockfd);
+        return (std::cerr << "error listening for connections\n", -1);
+    }
+
+    std::cout << "listening successfully on port - " << servInstance.getPort() << " \n";
+
+    // Create an epoll instance
+    int epoll_fd = epoll_create1(0);
+    if (epoll_fd < 0) {
+        std::cerr << "error creating epoll instance\n";
+        return -1;
+    }
+
+    // Add server socket to epoll instance
+    struct epoll_event event;
+    event.events = EPOLLIN; // Monitor for incoming connections
+    event.data.fd = _sockfd;
+    if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _sockfd, &event) < 0) {
+        std::cerr << "error adding server socket to epoll\n";
+        return -1;
+    }
+
+    // Initialize client socket (you can set this to an invalid value initially)
+    int client_socket = -1;
+
+    // Main event loop
+    while (true)
+    {
+        struct epoll_event events[10]; // Array to hold events
+        int nfds = epoll_wait(epoll_fd, events, 10, -1); // Wait for events
+
+        for (int i = 0; i < nfds; ++i) {
+            if (events[i].data.fd == _sockfd) {
+                // Accept new connection
+                _connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, &_addrlen);
+                if (_connection < 0) {
+                    std::cerr << "error accepting connection\n";
+                    continue;
+                }
+                std::cout << "successfully made connection\n";
+
+                // Set the new connection socket to non-blocking
+                _flags = fcntl(_connection, F_GETFL, 0);
+                fcntl(_connection, F_SETFL, _flags | O_NONBLOCK);
+
+                // Add new connection to epoll instance
+                event.events = EPOLLIN | EPOLLET; // Edge-triggered
+                event.data.fd = _connection;
+                if (epoll_ctl(epoll_fd, EPOLL_CTL_ADD, _connection, &event) < 0) {
+                    std::cerr << "error adding connection to epoll\n";
+                    close(_connection);
+                }
+            } else {
+                // Handle incoming data from a client connection
+                int client_fd = events[i].data.fd;
+                char buffer[1024];
+                ssize_t bytesRead = read(client_fd, buffer, sizeof(buffer) - 1);
+                if (bytesRead > 0) {
+                    buffer[bytesRead] = '\0';
+                    std::cout << "received request: " << buffer << "\n";
+
+                    // Send HTTP response
+                    std::string response = generateHttpResponse("get me on your browser");
+                    send(client_fd, response.c_str(), response.size(), 0);
+                } else {
+                    if (bytesRead < 0) {
+                        std::cerr << "error reading from client\n";
+                    }
+                    // Close the client socket
+                    close(client_fd);
+                    epoll_ctl(epoll_fd, EPOLL_CTL_DEL, client_fd, nullptr); // Remove from epoll
+                }
+            }
+        }
+    }
+
+    close(epoll_fd);
+    return 1;
+}
+
+Handling Client Connections
+
+You can have a separate function for the client, but instead of creating a new epoll instance, simply use the existing one:
+
+    In openClientSocket: After you connect the client, you can add the client socket to the same epoll instance. This means you'll have to pass the epoll_fd to your client function.
+
+    Event Loop: The same event loop can handle events for both the server and the client.
+
+Example of Handling Client in the Same Loop
+
+You could manage sending a request to the server from your client side by triggering events that notify the epoll loop about the client's socket. This may involve additional state management to keep track of the request and response.
+Conclusion
+
+By consolidating everything into a single epoll instance, you can efficiently manage both server and client sockets in the same event loop. This can simplify your code and improve performance, especially when dealing with multiple connections. Just ensure your logic can differentiate between events coming from server and client sockets so that you handle them appropriately.

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 18:18:46 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/04 15:27:34 by eugene        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,16 +44,8 @@ Webserv::~Webserv(void)
 
 void Webserv::run()
 {
-	// or just creating an epoll instance, we see
 	_epoll.initEpoll();
-
-
-	// assign sockets/servers to Epoll monitoring
-
-
-	// will need to clean everything up at some point
-	// closing sockets i think happens in epoll monitoring
-	// sock.closeSockets();
+	_epoll.monitor();
 }
 
 
