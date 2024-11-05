@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 21:46:30 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 21:59:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,9 +106,6 @@ void		Epoll::monitor(Socket &server, Socket &client)
 	socklen_t	serverAddrlen = server.getAddrlen();
 	struct sockaddr_in	serverAddr = server.getSockaddr();
 	
-	int		clientSockfd = client.getSockfd();
-	socklen_t	clientAddrlen = client.getAddrlen();
-	struct sockaddr_in	clientAddr = client.getSockaddr();
 
 	// add server socket to epoll
 	struct epoll_event event = addSocketEpoll(serverSockfd, _epfd);
@@ -125,7 +122,6 @@ void		Epoll::monitor(Socket &server, Socket &client)
 				// accept new connection
 				serverAddrlen = server.getAddrlen();
 				serverAddr = server.getSockaddr();
-
 				int newConnection = accept(serverSockfd, (struct sockaddr *)&serverAddr, &serverAddrlen);
 				if (newConnection < 0)
 				{
@@ -140,7 +136,6 @@ void		Epoll::monitor(Socket &server, Socket &client)
 					addConnectionEpoll(newConnection, _epfd, event);
 
 					/* TEST STUFF*/
-					// read from connection
 					char buffer[1000];
 					std::string request;
 					ssize_t bytesRead;
@@ -169,31 +164,29 @@ void		Epoll::monitor(Socket &server, Socket &client)
 			}
 			
 			/* TESTING OLD CLIENT FUNCTION FROM HERE */
-			// attempt to connect
 			else
 			{
-				//int	sockfd = events[i].data.fd;
-				int	sockfd = client.getSockfd();
-				socklen_t	addlen = client.getAddrlen();
-				struct sockaddr_in sockadd = client.getSockaddr();
+				int		clientSockfd = client.getSockfd(); //events[i].data.fd
+				socklen_t	clientAddrlen = client.getAddrlen();
+				struct sockaddr_in	clientSockaddr = client.getSockaddr();
 				
-				if ((connect(sockfd, (struct sockaddr *)&sockadd, addlen)) < 0)
+				if ((connect(clientSockfd, (struct sockaddr *)&clientSockaddr, clientAddrlen)) < 0)
 				{
-					close(sockfd);
+					close(clientSockfd);
 					throw std::runtime_error("Error connecting to server from client\n");
 				}
 				std::cout << "Client connected successfully to port\n";
 
 				std::string message = "GET / HTTP/1.1\r\nHost: " + client.getHost() + "\r\nConnection: close\r\n";
-				if (send(sockfd, message.c_str(), message.size(),0) < 0)
+				if (send(clientSockfd, message.c_str(), message.size(),0) < 0)
 				{
-					close(sockfd);
+					close(clientSockfd);
 					throw std::runtime_error("Error sending message from client\n");
 				}
 				
 				char	buffer[1000];
 				ssize_t	bytesRead;
-				while ((bytesRead = read(sockfd, buffer, sizeof(buffer) - 1)) > 0)
+				while ((bytesRead = read(clientSockfd, buffer, sizeof(buffer) - 1)) > 0)
 				{
 					buffer[bytesRead] = '\0';
 					std::cout << "Received response: " << buffer;
@@ -202,7 +195,7 @@ void		Epoll::monitor(Socket &server, Socket &client)
 					throw std::runtime_error("Error reading response\n");
 				buffer[999] = '\0';
 				std::cout << "Read by client: " << buffer << "\n";
-				closeDelete(sockfd, _epfd);
+				closeDelete(clientSockfd, _epfd);
 				std::cout << "\nClosed client socket and deleted from Epoll\n";
 				
 			}

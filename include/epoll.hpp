@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 20:20:42 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 21:58:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Epoll
 		int					_epfd;
 		int					_op;
 		int					_numEvents;
-		int					_timeout;
+		//int					_timeout;
 		
 	public:
 		Epoll();
