@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 15:02:52 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 17:17:36 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Webserv::Webserv(void)
 
 Webserv::Webserv(std::string config)
 {
-	std::cout << "config: " << config << std::endl;
+	//std::cout << "config: " << config << std::endl;
 	_epoll.initEpoll();
 	if (config.empty())
 	{

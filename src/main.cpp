@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:18:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 16:13:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{
 				Server serv = wserv.getServer(i);
-				serv.printServer();
+				//serv.printServer();
 			}
 		}
 		catch (eConf &e)

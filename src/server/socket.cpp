@@ -6,13 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 15:00:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 17:17:57 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
-/* constructors an' that */
+/* constructors */
 
 Socket::Socket() {}
 
@@ -21,17 +21,17 @@ Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), 
 	if (type == eSocket::Server)
 	{
 		if (openServerSocket(servInstance) < 0)
-			std::cout << "\n\n666: open server socket error\n\n"; // add throw
+			std::cout << "\nopen server socket error\n\n"; // add throw
 		else
-			std::cout << "\n\n666: server socket setup successful\n\n";
+			std::cout << "\nserver socket setup successful\n\n";
 
 	}
 	else if (type == eSocket::Client)
 	{
 		if (openClientSocket(servInstance) < 0)
-			std::cout << "\n\n666: open client socket error\n\n"; // add throw
+			std::cout << "\nopen client socket error\n\n"; // add throw
 		else
-			std::cout << "\n\n666: client socket setup successful\n\n";
+			std::cout << "\nclient socket setup successful\n\n";
 
 	}
 	//else
@@ -110,9 +110,11 @@ int	Socket::openServerSocket(const Server &servInstance)
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_sockaddr.sin_port = htons(servInstance.getPort());
-
+	setSockFd(_sockfd);
+	
 	// bind
 	_addrlen = sizeof(_sockaddr);
+	setAddrlen(_addrlen);
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
 		close(_sockfd);
@@ -125,8 +127,7 @@ int	Socket::openServerSocket(const Server &servInstance)
 		close(_sockfd);
 		return (std::cerr << "error listening for connections\n", -1);
 	}
-
-	std::cout << "\n\n333: listening successfully on port - " << servInstance.getPort() << " \n";
+	std::cout << "\nlistening successfully on port - " << servInstance.getPort() << " \n";
 
 	return 1;
 }
@@ -144,6 +145,7 @@ int Socket::openClientSocket(const Server &servInstance)
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr);
+	setSockFd(_sockfd);
 
 	// set to non-blocking socket mode
 	_flags = fcntl(_sockfd, F_GETFL, 0);
@@ -154,13 +156,13 @@ int Socket::openClientSocket(const Server &servInstance)
 	}
 
 	// attempt to connect
-	_addrlen = sizeof(_sockaddr);
-	if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
-	{
-		close(_sockfd);
-		return (std::cout << "error connecting to server from client\n", -1);
-	}
-	std::cout << "\n\n333: client connected successfully to port - " << servInstance.getPort() << " \n";
+	//_addrlen = sizeof(_sockaddr);
+	//if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
+	//{
+	//	close(_sockfd);
+	//	return (std::cout << "error connecting to server from client\n", -1);
+	//}
+	//std::cout << "\nclient connected successfully to port - " << servInstance.getPort() << " \n";
 
 	return 1;
 }
@@ -190,7 +192,22 @@ socklen_t	Socket::getAddrlen() const
 
 /* setters */
 
-void		Socket::setNewConnection(int connection)
+void			Socket::setSockFd(int fd)
+{
+	this->_sockfd = fd;
+}
+
+void		Socket::setNewConnection(int &connection)
 {
 	this->_connection = connection;
+}
+
+void		Socket::setSockaddr(struct sockaddr_in &sockaddr)
+{
+	this->_sockaddr = sockaddr;
+}
+
+void		Socket::setAddrlen(socklen_t &addrlen)
+{
+	this->_addrlen = addrlen;
 }

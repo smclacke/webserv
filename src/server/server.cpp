@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 15:03:07 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 17:17:03 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,11 +23,10 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void)
+Server::Server(void) : _port(8080), _serverSocket(*this, eSocket::Server), _clientSocket(*this, eSocket::Client)
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
-	_port = 8080;
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -40,8 +39,6 @@ Server::Server(void)
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
-	Socket _serverSocket(*this, eSocket::Server);
-	Socket _clientSocket(*this, eSocket::Client);
 }
 
 Server &Server::operator=(const Server &rhs)
@@ -370,12 +367,12 @@ const std::vector<s_location> &Server::getLocation(void) const
 	return _location;
 }
 
-const Socket &Server::getServerSocket(void) const
+Socket &Server::getServerSocket(void)
 {
 	return _serverSocket;
 }
 
-const Socket &Server::getClientSocket(void) const
+Socket &Server::getClientSocket(void)
 {
 	return _clientSocket;
 }

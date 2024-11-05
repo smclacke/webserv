@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:22:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 16:57:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,55 +77,55 @@ struct s_ePage
 
 class Server
 {
-private:
-	std::string _serverName;
-	std::string _host;
-	int _port;
-	std::vector<s_ePage> _errorPage;
-	size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
-	std::vector<s_location> _location;
-	Socket _serverSocket;
-	Socket _clientSocket;
+	private:
+		std::string _serverName;
+		std::string _host;
+		int _port;
+		std::vector<s_ePage> _errorPage;
+		size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
+		std::vector<s_location> _location;
+		Socket _serverSocket;
+		Socket _clientSocket;
 
-public:
-	Server(void);
-	Server &operator=(const Server &rhs);
-	Server(std::ifstream &file, int &line_n);
-	~Server(void);
+	public:
+		Server(void);
+		Server &operator=(const Server &rhs);
+		Server(std::ifstream &file, int &line_n);
+		~Server(void);
 
-	/* Member functions */
-	eHttpMethod allowedHttpMethod(std::string &str);
-	void printServer(void);
+		/* Member functions */
+		eHttpMethod allowedHttpMethod(std::string &str);
+		void printServer(void);
 
-	/* add */
-	void addLocation(s_location route);
-	void addErrorPage(s_ePage errorPage);
+		/* add */
+		void addLocation(s_location route);
+		void addErrorPage(s_ePage errorPage);
 
-	/* directives */
-	void parseServerName(std::stringstream &ss, int line_n);
-	void parseListen(std::stringstream &ss, int line_n);
-	void parseErrorPage(std::stringstream &ss, int line_n);
-	void parseClientMaxBody(std::stringstream &ss, int line_n);
+		/* directives */
+		void parseServerName(std::stringstream &ss, int line_n);
+		void parseListen(std::stringstream &ss, int line_n);
+		void parseErrorPage(std::stringstream &ss, int line_n);
+		void parseClientMaxBody(std::stringstream &ss, int line_n);
 
-	/* setters */
-	void setServerName(std::string serverName);
-	void setHost(std::string host);
-	void setPort(int port);
-	void setErrorPage(std::vector<s_ePage> errorPage);
-	void setClientMaxBodySize(size_t clientMaxBodySize);
-	void setLocation(std::vector<s_location> location);
-	void setServerSocket(Socket serverSocket);
-	void setClientSocket(Socket clientSocket);
+		/* setters */
+		void setServerName(std::string serverName);
+		void setHost(std::string host);
+		void setPort(int port);
+		void setErrorPage(std::vector<s_ePage> errorPage);
+		void setClientMaxBodySize(size_t clientMaxBodySize);
+		void setLocation(std::vector<s_location> location);
+		void setServerSocket(Socket serverSocket);
+		void setClientSocket(Socket clientSocket);
 
-	/* getters */
-	std::string const &getServerName(void) const;
-	const std::string &getHost(void) const;
-	const int &getPort(void) const;
-	const std::vector<s_ePage> &getErrorPage(void) const;
-	const size_t &getClientMaxBodySize(void) const;
-	const std::vector<s_location> &getLocation(void) const;
-	const Socket &getServerSocket(void) const;
-	const Socket &getClientSocket(void) const;
+		/* getters */
+		std::string const &getServerName(void) const;
+		const std::string &getHost(void) const;
+		const int &getPort(void) const;
+		const std::vector<s_ePage> &getErrorPage(void) const;
+		const size_t &getClientMaxBodySize(void) const;
+		const std::vector<s_location> &getLocation(void) const;
+		Socket &getServerSocket(void);
+		Socket &getClientSocket(void);
 };
 
 #endif /* SERVER_HPP */

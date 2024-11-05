@@ -449,6 +449,20 @@ while (vector<servers>)
 #########################################################################
 
 
+				//ssize_t 	bytesRead = read(clientSockFd, buffer, sizeof(buffer) - 1);
+				//if (bytesRead > 0)
+				//{
+				//	buffer[bytesRead] = '\0';
+				//	std::cout << "received request: " << buffer << "\n";
+					
+				//	// send HTTP response
+				//	std::string	response = generateHttpResponse("here, have a response");
+				//	send(clientSockFd, response.c_str(), response.size(), 0);
+				//	std::cout << "successfully read message from client to server\n";
+				//}
+				//else
+				//{
+
 /**
  * monitoring serveral sockets
  * waits for changing state or changing level for each socket monitored
