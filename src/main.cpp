@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 14:03:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 14:07:46 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,8 +24,8 @@ int main(int argc, char **argv)
 			Webserv wserv(config);
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{
-				auto serv = wserv.getServer(i); // Get shared pointer to server
-				serv->printServer();			// Call printServer on the existing server
+				std::shared_ptr<Server> serv = wserv.getServer(i); // Get shared pointer to server
+				serv->printServer();							   // Call printServer on the existing server
 			}
 		}
 		catch (eConf &e)

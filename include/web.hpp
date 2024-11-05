@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:59:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 14:52:41 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,6 +71,9 @@ enum class eSocket
 	Client = 1,
 	Server = 2
 };
+
+/* http */
+std::string generateHttpResponse(const std::string &message);
 
 /* parser */
 void lineStrip(std::string &line);

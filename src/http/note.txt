@@ -1,0 +1,40 @@
+Goals:
+
+1. determine request type
+
+if (cgi)
+- check validity path
+- check validity program
+- run CGI with METHOD that exists with said fle
+
+
+CGI requires
+- pipes for in and out pipe_in[2] pipe_out[2]
+- fork() call
+- checks if everything is safe and llowed
+
+
+methods
+- check validity of HTTPS, right header, right version of HTTPS
+- check if METHOD exists and is below 1,2,3. right now we just DONT ALLOW methods other than post get DELETE
+- PARSE the method and generate appripiate response
+
+- server and clients can inherit the CGI and methods classes to process responses.
+
+
+else
+
+methods -> POST / GET / DELETE
+
+if (POST)
+upload -> good or bad ie good path, POST allowed. -> appripiate response code
+
+
+if (DELETE)
+check validity. check URL end "/$". check access --> appropiate response code
+
+if (GET)
+-> type file or directory
+
+file -> if exists return file -> appropiate response code
+directory -> url ends with "/$" . index / auto-index check-> return file or not -> appropiate response code
