@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 16:13:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 19:48:57 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,13 @@ int main(int argc, char **argv)
 			if (argc == 2)
 				config = std::string(argv[1]);
 			Webserv wserv(config);
+			// monitor
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{
 				Server serv = wserv.getServer(i);
 				//serv.printServer();
+				//server[0].monitor; // if this is on while true how do we get to server1
+				//server[1].monitor;
 			}
 		}
 		catch (eConf &e)

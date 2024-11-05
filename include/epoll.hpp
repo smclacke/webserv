@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 16:50:01 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 19:47:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,15 +27,7 @@ class Epoll
 		int					_op;
 		int					_numEvents;
 		int					_timeout;
-		struct epoll_event	_event;
-
-		// instead of being in the socket class - not sure about this yet but
-		// connections are made in the main epoll loop sooo...
-		int 					_connection; // for grabbing one from queue
-		std::vector<int>		_connections; // need vector of connections?
-
-		struct epoll_event	*_events; // ?
-		struct epoll_event	_clientEvent; // ?
+		//struct epoll_event	_event;
 		
 
 	public:

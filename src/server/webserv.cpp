@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 17:17:36 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 17:58:36 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Webserv::Webserv(std::string config)
 	if (config.empty())
 	{
 		Server default_server;
-		_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket());
+		//_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket());
 		_servers.push_back(default_server);
 		return;
 	}
@@ -49,7 +49,7 @@ Webserv::Webserv(std::string config)
 		if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
 		{
 			Server nServer = Server(file, line_n);
-			_epoll.monitor(nServer.getServerSocket(), nServer.getClientSocket());
+			//_epoll.monitor(nServer.getServerSocket(), nServer.getClientSocket());
 			_servers.push_back(nServer);
 			continue;
 		}

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 17:17:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 19:45:47 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,10 +111,11 @@ int	Socket::openServerSocket(const Server &servInstance)
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	setSockFd(_sockfd);
-	
-	// bind
+	setSockaddr(_sockaddr);
 	_addrlen = sizeof(_sockaddr);
 	setAddrlen(_addrlen);
+	
+	// bind
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
 		close(_sockfd);
@@ -154,15 +155,18 @@ int Socket::openClientSocket(const Server &servInstance)
 		close(_sockfd);
 		return (std::cout << "error setting client socket to nonblocking\n", -1);
 	}
+	
+	setSockaddr(_sockaddr);
+	_addrlen = sizeof(_sockaddr);
+	setAddrlen(_addrlen);
 
 	// attempt to connect
-	//_addrlen = sizeof(_sockaddr);
-	//if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
-	//{
-	//	close(_sockfd);
-	//	return (std::cout << "error connecting to server from client\n", -1);
-	//}
-	//std::cout << "\nclient connected successfully to port - " << servInstance.getPort() << " \n";
+	if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
+	{
+		close(_sockfd);
+		return (std::cout << "error connecting to server from client\n", -1);
+	}
+	std::cout << "\nclient connected successfully to port - " << servInstance.getPort() << " \n";
 
 	return 1;
 }

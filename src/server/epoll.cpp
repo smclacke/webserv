@@ -6,13 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 17:53:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 19:52:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
-/* constructors an' that */
+/* constructors */
 
 Epoll::Epoll() {}
 
@@ -27,7 +27,10 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 	if (this != &epoll)
 	{
 		this->_epfd = epoll._epfd;
-		// events...
+		this->_op = epoll._op;
+		this->_numEvents = epoll._numEvents;
+		// timeout
+		// event
 	}
 	return *this;
 }
@@ -39,7 +42,7 @@ Epoll::~Epoll() {}
 
 static std::string generateHttpResponse(const std::string &message)
 {
-	size_t	contentLength = message.size(); // lwngth
+	size_t	contentLength = message.size();
 	std::ostringstream	response;
 	response	<< "HTPP/1.1 200 OK\r\n"
 				<< "Content-Type: text/plain\r\n"
@@ -54,7 +57,7 @@ static std::string generateHttpResponse(const std::string &message)
 
 int		Epoll::initEpoll()
 {
-	_epfd = epoll_create(1); // 0
+	_epfd = epoll_create(1);
 	if (_epfd < 0)
 	{
 		std::cerr << "\nerror creating epoll instance\n";
@@ -74,12 +77,10 @@ int		Epoll::monitor(Socket &server, Socket &client)
 	socklen_t	serverAddrlen = server.getAddrlen();
 	struct sockaddr_in	serverAddr = server.getSockaddr();
 
+
 	// add server socket to epoll
-	//_event.events = EPOLLIN; // monitor incoming connections
-	//_event.data.fd = serverSockFd;
-	
 	struct epoll_event event;
-	event.events = EPOLLIN;
+	event.events = EPOLLIN; // monitor incoming events
 	event.data.fd = serverSockFd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, serverSockFd, &event) < 0)
 	{
@@ -105,7 +106,7 @@ int		Epoll::monitor(Socket &server, Socket &client)
 		{
 			if (events[i].data.fd == serverSockFd)
 			{
-				// accept new connection // LOOP here till the fully request has been received
+				// accept new connection // LOOP here till the full request has been received
 				serverAddrlen = server.getAddrlen();
 				serverAddr = server.getSockaddr();
 				int newConnection = accept(serverSockFd, (struct sockaddr *)&serverAddr, &serverAddrlen);
@@ -119,7 +120,7 @@ int		Epoll::monitor(Socket &server, Socket &client)
 				std::cout << "successfully made connection\n";
 
 				// set new connection socket to non-blocking
-				int	flag = fcntl(newConnection, F_GETFL, 0);
+				int	flag = fcntl(newConnection, F_GETFL, 0); // use server connection variable here?
 				fcntl(newConnection, F_SETFL, flag | O_NONBLOCK);
 
 				// add new connection to epoll instance
@@ -134,6 +135,7 @@ int		Epoll::monitor(Socket &server, Socket &client)
 			}
 			else
 			{
+				// !! here to me, there is a disconnect between clientserver here and in openclientsocket
 				// handle incoming data from client connection
 				int			clientSockFd = events[i].data.fd;
 				char		buffer[1024];
@@ -160,6 +162,7 @@ int		Epoll::monitor(Socket &server, Socket &client)
 				close(clientSockFd);
 				epoll_ctl(_epfd, EPOLL_CTL_DEL, clientSockFd, nullptr);
 			}
+			// what about closing and deleting serversockfd??
 		}
 	}
 	return 0; // success
