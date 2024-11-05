@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:19:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 13:59:03 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@
 #include <iostream> // for cout
 #include <cstdlib>	// for exit() + EXIT_FAILURE
 #include <cstdio>
+#include <memory> // shared pointers header
 
 // CPP containers
 #include <algorithm>

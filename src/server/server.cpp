@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:31:45 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 13:49:14 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ Server::Server(std::ifstream &file, int &line_n)
 
 Server::~Server()
 {
+	std::cout << "Hello i am the Server deconstructor" << std::endl;
 }
 
 /* member functions */

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:28:11 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 14:02:05 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
  */
 Webserv::Webserv(void)
 {
-	Server default_server;
+	auto default_server = std::make_shared<Server>();
 	_servers.push_back(default_server);
 }
 
@@ -28,7 +28,7 @@ Webserv::Webserv(std::string config)
 	std::cout << "config: " << config << std::endl;
 	if (config.empty())
 	{
-		Server default_server;
+		auto default_server = std::make_shared<Server>();
 		_servers.push_back(default_server);
 		return;
 	}
@@ -45,7 +45,7 @@ Webserv::Webserv(std::string config)
 			continue;
 		if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
 		{
-			Server nServer = Server(file, line_n);
+			auto nServer = std::make_shared<Server>(file, line_n);
 			_servers.push_back(nServer);
 			if (_servers.size() == 10)
 			{
@@ -61,6 +61,7 @@ Webserv::Webserv(std::string config)
 
 Webserv::~Webserv(void)
 {
+	std::cout << "Hello i am the Webserv deconstructor" << std::endl;
 }
 
 /* member functions */
@@ -71,33 +72,33 @@ void Webserv::start(void)
 
 /* setters */
 
-void Webserv::addServer(Server &server)
+void Webserv::addServer(std::shared_ptr<Server> server)
 {
 	_servers.push_back(server);
 }
 
 /* getters */
 
-std::vector<Server> &Webserv::getallServer()
+std::shared_ptr<Server> Webserv::getServer(size_t index)
 {
-	return (_servers);
+	return _servers[index];
+}
+
+std::vector<std::shared_ptr<Server>> &Webserv::getallServer()
+{
+	return _servers;
 }
 
 size_t Webserv::getServerCount(void) const
 {
-	return (_servers.size());
+	return _servers.size();
 }
 
-Server &Webserv::getServer(size_t index)
+std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
-	return (_servers.at(index));
-}
-
-Server &Webserv::getServer(std::string name)
-{
-	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const Server &server)
+	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
 						   {
-							   return server.getServerName() == name; // Assuming you have a method to get the server name
+							   return server->getServerName() == name; // Assuming you have a method to get the server name
 						   });
 	if (it != _servers.end())
 	{

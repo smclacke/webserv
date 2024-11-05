@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:59:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 14:03:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ class Server;
 class Webserv
 {
 private:
-	std::vector<Server> _servers;
+	std::vector<std::shared_ptr<Server>> _servers;
 
 public:
 	/* constructors */
@@ -33,13 +33,13 @@ public:
 	void start(void);
 
 	/* Setters */
-	void addServer(Server &server);
+	void addServer(std::shared_ptr<Server> server);
 
 	/* getters */
-	std::vector<Server> &getallServer();
+	std::shared_ptr<Server> getServer(size_t index);
+	std::shared_ptr<Server> getServer(std::string name);
+	std::vector<std::shared_ptr<Server>> &getallServer();
 	size_t getServerCount(void) const;
-	Server &getServer(size_t index);
-	Server &getServer(std::string name);
 };
 
 #endif /* WEBSERV_HPP */
