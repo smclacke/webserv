@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:44:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 13:28:11 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,16 @@ Webserv::Webserv(std::string config)
 		{
 			Server nServer = Server(file, line_n);
 			_servers.push_back(nServer);
+			if (_servers.size() == 10)
+			{
+				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
+				return;
+			}
 			continue;
 		}
 		else
 			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
-	(void)config;
 }
 
 Webserv::~Webserv(void)
