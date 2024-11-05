@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/29 17:51:38 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 15:12:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,35 +15,41 @@
 /**
  * @brief checks if the location brackets are correct
  */
-static void check_location_brackets(std::ifstream &file, std::string line, int *line_n)
+static void check_location_brackets(std::ifstream &file, std::string line, int &line_n)
 {
 	size_t pos = line.find("{");
 	if (pos != std::string::npos) // found {
 	{
 		while (std::getline(file, line))
 		{
-			(*line_n)++;
+			++line_n;
+			lineStrip(line);
+			if (line.empty())
+				continue;
 			if (line.find("{") != std::string::npos)
-				throw eConf("unexpected \"{\" found", (*line_n));
+				throw eConf("unexpected \"{\" found", line_n);
 			if (line.find("}") != std::string::npos)
 				return;
 		}
-		throw eConf("eof reached with no closing } for \"location\" keyword", (*line_n));
+		throw eConf("eof reached with no closing } for \"location\" keyword", line_n);
 	}
-	throw eConf("no opening bracket after \"location\" keyword", (*line_n));
+	throw eConf("no opening bracket after \"location\" keyword", line_n);
 }
 
 /**
  * @brief checks if the server brackets are correct.
  */
-static void check_server_brackets(std::ifstream &file, std::string line, int *line_n)
+static void check_server_brackets(std::ifstream &file, std::string line, int &line_n)
 {
 	size_t pos = line.find("{");  // check if the server bracket has a {
 	if (pos != std::string::npos) // found {
 	{
 		while (std::getline(file, line))
 		{
-			(*line_n)++;
+			++line_n;
+			lineStrip(line);
+			if (line.empty())
+				continue;
 			size_t pos = line.find("location");
 			if (pos != std::string::npos)
 			{
@@ -51,13 +57,13 @@ static void check_server_brackets(std::ifstream &file, std::string line, int *li
 				continue;
 			}
 			if (line.find("{") != std::string::npos)
-				throw eConf("unexpected \"{\" found", (*line_n));
+				throw eConf("unexpected \"{\" found", line_n);
 			if (line.find("}") != std::string::npos)
 				return;
 		}
-		throw eConf("eof reached with no closing } for \"server\" keyword", (*line_n));
+		throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
 	}
-	throw eConf("no opening bracket after \"server\" keyword", (*line_n));
+	throw eConf("no opening bracket after \"server\" keyword", line_n);
 }
 
 /** checks if every server and location block has an opening and a closing bracket */
@@ -80,19 +86,19 @@ void verifyInput(int ac, char **av)
 	int line_n = 0; // keeps track of the line_number for accurate error outputs
 	while (std::getline(file, line))
 	{
-		line_n++;
-		if (line.find('#') != std::string::npos)
-			line.erase(line.find('#'), std::string::npos);	  // erase # and what comes afer
-		line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // erase start whitespace
-		line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1); // erase back whitespace
-		if (line.empty())									  // skip empty lines
+		++line_n;
+		lineStrip(line);
+		if (line.empty()) // skip empty lines
 			continue;
 		if (line.find('}') != std::string::npos) // random closing bracket = bad
 			throw eConf("} bracket with no opening {", line_n);
-		size_t pos = line.find("server"); // check for server directive
-		if (pos != std::string::npos)	  // "server" keyword exists
+		size_t pos;
+		pos = line.find("Server");
+		if (pos == std::string::npos)
+			pos = line.find("server"); // check for server directive
+		if (pos != std::string::npos)  // "server" keyword exists
 		{
-			check_server_brackets(file, line.substr(pos + 6), (&line_n));
+			check_server_brackets(file, line.substr(pos + 6), line_n);
 			continue;
 		}
 		else

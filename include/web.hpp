@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:50:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 13:20:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -66,6 +66,8 @@
 #include "error.hpp"
 
 /* enums, defines and errors */
+struct s_location;
+
 enum class eSocket
 {
 	Client = 1,
@@ -73,7 +75,11 @@ enum class eSocket
 };
 
 /* parser */
+void lineStrip(std::string &line);
 void verifyInput(int ac, char **av);
+void findLocationDirective(std::string &line, int &line_n, s_location &loc);
+void findServerDirective(Server &serv, std::string &line, int line_n);
+s_location parseLocation(std::ifstream &file, std::string &line, int &line_n);
 
 /* server */
 
