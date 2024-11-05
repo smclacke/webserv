@@ -267,3 +267,86 @@ You could manage sending a request to the server from your client side by trigge
 Conclusion
 
 By consolidating everything into a single epoll instance, you can efficiently manage both server and client sockets in the same event loop. This can simplify your code and improve performance, especially when dealing with multiple connections. Just ensure your logic can differentiate between events coming from server and client sockets so that you handle them appropriately.
+
+
+// something else
+
+
+	// SOMETHING WEIRD AND CONFUSING
+	//while (true)
+	//{
+	//	//_events[MAX_EVENTS];
+	//	_numEvents = epoll_wait(_epfd, events, MAX_EVENTS, -1);
+		
+	//	for (int i = 0; i < _numEvents; ++i)
+	//	{
+	//		if (_events[i].data.fd == _sockfd)
+	//		{	
+	//			// accept connection
+	//			_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, &_addrlen);
+	//			if (_connection < 0)
+	//			{
+	//				if (errno == EWOULDBLOCK || errno == EAGAIN)
+	//					continue ;
+	//				std::cerr << "error accepting connection\n";
+	//				continue ;
+	//			}
+	//			// TODO: set connection to non-blocking
+
+	//			// add client to epoll (need to check this in connection with opening the client socket)
+	//			_clientEvent.events = EPOLLIN;
+	//			_clientEvent.data.fd = _sockfd; // client fd - how to separate ...
+	//			epoll_ctl(_epfd, EPOLL_CTL_ADD, _sockfd, &_clientEvent);
+				
+	//		}
+	//		else	
+	//			// handle data from client socket
+	//			// client_fd = events[i].data.fd;
+	//			// read and process data
+	//	}
+	//}
+
+		// FROM SERVER SOCKET FUNCTION
+	// epoll comes in here | moving while loop into epoll.monitoring method
+	//while (true)
+	//{	
+	//	// accept connection
+	//	_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, &_addrlen);
+	//	if (_connection < 0)
+	//	{
+	//		if (errno == EWOULDBLOCK || errno == EAGAIN)
+	//			continue ;
+	//		std::cerr << "error accepting connection\n";
+	//		continue ;
+	//	}
+
+	//	std::cout << "successfully made connection\n";
+
+	//	// read from the connection
+	//	_bufferSize = sizeof(_buffer);
+	//	while ((_bytesRead = read(_connection, _buffer, _bufferSize - 1)) > 0)
+	//	{
+	//		_buffer[_bytesRead] = '\0';
+	//		_request += _buffer;
+	//		if (_request.find("\r\n\r\n") != std::string::npos)
+	//			break ; // end of HTTP request
+	//	}
+		
+	//	if (_bytesRead < 0 && errno != EWOULDBLOCK && errno != EAGAIN)
+	//		std::cerr << "error reading from connection\n";
+
+	//	if (!_request.empty())
+	//	{
+	//		std::cout << "received request: " << _request << "\n";
+
+	//		// send HTTP response
+	//		std::string	_response = generateHttpResponse(std::string("get me on your browser"));
+	//		if (send(_connection, _response.c_str(), _response.size(), 0) < 0)
+	//			std::cerr << "error snding response to client\n";
+	//	}
+	//	else
+	//		std::cout << "received empty request\n";
+
+	//	close(_connection);
+	//}
+	

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/04 16:12:55 by eugene        ########   odam.nl         */
+/*   Updated: 2024/11/05 15:05:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 	if (this != &epoll)
 	{
 		this->_epfd = epoll._epfd;
-		//this->_sockfd = epoll._sockfd;
+		// events...
 	}
 	return *this;
 }
@@ -37,100 +37,111 @@ Epoll::~Epoll() {}
 
 /* methods */
 
-void	Epoll::initEpoll()
+static std::string generateHttpResponse(const std::string &message)
 {
-	//_epfd = epoll_create(0);
-	//_event->events = EPOLLIN;
-	//_event->data.fd = _sockfd;
-	//epoll_ctl(_epfd, EPOLL_CTL_ADD, _sockfd, &_event);
-}
-// Server class has client and server sockets, use those?
-void	Epoll::monitor()
-{
-	//while (true)
-	//{
-	//	//_events[MAX_EVENTS];
-	//	_numEvents = epoll_wait(_epfd, events, MAX_EVENTS, -1);
-		
-	//	for (int i = 0; i < _numEvents; ++i)
-	//	{
-	//		if (_events[i].data.fd == _sockfd)
-	//		{	
-	//			// accept connection
-	//			_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, &_addrlen);
-	//			if (_connection < 0)
-	//			{
-	//				if (errno == EWOULDBLOCK || errno == EAGAIN)
-	//					continue ;
-	//				std::cerr << "error accepting connection\n";
-	//				continue ;
-	//			}
-	//			// TODO: set connection to non-blocking
-
-	//			// add client to epoll (need to check this in connection with opening the client socket)
-	//			_clientEvent.events = EPOLLIN;
-	//			_clientEvent.data.fd = _sockfd; // client fd - how to separate ...
-	//			epoll_ctl(_epfd, EPOLL_CTL_ADD, _sockfd, &_clientEvent);
-				
-	//		}
-	//		else	
-	//			// handle data from client socket
-	//			// client_fd = events[i].data.fd;
-	//			// read and process data
-	//	}
-	//}
-}
-
-
-// CHECK NOTES THEN MOVE
-
-/**
- * monitoring serveral sockets
- * waits for changing state or changing level for each socket monitored
- * handles lots of socket descriptors
- * 
- * contains internal structure: interest list (corresponding to all FDs monitors), a ready list (corresponding to FDs ready for I/O)
- * 
- * 
- * ---- functions ----
- * 
- * creates new epoll instance and reutrns a descriptor
- * < int		epoll_create(int nb); >
- * 
- * 
- * changes the behaviour of epoll instance
- * epfd: descriptor of epoll instance created
- * op: operation wanted on epoll structure (e.g. add new fd in interest list, modify/delete)
- * fd: concerned descriptor
- * event: filled with concerned fd and flags to apply to fd
- * < int		epoll_ctl(int epfd, int op, int fd, struct epoll_event *event); >
- * 
- * 
- * 
- * waits for event on any descriptor in interest list
- * funtion will block until - fd delivers event | call is interrupted by signal handler | timeout expires
- * epfd: descriptor of epoll instance created
- * maxevents: max of events returned
- * events: return info from ready list
- * < int		epoll_wait(int epfd, struct epoll_event *events, int maxevents, int timeout); >
- * 
- * 
- * 
- */
-
-// change close sockets, think it happens all here
-
-//void	Socket::initEpoll(Socket &sock)
-//{
-//	(void) sock;
-//	// create socketEpoll(sock)
-
-//	// while waitEpoll != err
+	size_t	contentLength = message.size();
+	std::ostringstream	response;
+	response	<< "HTPP/1.1 200 OK\r\n"
+				<< "Content-Type: text/plain\r\n"
+				<< "Content-Length: " << contentLength << "\r\n"
+				<< "Connection : close\r\n"
+				<< "\r\n"
+				<< message;
 	
-//	// loop getsocketnumber
-//		// close getsocket
-//		// epollctl(getepollfd, get socket etc...)
-//		// close sock getepollfd
+	return response.str();
+}
 
-//}
 
+int		Epoll::initEpoll()
+{
+	_epfd = epoll_create(1);
+	if (_epfd < 0)
+	{
+		std::cerr << "\n\n222: error creating epoll instance\n";
+		// close sockets ? + other cleaning up
+		// throw here? or in webser constructor?
+		return -1;
+	}
+	std::cout << "\n\n222: successfully created Epoll instance\n";
+	return 0; // success
+}
+
+
+int		Epoll::monitor(const Socket &client, const Socket &server)
+{
+	int		serverSockFd = server.getSockFd();
+	socklen_t	serverAddrlen = server.getAddrlen();
+	struct sockaddr_in	serverAddr = server.getSockaddr();
+
+
+	// add server socket to epoll
+	_event.events = EPOLLIN; // monitor incoming connections
+	_event.data.fd = serverSockFd;
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, serverSockFd, &_event) < 0)
+	{
+		std::cerr << "\n\n111: error adding server socket to epoll\n";
+		// clean? throw?
+		return -1;
+	}
+	std::cout << "\n\n111: successfully added server socket to epoll\n";
+
+	while (true)
+	{
+		//_events[10]; // array holding events
+		int		nfds = epoll_wait(_epfd, _events, 10, -1); // wait for events
+
+		for (int i = 0; i < nfds; ++i)
+		{
+			if (_events[i].data.fd == serverSockFd)
+			{
+				// accept new connection
+				int newConnection = accept(serverSockFd, (struct sockaddr *)&serverAddr, &serverAddrlen);
+				if (newConnection < 0)
+				{
+					std::cerr << "error accepting new connection\n";
+					continue ;
+				}
+				std::cout << "successfully made connection\n";
+				
+				// set new connection socket to non-blocking
+				int	flag = fcntl(newConnection, F_GETFL, 0);
+				fcntl(newConnection, F_SETFL, flag | O_NONBLOCK);
+				
+				// add new connection to epoll instance
+				_event.events = EPOLLIN | EPOLLET; // edge-triggered (wit?)
+				_event.data.fd = newConnection;
+				if (epoll_ctl(_epfd, EPOLL_CTL_ADD, newConnection, &_event) < 0)
+				{
+					std::cerr << "error adding connection to epoll\n";
+					close(newConnection);
+				}
+			}
+			else
+			{
+				// handle incoming data from client connection
+				int		clientSockFd = client.getSockFd(); // why not this?
+				//int			clientSockFd = _events[i].data.fd;
+				char		buffer[1024];
+				ssize_t 	bytesRead = read(clientSockFd, buffer, sizeof(buffer) - 1);
+				if (bytesRead > 0)
+				{
+					buffer[bytesRead] = '\0';
+					std::cout << "received request: " << buffer << "\n";
+					
+					// send HTTP response
+					std::string	response = generateHttpResponse("here, have a response");
+					send(clientSockFd, response.c_str(), response.size(), 0);
+				}
+				else
+				{
+					if (bytesRead < 0)
+						std::cerr << "error reading from client\n";
+					close(clientSockFd);
+					epoll_ctl(_epfd, EPOLL_CTL_DEL, clientSockFd, nullptr);
+				}
+			}
+		}
+	}
+	close(_epfd); // here? maybe not cause many servers, do this somewhere else
+	return 0; // success
+}

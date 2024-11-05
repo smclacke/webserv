@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:24:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 15:03:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ Server::Server(void)
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
-	Socket _clientSocket(*this, eSocket::Client);
 	Socket _serverSocket(*this, eSocket::Server);
+	Socket _clientSocket(*this, eSocket::Client);
 }
 
 Server &Server::operator=(const Server &rhs)
