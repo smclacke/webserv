@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/04 15:27:34 by eugene        ########   odam.nl         */
+/*   Updated: 2024/11/05 13:12:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,10 @@ Webserv::Webserv(std::string config)
 	// parse config file
 	// if _server.size == 0 --> config file was empty --> add defualt server
 	(void)config;
+
+	// create epoll
+	// assign client_ + server sckets - this->_clientSocket + this->_sevrerSocket
+	// monitor loop
 }
 
 Webserv::~Webserv(void)
@@ -41,12 +45,6 @@ Webserv::~Webserv(void)
 }
 
 /* member functions */
-
-void Webserv::run()
-{
-	_epoll.initEpoll();
-	_epoll.monitor();
-}
 
 
 /* setters */

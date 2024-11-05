@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/04 16:14:26 by eugene        ########   odam.nl         */
+/*   Updated: 2024/11/05 13:08:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ int main(int argc, char **argv)
 			if (argc == 2)
 				std::string config = std::string(argv[1]);
 			Webserv wserv(config);
-			wserv.run();
+			//wserv.run();
 		}
 		catch (eConf &e)
 		{
