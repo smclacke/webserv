@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:31:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/01 16:07:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,52 +19,52 @@
 #include <iostream>
 #include "socket.hpp"
 
-/**
- * @note allowed_methods, GET POST DELETE are all default turned on
- * if 1 is specified in the config file only that one will be turned on;
- */
+enum class eHttpMethod
+{
+	GET,
+	POST,
+	DELETE,
+	PUT,
+	HEAD,
+	OPTIONS,
+	PATCH,
+	INVALID
+};
 
-// std::map<std::string, std::string> serverConfig = {
-// 	{"listen", ""},
-// 	{"server_name", ""},
-// 	{"client_max_body_size", ""},
-// 	{"error_page", ""},
-// 	{"Location", ""}};
+const std::map<eHttpMethod, std::string> HttpMethodToString = {
+	{eHttpMethod::GET, "GET"},
+	{eHttpMethod::POST, "POST"},
+	{eHttpMethod::DELETE, "DELETE"},
+	{eHttpMethod::PUT, "PUT"},
+	{eHttpMethod::HEAD, "HEAD"},
+	{eHttpMethod::OPTIONS, "OPTIONS"},
+	{eHttpMethod::PATCH, "PATCH"},
+};
 
-// std::map<std::string, std::string> locationConfig = {
-// 	{"allowed_methods", ""},
-// 	{"upload_dir", ""},
-// 	{"client_max_body_size", ""},
-// 	{"root", ""},
-// 	{"autoindex", ""},
-// 	{"index", ""},
-// 	{"cgi_path", ""},
-// 	{"cgi_ext", ""}};
-
-// location / files
-// {
-// 	autoindex on;
-// 	allowed_methods GET;
-// 	root / var / www / files;
-// 	autoindex
-// 				upload_dir /
-// 			var / uploads -
-// 		local;
-// }
+const std::map<std::string, eHttpMethod> StringToHttpMethod = {
+	{"GET", eHttpMethod::GET},
+	{"POST", eHttpMethod::POST},
+	{"DELETE", eHttpMethod::DELETE},
+	{"PUT", eHttpMethod::PUT},
+	{"HEAD", eHttpMethod::HEAD},
+	{"OPTIONS", eHttpMethod::OPTIONS},
+	{"PATCH", eHttpMethod::PATCH},
+};
 
 struct s_location
 {
-	std::string path;
-	std::string root;
-	size_t client_body_buffer_size;
-	bool allow_GET;
-	bool allow_POST;
-	bool allow_DELETE;
-	bool autoindex;
-	std::string upload_dir;
-	std::string index;
-	std::string cgi_ext;
-	std::string cgi_path;
+	std::string path = "/";
+	std::string root = "/var/www/html";		 // Default to standard web root
+	size_t client_body_buffer_size = 8192;	 // Default buffer size, 8 KB
+	std::list<eHttpMethod> allowed_methods;	 // Default: will be set to GET, POST, DELETE in parseLocation if empty
+	std::string redir_url = "";				 // No redirection by default
+	int redirect_status = 0;				 // No redirection status by default (0 indicates no redirect)
+	std::list<std::string> index_files;		 // Standard index files
+	bool autoindex = false;					 // Directory listing off by default
+	std::string upload_dir = "/tmp/uploads"; // Default upload directory
+	std::string index = "index.html";		 // Primary index file if directory is requested
+	std::string cgi_ext = "";				 // No default CGI extension
+	std::string cgi_path = "";				 // No default CGI path
 };
 
 struct s_ePage
@@ -80,7 +80,7 @@ private:
 	std::string _host;
 	int _port;
 	std::vector<s_ePage> _errorPage;
-	size_t _clientMaxBodySize; // in megaBytes
+	size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
 	std::vector<s_location> _location;
 	Socket _serverSocket;
 	Socket _clientSocket;
@@ -88,16 +88,22 @@ private:
 public:
 	Server(void);
 	Server &operator=(const Server &rhs);
-	Server(std::ifstream server_block);
+	Server(std::ifstream &file, int &line_n);
 	~Server(void);
+
+	/* Member functions */
+	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 
 	/* add */
 	void addLocation(s_location route);
 	void addErrorPage(s_ePage errorPage);
 
-	/* init */
-	void initListen(std::string hostPort);
+	/* directives */
+	void parseServerName(std::stringstream &ss, int line_n);
+	void parseListen(std::stringstream &ss, int line_n);
+	void parseErrorPage(std::stringstream &ss, int line_n);
+	void parseClientMaxBody(std::stringstream &ss, int line_n);
 
 	/* setters */
 	void setServerName(std::string serverName);
