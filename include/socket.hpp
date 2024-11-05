@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 20:36:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 21:43:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ class Socket
 		int						_reuseaddr; // for re-binding to port while preivous
 											// connection is still in TIME_WAIT state
 		int						_flags; // setting nonblocking on the socket
+		std::string				_host;
 
 	public:
 		Socket();
@@ -46,16 +47,18 @@ class Socket
 		void					closeSocket();
 
 		/* getters */
-		int						getSockFd() const;
+		int						getSockfd() const;
 		int						getConnection() const;
 		struct sockaddr_in		getSockaddr() const;
 		socklen_t				getAddrlen() const;
+		std::string				getHost() const;
 
 		/* setters */
-		void					setSockFd(int fd);
+		void					setSockfd(int fd);
 		void					setNewConnection(int &connection);
 		void					setSockaddr(struct sockaddr_in &sockaddr);
 		void					setAddrlen(socklen_t &addrlen);
+		void					setHost(std::string host);
 
 };
 
