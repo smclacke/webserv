@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 16:10:51 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 13:31:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,7 +113,7 @@ void Server::printServer(void)
 	std::cout << "Server Name: " << _serverName << std::endl;
 	std::cout << "Host: " << _host << std::endl;
 	std::cout << "Port: " << _port << std::endl;
-	std::cout << "Client Max Body Size: " << _clientMaxBodySize << "MB" << std::endl;
+	std::cout << "Client Max Body Size: " << _clientMaxBodySize << "byte" << std::endl;
 	std::cout << "Error Pages:" << _errorPage.size() << std::endl;
 	for (const auto &errorPage : _errorPage)
 	{
