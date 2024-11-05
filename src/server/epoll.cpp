@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 19:52:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 20:30:32 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,12 +30,11 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 		this->_op = epoll._op;
 		this->_numEvents = epoll._numEvents;
 		// timeout
-		// event
 	}
 	return *this;
 }
 
-Epoll::~Epoll() {}
+Epoll::~Epoll() {} // delete epoll socket stuff?
 
 
 /* methods */
@@ -54,84 +53,85 @@ static std::string generateHttpResponse(const std::string &message)
 	return response.str();
 }
 
-
-int		Epoll::initEpoll()
+void		Epoll::initEpoll()
 {
 	_epfd = epoll_create(1);
 	if (_epfd < 0)
 	{
-		std::cerr << "\nerror creating epoll instance\n";
-		// close sockets ? + other cleaning up
-		// throw here? or in webser constructor?
-		return -1;
+		// close sockets ? + other cleaning up?
+		throw std::runtime_error("Error creating Epoll instance\n");
 	}
-	std::cout << "\nsuccessfully created Epoll instance\n";
-	return 0; // success
+	std::cout << "Successfully created Epoll instance\n";
 }
 
-
-int		Epoll::monitor(Socket &server, Socket &client)
+static struct epoll_event addSocketEpoll(int sockfd, int epfd)
 {
-	int		serverSockFd = server.getSockFd();
+	struct epoll_event	event;
+	event.events = EPOLLIN;
+	event.data.fd = sockfd;
+	
+	if (epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
+	{
+		throw std::runtime_error("Error adding server socket to epoll\n");
+	}
+	std::cout << "Successfully added server socket to epoll\n";
+	return event;
+}
 
+static void		addConnectionEpoll(int connection, int epfd, struct epoll_event event)
+{
+	event.events = EPOLLIN;
+	event.data.fd = connection;
+	if (epoll_ctl(epfd, EPOLL_CTL_ADD, connection, &event) < 0)
+	{
+		close(connection);
+		throw std::runtime_error("Error adding connection to epoll\n");
+	}
+	std::cout << "Successfully added connection to epoll\n";
+}
+
+static	void	setNonBlocking(int connection)
+{
+	int	flag = fcntl(connection, F_GETFL, 0);
+	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
+}
+
+void		Epoll::monitor(Socket &server, Socket &client)
+{
+	int		serverSockfd = server.getSockFd();
 	socklen_t	serverAddrlen = server.getAddrlen();
 	struct sockaddr_in	serverAddr = server.getSockaddr();
 
-
 	// add server socket to epoll
-	struct epoll_event event;
-	event.events = EPOLLIN; // monitor incoming events
-	event.data.fd = serverSockFd;
-	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, serverSockFd, &event) < 0)
-	{
-		std::cerr << "\nerror adding server socket to epoll\n";
-		// clean? throw?
-		return -1;
-	}
-	std::cout << "\nsuccessfully added server socket to epoll\n";
-
+	struct epoll_event event = addSocketEpoll(serverSockfd, _epfd);
 
 	struct epoll_event events[10];
+
 	while (true)
 	{
 		int numEvents = epoll_wait(_epfd, events, 10, -1); // wait for events
-		perror("");
-		if (numEvents == -1)
-		{
-			std::cout << "fucked\n";
-			exit(EXIT_FAILURE);
-		}
 
 		for (int i = 0; i < numEvents; ++i)
 		{
-			if (events[i].data.fd == serverSockFd)
+			if (events[i].data.fd == serverSockfd)
 			{
 				// accept new connection // LOOP here till the full request has been received
 				serverAddrlen = server.getAddrlen();
 				serverAddr = server.getSockaddr();
-				int newConnection = accept(serverSockFd, (struct sockaddr *)&serverAddr, &serverAddrlen);
+				int newConnection = accept(serverSockfd, (struct sockaddr *)&serverAddr, &serverAddrlen);
 				server.setNewConnection(newConnection);
 
 				if (newConnection < 0)
 				{
-					std::cerr << "error accepting new connection\n";
+					std::cerr << "Error accepting new connection\n";
 					continue ;
 				}
-				std::cout << "successfully made connection\n";
+				std::cout << "Successfully made connection\n";
 
-				// set new connection socket to non-blocking
-				int	flag = fcntl(newConnection, F_GETFL, 0); // use server connection variable here?
-				fcntl(newConnection, F_SETFL, flag | O_NONBLOCK);
+				setNonBlocking(newConnection);
+				addConnectionEpoll(newConnection, _epfd, event);
 
-				// add new connection to epoll instance
-				event.events = EPOLLIN;
-				event.data.fd = newConnection;
-				if (epoll_ctl(_epfd, EPOLL_CTL_ADD, newConnection, &event) < 0)
-				{
-					std::cerr << "error adding connection to epoll\n";
-					close(newConnection);
-				}
-				std::cout << "successfully added connection to epoll\n";
+				//if ((connect()))
 			}
 			else
 			{
@@ -149,10 +149,9 @@ int		Epoll::monitor(Socket &server, Socket &client)
 				}
 				if (bytesRead < 0)
 				{
-					std::cerr << "error reading from client\n";
 					close(clientSockFd);
 					epoll_ctl(_epfd, EPOLL_CTL_DEL, clientSockFd, nullptr);
-					return -1;
+					throw std::runtime_error("Error reading from client\n");
 				}
 
 				std::cout << "received reuqest: " << request << "\n";
@@ -162,8 +161,7 @@ int		Epoll::monitor(Socket &server, Socket &client)
 				close(clientSockFd);
 				epoll_ctl(_epfd, EPOLL_CTL_DEL, clientSockFd, nullptr);
 			}
-			// what about closing and deleting serversockfd??
 		}
 	}
-	return 0; // success
+	// what about closing and deleting serversockfd??
 }

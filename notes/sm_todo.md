@@ -1,5 +1,11 @@
 
 
+1) check with julius how we're handling try/catch so i can just do it all now correctly (will main catch any throw?)
+
+2) stuff in main - figure out with julius (multiple server monitoring etc //server[1]...)
+
+-----------------------------------------------------------------
+
 - add other variables to socket struct, clean all socket stuff
 
 

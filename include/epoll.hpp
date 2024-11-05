@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 19:47:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 20:20:42 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,23 +27,20 @@ class Epoll
 		int					_op;
 		int					_numEvents;
 		int					_timeout;
-		//struct epoll_event	_event;
 		
-
 	public:
 		Epoll();
 		Epoll(const Epoll &copy);
 		Epoll &operator=(const Epoll &epoll);
 		~Epoll();
 
+		/* methods */
+		void		initEpoll();
+		void		monitor(Socket &client, Socket &server);
+		
+		/* getters */
 
-		///* getters */
-
-		///* setters */
-
-		///* methods */
-		int		initEpoll();
-		int		monitor(Socket &client, Socket &server);
+		/* setters */
 
 };
 

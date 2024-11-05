@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 19:45:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 20:37:58 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,22 +20,18 @@ Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), 
 {
 	if (type == eSocket::Server)
 	{
-		if (openServerSocket(servInstance) < 0)
-			std::cout << "\nopen server socket error\n\n"; // add throw
-		else
-			std::cout << "\nserver socket setup successful\n\n";
+		openServerSocket(servInstance);
+		std::cout << "Server socket setup successful\n\n";
 
 	}
 	else if (type == eSocket::Client)
 	{
-		if (openClientSocket(servInstance) < 0)
-			std::cout << "\nopen client socket error\n\n"; // add throw
-		else
-			std::cout << "\nclient socket setup successful\n\n";
+		openClientSocket(servInstance);
+		std::cout << "Client socket setup successful\n\n";
 
 	}
-	//else
-		// throw - incorrect contructor parameter
+	else
+		throw std::runtime_error("Error invalid socket type argument passed\n");
 }
 
 Socket::Socket(const Socket &copy)
@@ -87,24 +83,23 @@ void Socket::closeSocket()
 
 // A process that waits passively for requests from clients, processes the work specified,
 // and returns the result to the client that originated the request.
-int	Socket::openServerSocket(const Server &servInstance)
+void		Socket::openServerSocket(const Server &servInstance)
 {
-
 	// create listening socket
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		return (std::cout << "error socketing sock\n", -1);
+		throw std::runtime_error("Error socketing sock\n");
 
 	// set to non-blocking socket mode
 	_flags = fcntl(_sockfd, F_GETFL, 0);
 	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		close(_sockfd);
-		return (std::cout << "error setting nonblocking\n", -1);
+		throw std::runtime_error("Error setting nonblocking\n");
 	}
 
 	// to re-bind without TIME_WAIT issues
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
-		return (std::cout << "error setsockopt sock\n", -1);
+		throw std::runtime_error("Error setsockopt sock\n");
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
@@ -119,28 +114,26 @@ int	Socket::openServerSocket(const Server &servInstance)
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
 		close(_sockfd);
-		return (std::cout << "error binding sock\n", -1);
+		throw std::runtime_error("Error binding sock\n");
 	}
 
 	// listen for incoming connections, (set up queue for incoming connections)
 	if (listen(_sockfd, _maxConnections) < 0)
 	{
 		close(_sockfd);
-		return (std::cerr << "error listening for connections\n", -1);
+		throw std::runtime_error("Error listening for connections\n");
 	}
-	std::cout << "\nlistening successfully on port - " << servInstance.getPort() << " \n";
+	std::cout << "Listening successfully on port - " << servInstance.getPort() << " \n";
 
-	return 1;
 }
 
 
-// A process that initiates a service request.
-// connect to server sockt instead of bind
-int Socket::openClientSocket(const Server &servInstance)
+// A process that initiates a service request
+void 		Socket::openClientSocket(const Server &servInstance)
 {
 	// create client socket
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		return (std::cout << "error socketing sock\n", -1);
+		throw std::runtime_error("Error socketing sock\n");
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
@@ -153,22 +146,21 @@ int Socket::openClientSocket(const Server &servInstance)
 	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		close(_sockfd);
-		return (std::cout << "error setting client socket to nonblocking\n", -1);
+		throw std::runtime_error("Error setting client socket to nonblocking\n");
 	}
-	
+
 	setSockaddr(_sockaddr);
 	_addrlen = sizeof(_sockaddr);
 	setAddrlen(_addrlen);
 
 	// attempt to connect
-	if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
-	{
-		close(_sockfd);
-		return (std::cout << "error connecting to server from client\n", -1);
-	}
-	std::cout << "\nclient connected successfully to port - " << servInstance.getPort() << " \n";
+	//if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
+	//{
+	//	close(_sockfd);
+	//	return (std::cout << "error connecting to server from client\n", -1);
+	//}
+	//std::cout << "\nclient connected successfully to port - " << servInstance.getPort() << " \n";
 
-	return 1;
 }
 
 

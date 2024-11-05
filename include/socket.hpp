@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 16:57:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/05 20:36:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,10 @@ class Socket
 		Socket &operator=(const Socket &Socket);
 		~Socket();
 
+		/* methods */
+		void					openClientSocket(const Server &serInstance);
+		void					openServerSocket(const Server &serInstance);
+		void					closeSocket();
 
 		/* getters */
 		int						getSockFd() const;
@@ -48,15 +52,11 @@ class Socket
 		socklen_t				getAddrlen() const;
 
 		/* setters */
-		void			setSockFd(int fd);
-		void			setNewConnection(int &connection);
-		void			setSockaddr(struct sockaddr_in &sockaddr);
-		void			setAddrlen(socklen_t &addrlen);
+		void					setSockFd(int fd);
+		void					setNewConnection(int &connection);
+		void					setSockaddr(struct sockaddr_in &sockaddr);
+		void					setAddrlen(socklen_t &addrlen);
 
-		/* methods */
-		int				openClientSocket(const Server &serInstance);
-		int				openServerSocket(const Server &serInstance);
-		void			closeSocket();
 };
 
 #endif /* SOCKET_HPP */
