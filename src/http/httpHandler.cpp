@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:10:15 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 17:19:49 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -136,7 +136,7 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 		return (generateHttpResponse(eHttpStatusCode::BadRequest));
 
 	if (version != "HTTP/1.1")
-		return (generateHttpResponse(eHttpStatusCode::HTTPVersionNotSupported);
+		return (generateHttpResponse(eHttpStatusCode::HTTPVersionNotSupported));
 	// Parse the request line
 	eHttpMethod method = _server.allowedHttpMethod(methodstring);
 	if (method == eHttpMethod::INVALID)
@@ -149,41 +149,41 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	std::string path = "";
 	for (const auto &location : _server.getLocation())
 	{
-			if (uri.starts_with(location.path)) // Check if the URI starts with the location path
+		if (uri.compare(0, location.path.length(), location.path) == 0) // Check if the URI starts with the location path
+		{
+			loc = location;
+			locationFound = true;
+			path = loc.root + uri;
+			if (!loc.cgi_path.empty()) // Check if CGI path is defined
 			{
-				loc = location;
-				locationFound = true;
-				path = loc.root + uri;
-				if (!loc.cgi_path.empty()) // Check if CGI path is defined
-				{
-					if (uri.ends_with(location.cgi_ext) &&
-						uri.length() > location.cgi_ext.length())
-					{ // Check if the URI matches the CGI extension
-						// Handle CGI request
-						cgi = true;
-						path = location.cgi_path;
-						if (!std::ifstream(path))
-							return (generateHttpResponse(eHttpStatusCode::NotFound));
-					}
+				if (uri.compare(uri.length() - location.cgi_ext.length(), location.cgi_ext.length(), location.cgi_ext) == 0 &&
+					uri.length() > location.cgi_ext.length())
+				{ // Check if the URI matches the CGI extension
+					// Handle CGI request
+					cgi = true;
+					path = location.cgi_path;
+					if (!std::ifstream(path))
+						return (generateHttpResponse(eHttpStatusCode::NotFound));
 				}
-				break; // relevant location found
 			}
+			break; // relevant location found
+		}
 	}
 	if (cgi == true)
 	{
-			// call cgi function
+		// call cgi function
 	}
 	if (locationFound) // a non cgi call
 	{
-			if (!std::ifstream(path))
-				return (generateHttpResponse(eHttpStatusCode::NotFound));
-			// call request function with path and pass location
+		if (!std::ifstream(path))
+			return (generateHttpResponse(eHttpStatusCode::NotFound));
+		// call request function with path and pass location
 	}
 	else // non cgi and no relevant location - check if it exists anyway as full uri
 	{
-			if (!std::ifstream(uri))
-				return (generateHttpResponse(eHttpStatusCode::NotFound));
-			// call request
+		if (!std::ifstream(uri))
+			return (generateHttpResponse(eHttpStatusCode::NotFound));
+		// call request
 	}
 
 	// do something with uri? -> check for .cgi extension? check for existing path?
@@ -197,7 +197,7 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	std::string header;
 	while (std::getline(ss, header) && !header.empty())
 	{
-			std::cout << "Header: " << header << std::endl;
+		std::cout << "Header: " << header << std::endl;
 	}
 }
 
