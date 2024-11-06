@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/06 15:15:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 17:10:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #include "../../include/server.hpp"
 #include "../../include/error.hpp"
 #include <unordered_map>
+#include <string>
 
 /* constructor and deconstructor */
 
@@ -119,47 +120,84 @@ const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
 
 std::string httpHandler::parseResponse(const std::string &httpRequest)
 {
-	try
+
+	std::istringstream ss(httpRequest);
+	std::string requestLine;
+	const std::unordered_map<std::string, std::string> httpHeaders;
+
+	// Get the request line
+	std::getline(ss, requestLine);
+	std::cout << "Request Line: " << requestLine << std::endl;
+
+	/* handle request line -> to be turned into seperate function*/
+	std::istringstream requestss(requestLine);
+	std::string methodstring, uri, version;
+	if (!(requestss >> methodstring >> uri >> version))
+		return (generateHttpResponse(eHttpStatusCode::BadRequest));
+
+	if (version != "HTTP/1.1")
+		return (generateHttpResponse(eHttpStatusCode::HTTPVersionNotSupported);
+	// Parse the request line
+	eHttpMethod method = _server.allowedHttpMethod(methodstring);
+	if (method == eHttpMethod::INVALID)
+		return (generateHttpResponse(eHttpStatusCode::MethodNotAllowed));
+
+	// Find the relevant location for the URI
+	s_location loc;
+	bool locationFound = false;
+	bool cgi = false;
+	std::string path = "";
+	for (const auto &location : _server.getLocation())
 	{
-
-		std::istringstream ss(httpRequest);
-		std::string requestLine;
-		const std::unordered_map<std::string, std::string> httpHeaders;
-
-		// Get the request line
-		std::getline(ss, requestLine);
-		std::cout << "Request Line: " << requestLine << std::endl;
-
-		std::istringstream requestss(requestLine);
-		std::string methodstring, uri, version;
-		if (!(requestss >> methodstring >> uri >> version))
-		{
-			throw httpError("HTTP requesst line unexpected format: " + requestLine, eHttpStatusCode::BadRequest);
-		}
-
-		// Parse the request line
-		eHttpMethod method = _server.allowedHttpMethod(methodstring);
-		if (method == eHttpMethod::INVALID)
-			return (generateHttpResponse(eHttpStatusCode::MethodNotAllowed));
-		std::string method, uri, version;
-		std::istringstream requestLineStream(requestLine);
-
-		std::cout << "Method: " << methodstring << std::endl;
-		std::cout << "URI: " << uri << std::endl;
-		std::cout << "Version: " << version << std::endl;
-
-		// Read headers
-		std::string header;
-		while (std::getline(ss, header) && !header.empty())
-		{
-
-			std::cout << "Header: " << header << std::endl;
-		}
+			if (uri.starts_with(location.path)) // Check if the URI starts with the location path
+			{
+				loc = location;
+				locationFound = true;
+				path = loc.root + uri;
+				if (!loc.cgi_path.empty()) // Check if CGI path is defined
+				{
+					if (uri.ends_with(location.cgi_ext) &&
+						uri.length() > location.cgi_ext.length())
+					{ // Check if the URI matches the CGI extension
+						// Handle CGI request
+						cgi = true;
+						path = location.cgi_path;
+						if (!std::ifstream(path))
+							return (generateHttpResponse(eHttpStatusCode::NotFound));
+					}
+				}
+				break; // relevant location found
+			}
 	}
-	catch (httpError &e)
+	if (cgi == true)
 	{
-		std::cerr << "HTTP request error: " << e.what() << std::endl;
-		return (generateHttpResponse(e.code()));
+			// call cgi function
+	}
+	if (locationFound) // a non cgi call
+	{
+			if (!std::ifstream(path))
+				return (generateHttpResponse(eHttpStatusCode::NotFound));
+			// call request function with path and pass location
+	}
+	else // non cgi and no relevant location - check if it exists anyway as full uri
+	{
+			if (!std::ifstream(uri))
+				return (generateHttpResponse(eHttpStatusCode::NotFound));
+			// call request
+	}
+
+	// do something with uri? -> check for .cgi extension? check for existing path?
+	std::istringstream requestLineStream(requestLine);
+
+	std::cout << "Method: " << methodstring << std::endl;
+	std::cout << "URI: " << uri << std::endl;
+	std::cout << "Version: " << version << std::endl;
+
+	// Read headers
+	std::string header;
+	while (std::getline(ss, header) && !header.empty())
+	{
+			std::cout << "Header: " << header << std::endl;
 	}
 }
 

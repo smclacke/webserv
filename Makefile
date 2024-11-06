@@ -6,14 +6,14 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/11/05 14:48:33 by jde-baai      ########   odam.nl          #
+#    Updated: 2024/11/06 16:10:16 by jde-baai      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
 NAME:= webserv
 CC:= c++
 
-FLAGS := -std=c++11
+FLAGS := -std=c++20
 FLAGS += -Wall -Wextra -Werror
 FLAGS += -g -fsanitize=address
 
@@ -23,8 +23,8 @@ HEADER_FILES := error.hpp server.hpp web.hpp  webserv.hpp
 
 
 SRC_FILES := main.cpp					\
-			http/generate.cpp	\
-			http/parse.cpp		\
+			http/generate.cpp			\
+			http/httpHandler.cpp		\
 			parser/error.cpp			\
 			parser/parsLocation.cpp		\
 			parser/parsUtils.cpp		\
