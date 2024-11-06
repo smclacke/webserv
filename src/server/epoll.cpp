@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:55:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/06 18:11:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,8 @@ Epoll::~Epoll()
 	if (_epfd)
 		protectedClose(_epfd);
 
-	// clean up events etc?
+	// freeaddrinfo
+	// more clean
 }
 
 
@@ -55,7 +56,7 @@ Epoll::~Epoll()
 
 void		Epoll::initEpoll()
 {
-	_epfd = epoll_create(10); // need positive num but basically ignored
+	_epfd = epoll_create(10);
 	if (_epfd < 0)
 		throw std::runtime_error("Error creating Epoll instance\n");
 	std::cout << "Successfully created Epoll instance\n";
@@ -75,10 +76,62 @@ void		Epoll::connectClient()
 	}
 }
 
-// read data from client socket
+void		Epoll::readClient(int i)
+{
+	char	buffer[1024];
+	int		bytesRead = read(_events[i].data.fd, buffer, sizeof(buffer) - 1);
+	
+	if (bytesRead == -1)
+	{
+		protectedClose(_events[i].data.fd);
+		throw std::runtime_error("Reading from client socket failed\n");
+	}
+	else if (bytesRead == 0)
+	{
+		protectedClose(_events[i].data.fd);
+		std::cout << "Client disconnected\n";
+	}
+	else
+	{
+		buffer[bytesRead] = '\0';
+		std::cout << "Server received " << buffer << "\n";
+		switchOUTMode(_events[i].data.fd, _epfd, _event);
+	}
+}
 
-// send response to client
+void		Epoll::sendResponse(int i)
+{
+	const char	*response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+	ssize_t	bytesWritten = write(_events[i].data.fd, response, strlen(response));
 
+	if (bytesWritten == -1)
+	{
+		std::cerr << "Write to client failed\n";
+		return ;
+	}
+
+	std::cout << "Client sent message to server: " << response << "\n\n\n";
+	switchINMode(_events[i].data.fd, _epfd, _event);
+	protectedClose(_events[i].data.fd);
+}
+
+void		Epoll::serverSockConnect(Socket &client)
+{
+	_newaddlen = client.getAddrlen();
+	_newaddr = client.getSockaddr();
+	_newfd = accept(_serverfd, (struct sockaddr *)&_newaddr, &_newaddlen);
+	if (_newfd < 0)
+	{
+		std::cerr << "Error accepting new connection\n";
+		return ;
+	}
+	else 
+	{
+		setNonBlocking(_newfd);
+		addConnectionEpoll(_newfd, _epfd, _event);
+		std::cout << "Successfully made connection\n";
+	}
+}
 
 void		Epoll::monitor(Socket &server, Socket &client)
 {
@@ -94,6 +147,7 @@ void		Epoll::monitor(Socket &server, Socket &client)
 	std::cout << "Client connected to server successfuly \n";
 	_event = addSocketEpoll(_clientfd, _epfd, eSocket::Client);
 
+	/* Monitor Loop */
 	while (true)
 	{
 		_numEvents = epoll_wait(_epfd, _events, 10, -1);
@@ -102,62 +156,12 @@ void		Epoll::monitor(Socket &server, Socket &client)
 
 		for (int i = 0; i < _numEvents; ++i)
 		{
-			// accept incoming connection on server socket
 			if (_events[i].data.fd == _serverfd)
-			{
-				socklen_t	newClientlen = client.getAddrlen();
-				struct sockaddr_in	newClientaddr = client.getSockaddr();
-				int newConnection = accept(_serverfd, (struct sockaddr *)&newClientaddr, &newClientlen);
-				if (newConnection < 0)
-				{
-					std::cerr << "Error accepting new connection\n";
-					continue ;
-				}
-				else 
-				{
-					setNonBlocking(newConnection);
-					addConnectionEpoll(newConnection, _epfd, _event);
-					std::cout << "Successfully made connection\n";
-				}
-			}
+				serverSockConnect(client);
 			else if (_events[i].events & EPOLLIN)
-			{
-				// read data from client socket
-				char	buffer[1024];
-				int		bytesRead = read(_events[i].data.fd, buffer, sizeof(buffer) - 1);
-				
-				if (bytesRead == -1)
-				{
-					protectedClose(_events[i].data.fd);
-					throw std::runtime_error("Reading from client socket failed\n");
-				}
-				else if (bytesRead == 0)
-				{
-					protectedClose(_events[i].data.fd);
-					std::cout << "Client disconnected\n";
-				}
-				else
-				{
-					buffer[bytesRead] = '\0';
-					std::cout << "Server received " << buffer << "\n";
-					switchOUTMode(_events[i].data.fd, _epfd, _event);
-				}
-			}
+				readClient(i);
 			else if (_events[i].events & EPOLLOUT)
-			{
-				// send response to client
-				// take parsed <response> from HTTP shizzle from joolioos (definitely for non default)
-				const char	*response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-				ssize_t	bytesWritten = write(_events[i].data.fd, response, strlen(response));
-				if (bytesWritten == -1)
-				{
-					std::cerr << "Write to client failed\n";
-					continue ;
-				}
-				std::cout << "Client sent message to server: " << response << "\n\n\n";
-				switchINMode(_events[i].data.fd, _epfd, _event);
-				protectedClose(_events[i].data.fd);
-			}
+				sendResponse(i);
 		}
 	}
 	closeDelete(_serverfd, _epfd);

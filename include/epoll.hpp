@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:44:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/06 18:12:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,6 +31,9 @@ class Epoll
 		struct sockaddr_in	_serveraddr;
 		struct epoll_event	_event;
 		struct epoll_event	_events[MAX_EVENTS];
+		int					_newfd;
+		socklen_t			_newaddlen;
+		struct sockaddr_in	_newaddr;
 
 	
 	public:
@@ -43,6 +46,9 @@ class Epoll
 		void					initEpoll();
 		void					connectClient();
 		void					monitor(Socket &server, Socket &client);
+		void					serverSockConnect(Socket &client);
+		void					readClient(int i);
+		void					sendResponse(int i);
 
 		
 		/* getters */

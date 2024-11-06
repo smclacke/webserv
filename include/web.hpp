@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:51:11 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/06 18:12:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,11 +41,6 @@
 #include <sys/ioctl.h> // for nonblocking stuff..
 #include <arpa/inet.h>
 #include <sys/select.h> // for select()
-
-//#include <sys/msg.h>	// check this out (poll)
-//#include <sys/time.h>	// check this out (poll)
-//#include <sys/types.h>	// check this out (poll)
-//#include <arpa.inet.h> // check this out
 
 // C includes
 #include <unistd.h>
