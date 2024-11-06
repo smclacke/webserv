@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 16:07:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 14:39:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include <vector>
 #include <string>
 #include <iostream>
-#include "socket.hpp"
+#include <unordered_map>
 
 enum class eHttpMethod
 {
@@ -31,7 +31,7 @@ enum class eHttpMethod
 	INVALID
 };
 
-const std::map<eHttpMethod, std::string> HttpMethodToString = {
+const std::unordered_map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::GET, "GET"},
 	{eHttpMethod::POST, "POST"},
 	{eHttpMethod::DELETE, "DELETE"},
@@ -41,7 +41,7 @@ const std::map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::PATCH, "PATCH"},
 };
 
-const std::map<std::string, eHttpMethod> StringToHttpMethod = {
+const std::unordered_map<std::string, eHttpMethod> StringToHttpMethod = {
 	{"GET", eHttpMethod::GET},
 	{"POST", eHttpMethod::POST},
 	{"DELETE", eHttpMethod::DELETE},
@@ -92,6 +92,7 @@ public:
 	~Server(void);
 
 	/* Member functions */
+	std::string handleRequest(const std::string &request);
 	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 

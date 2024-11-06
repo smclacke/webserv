@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 14:52:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 14:38:09 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,7 @@
 #include "server.hpp"
 #include "socket.hpp"
 #include "error.hpp"
+#include "httpHandler.hpp"
 
 /* enums, defines and errors */
 struct s_location;

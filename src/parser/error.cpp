@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/29 15:40:20 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/29 17:00:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 15:15:22 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,4 +27,17 @@ const char *eConf::what() const throw()
 int eConf::line() const
 {
 	return _line;
+}
+
+httpError::httpError(const std::string &msg, eHttpStatusCode code) : _msg(msg), _code(code)
+{
+}
+
+const char *httpError::what() const throw()
+{
+	return _msg.c_str();
+}
+eHttpStatusCode httpError::code() const
+{
+	return _code;
 }

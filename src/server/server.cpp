@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 14:08:13 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 14:39:00 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,6 +93,13 @@ Server::~Server()
 }
 
 /* member functions */
+
+std::string Server::handleRequest(const std::string &request)
+{
+	httpHandler parser(*this);
+	std::string response = parser.parseResponse("HTTP/1.1 200 OK\r\n...");
+	return (response);
+}
 
 /**
  * @brief finds if the HHTP methods exists

@@ -6,71 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 16:13:05 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 14:53:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/error.hpp"
-
-enum class HttpStatusCode
-{
-	Continue = 100,
-	SwitchingProtocols = 101,
-	OK = 200,
-	Created = 201,
-	Accepted = 202,
-	NonAuthoritativeInformation = 203,
-	NoContent = 204,
-	ResetContent = 205,
-	PartialContent = 206,
-	MultipleChoices = 300,
-	MovedPermanently = 301,
-	Found = 302,
-	SeeOther = 303,
-	NotModified = 304,
-	UseProxy = 305,
-	TemporaryRedirect = 307,
-	PermanentRedirect = 308,
-	BadRequest = 400,
-	Unauthorized = 401,
-	PaymentRequired = 402,
-	Forbidden = 403,
-	NotFound = 404,
-	MethodNotAllowed = 405,
-	NotAcceptable = 406,
-	ProxyAuthenticationRequired = 407,
-	RequestTimeout = 408,
-	Conflict = 409,
-	Gone = 410,
-	LengthRequired = 411,
-	PreconditionFailed = 412,
-	PayloadTooLarge = 413,
-	URITooLong = 414,
-	UnsupportedMediaType = 415,
-	RangeNotSatisfiable = 416,
-	ExpectationFailed = 417,
-	IAmATeapot = 418,
-	MisdirectedRequest = 421,
-	UnprocessableEntity = 422,
-	Locked = 423,
-	FailedDependency = 424,
-	UpgradeRequired = 426,
-	PreconditionRequired = 428,
-	TooManyRequests = 429,
-	RequestHeaderFieldsTooLarge = 431,
-	UnavailableForLegalReasons = 451,
-	InternalServerError = 500,
-	NotImplemented = 501,
-	BadGateway = 502,
-	ServiceUnavailable = 503,
-	GatewayTimeout = 504,
-	HTTPVersionNotSupported = 505,
-	VariantAlsoNegotiates = 506,
-	InsufficientStorage = 507,
-	LoopDetected = 508,
-	NotExtended = 510,
-	NetworkAuthenticationRequired = 511
-};
+#include <unordered_map>
 
 const std::string HTTP_VERSION = "HTTP/1.1";
 const std::string CONNECTION_CLOSE = "Connection: close";			// Default connection close
@@ -86,20 +27,6 @@ const std::string CONTENT_TYPE_TEXT = "Content-Type: text/plain";
 // const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascript";
 // const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
 // const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
-
-std::string generateHttpResponse(const std::string &message)
-{
-	size_t contentLength = message.size();
-	std::ostringstream response;
-	response << "HTTP/1.1 200 OK\r\n"
-			 << "Content-Type: text/plain\r\n"
-			 << "Content-Length: " << contentLength << "\r\n"
-			 << "Connection: close\r\n"
-			 << "\r\n"
-			 << message;
-
-	return response.str();
-}
 
 /**
 The request line in an HTTP request message contains the method, URI, and HTTP version. Parsing this line is the first step in understanding the client’s request.
@@ -233,3 +160,61 @@ from the CGI, EOF will mark the end of the returned data.
 
 
  */
+
+const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
+	{eHttpStatusCode::Continue, "Continue"},
+	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
+	{eHttpStatusCode::OK, "OK"},
+	{eHttpStatusCode::Created, "Created"},
+	{eHttpStatusCode::Accepted, "Accepted"},
+	{eHttpStatusCode::NonAuthoritativeInformation, "Non-Authoritative Information"},
+	{eHttpStatusCode::NoContent, "No Content"},
+	{eHttpStatusCode::ResetContent, "Reset Content"},
+	{eHttpStatusCode::PartialContent, "Partial Content"},
+	{eHttpStatusCode::MultipleChoices, "Multiple Choices"},
+	{eHttpStatusCode::MovedPermanently, "Moved Permanently"},
+	{eHttpStatusCode::Found, "Found"},
+	{eHttpStatusCode::SeeOther, "See Other"},
+	{eHttpStatusCode::NotModified, "Not Modified"},
+	{eHttpStatusCode::UseProxy, "Use Proxy"},
+	{eHttpStatusCode::TemporaryRedirect, "Temporary Redirect"},
+	{eHttpStatusCode::PermanentRedirect, "Permanent Redirect"},
+	{eHttpStatusCode::BadRequest, "Bad Request"},
+	{eHttpStatusCode::Unauthorized, "Unauthorized"},
+	{eHttpStatusCode::PaymentRequired, "Payment Required"},
+	{eHttpStatusCode::Forbidden, "Forbidden"},
+	{eHttpStatusCode::NotFound, "Not Found"},
+	{eHttpStatusCode::MethodNotAllowed, "Method Not Allowed"},
+	{eHttpStatusCode::NotAcceptable, "Not Acceptable"},
+	{eHttpStatusCode::ProxyAuthenticationRequired, "Proxy Authentication Required"},
+	{eHttpStatusCode::RequestTimeout, "Request Timeout"},
+	{eHttpStatusCode::Conflict, "Conflict"},
+	{eHttpStatusCode::Gone, "Gone"},
+	{eHttpStatusCode::LengthRequired, "Length Required"},
+	{eHttpStatusCode::PreconditionFailed, "Precondition Failed"},
+	{eHttpStatusCode::PayloadTooLarge, "Payload Too Large"},
+	{eHttpStatusCode::URITooLong, "URI Too Long"},
+	{eHttpStatusCode::UnsupportedMediaType, "Unsupported Media Type"},
+	{eHttpStatusCode::RangeNotSatisfiable, "Range Not Satisfiable"},
+	{eHttpStatusCode::ExpectationFailed, "Expectation Failed"},
+	{eHttpStatusCode::IAmATeapot, "I'm a teapot"},
+	{eHttpStatusCode::MisdirectedRequest, "Misdirected Request"},
+	{eHttpStatusCode::UnprocessableEntity, "Unprocessable Entity"},
+	{eHttpStatusCode::Locked, "Locked"},
+	{eHttpStatusCode::FailedDependency, "Failed Dependency"},
+	{eHttpStatusCode::UpgradeRequired, "Upgrade Required"},
+	{eHttpStatusCode::PreconditionRequired, "Precondition Required"},
+	{eHttpStatusCode::TooManyRequests, "Too Many Requests"},
+	{eHttpStatusCode::RequestHeaderFieldsTooLarge, "Request Header Fields Too Large"},
+	{eHttpStatusCode::UnavailableForLegalReasons, "Unavailable For Legal Reasons"},
+	{eHttpStatusCode::InternalServerError, "Internal Server Error"},
+	{eHttpStatusCode::NotImplemented, "Not Implemented"},
+	{eHttpStatusCode::BadGateway, "Bad Gateway"},
+	{eHttpStatusCode::ServiceUnavailable, "Service Unavailable"},
+	{eHttpStatusCode::GatewayTimeout, "Gateway Timeout"},
+	{eHttpStatusCode::HTTPVersionNotSupported, "HTTP Version Not Supported"},
+	{eHttpStatusCode::VariantAlsoNegotiates, "Variant Also Negotiates"},
+	{eHttpStatusCode::InsufficientStorage, "Insufficient Storage"},
+	{eHttpStatusCode::LoopDetected, "Loop Detected"},
+	{eHttpStatusCode::NotExtended, "Not Extended"},
+	{eHttpStatusCode::NetworkAuthenticationRequired, "Network Authentication Required"}};
