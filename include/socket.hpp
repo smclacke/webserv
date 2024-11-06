@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 21:43:29 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/06 13:52:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ class Socket
 		int						_sockfd;
 		size_t					_maxConnections; // set to 10
 		int 					_connection; // for grabbing one from queue
-		std::vector<int>		_connections; // need vector of connections?
+		std::vector<int>		_connections; // need vector of connections? [LIST]
 		struct sockaddr_in		_sockaddr; // socket address
 		socklen_t				_addrlen; // socket address length
 		int						_reuseaddr; // for re-binding to port while preivous

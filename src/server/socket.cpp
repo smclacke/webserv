@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 21:44:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/06 14:34:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,15 +129,11 @@ void		Socket::openServerSocket(const Server &servInstance)
 // A process that initiates a service request
 void 		Socket::openClientSocket(const Server &servInstance)
 {
+	(void) servInstance; // remove if definitely dont need
+	
 	// create client socket
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("Error socketing sock\n");
-
-	memset(&_sockaddr, 0, sizeof(_sockaddr));
-	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_port = htons(servInstance.getPort());
-	inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr);
-	setSockfd(_sockfd);
 
 	// set to non-blocking socket mode
 	_flags = fcntl(_sockfd, F_GETFL, 0);
@@ -146,42 +142,6 @@ void 		Socket::openClientSocket(const Server &servInstance)
 		close(_sockfd);
 		throw std::runtime_error("Error setting client socket to nonblocking\n");
 	}
-
-	setSockaddr(_sockaddr);
-	_addrlen = sizeof(_sockaddr);
-	setAddrlen(_addrlen);
-	_host = servInstance.getHost();
-	setHost(_host);
-	
-
-
-	///* TESTING OLD CLIENT FUNCTION FROM HERE */
-	//// attempt to connect
-	//if ((connect(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen)) < 0)
-	//{
-	//	close(_sockfd);
-	//	throw std::runtime_error("Error connecting to server from client\n");
-	//}
-	//std::cout << "Client connected successfully to port - " << servInstance.getPort() << " \n";
-
-	//std::string message = "GET / HTTP/1.1\r\nHost: " + servInstance.getHost() + "\r\nConnection: close\r\n";
-	//if (send(_sockfd, message.c_str(), message.size(),0) < 0)
-	//{
-	//	close(_sockfd);
-	//	throw std::runtime_error("Error sending message from client\n");
-	//}
-	
-	//char	buffer[1000];
-	//ssize_t	bytesRead;
-	//while ((bytesRead = read(_sockfd, buffer, sizeof(buffer) - 1)) > 0)
-	//{
-	//	buffer[bytesRead] = '\0';
-	//	std::cout << "Received response: " << buffer;
-	//}
-	//if (bytesRead < 0)
-	//	throw std::runtime_error("Error reading response\n");
-	//buffer[999] = '\0';
-	//std::cout << "Read by client: " << buffer << "\n";
 }
 
 

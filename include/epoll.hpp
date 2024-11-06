@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/05 21:58:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/06 14:54:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,12 +35,19 @@ class Epoll
 		~Epoll();
 
 		/* methods */
-		void		initEpoll();
-		void		monitor(Socket &client, Socket &server);
+		void					initEpoll();
+		std::string				generateHttpResponse(const std::string &message);
+		struct epoll_event		addSocketEpoll(int sockfd, int epfd, eSocket type);
+		void					addConnectionEpoll(int connection, int epfd, struct epoll_event event);
+		void					setNonBlocking(int connection);
+		void					closeDelete(int fd, int epfd);
+		void					switchReadMode(int fd, int epfd, struct epoll_event event);
+		void					monitor(Socket &client, Socket &server);
 		
 		/* getters */
 
 		/* setters */
+
 
 };
 

@@ -364,6 +364,46 @@ This setup allows for modular and scalable server architecture.
 #########################################################################
 #########################################################################
 
+**GOOD EXPLANATION ROLES, SEVRERS, SOCKETS, CONNECTIONS**
+
+When building a web server in C++, or in general working with socket-based communication, the server itself is the entity that manages and listens for incoming client connections, but the actual connections are established between the server and client sockets.
+
+Breakdown of the roles of sockets and the server:
+
+Server Socket:
+	The server creates a server socket (also known as the listening socket) that listens for incoming connection requests from clients. This socket does not directly communicate with clients; it just waits for requests to come in.
+	The server socket is typically created using the socket() system call and then bound to a specific IP address and port using bind().
+	Once bound, the server socket starts listening for incoming client requests using listen().
+
+Client Socket:
+	Each client that wants to communicate with the server will initiate a connection. This can be done using the connect() system call on the client side to the server’s address and port.
+	Once a connection request is received by the server socket, the server can accept the connection using accept(). This returns a new socket specifically for communication with that client.
+	The client and server then communicate through this new socket, referred to as a client socket or communication socket. This socket is separate from the server's listening socket, which is just used to accept new connections.
+
+Clarification of roles:
+	Server: The server is responsible for listening for incoming connections, managing those connections, and handling requests. The server itself is what controls and manages the flow of data between the clients.
+	Sockets: The sockets represent endpoints in the communication and are used to establish, maintain, and terminate connections between the server and the client.
+
+	Multiple Servers:
+	If you're working with multiple servers (e.g., handling multiple clients concurrently), you will generally have multiple server sockets (one per server), and each server socket can accept connections from multiple clients. Once a connection is accepted, a separate socket is created for that communication, and the server can continue listening for more incoming connections.
+
+Example flow:
+	The server listens for incoming connections using a server socket.
+	A client connects to the server, and the server accepts the connection, creating a new client socket for communication.
+	Data is transferred over the client socket.
+	Once communication is done, the server closes the client socket, and the process is ready to accept new connections again.
+	In summary:
+	The server itself doesn't make connections; it listens for incoming requests and then handles those requests through client sockets once a connection is established.
+	The sockets (client and server) are the actual objects that manage the connections, while the server coordinates the connections and communication.
+
+
+
+
+
+#########################################################################
+#########################################################################
+#########################################################################
+
 
 **MESS**
 **MESS**
