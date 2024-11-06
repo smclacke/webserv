@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:19:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 17:28:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,7 +201,7 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	}
 }
 
-std::string getStatusMessage(eHttpStatusCode statusCode)
+static std::string getStatusMessage(eHttpStatusCode statusCode)
 {
 	auto it = statusMessages.find(statusCode);
 	if (it != statusMessages.end())
