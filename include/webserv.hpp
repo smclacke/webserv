@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:59:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/05 13:12:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,16 @@
 
 #include <vector>
 #include "server.hpp"
+#include "epoll.hpp"
 
 class Server;
+class Epoll;
 
 class Webserv
 {
 private:
 	std::vector<Server> _servers;
+	Epoll 				_epoll;
 
 public:
 	/* constructors */
@@ -30,7 +33,6 @@ public:
 	~Webserv(void);
 
 	/* member functions */
-	void start(void);
 
 	/* Setters */
 	void addServer(Server &server);

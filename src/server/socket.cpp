@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/10/30 16:32:36 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/06 17:53:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,110 +16,133 @@
 
 Socket::Socket() {}
 
-Socket::Socket(eSocket type)
+Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _reuseaddr(1), _flags(0)
 {
-	if (type == eSocket::Client)
+	if (type == eSocket::Server)
 	{
-		// do client socket things
+		openServerSocket(servInstance);
+		std::cout << "Server socket setup successful\n";
+
+	}
+	else if (type == eSocket::Client)
+	{
+		openClientSocket();
+		std::cout << "Client socket setup successful\n";
+		std::cout << "---------------------------------\n\n";
+
 	}
 	else
-	{
-		// do server socket things
-	}
+		throw std::runtime_error("Error invalid socket type argument passed\n");
 }
 
-Socket::Socket(const Webserv &servers)
+Socket::Socket(const Socket &copy)
 {
-	(void)servers; // wll actually use ... somehow sometime
-
-	/*
-		for (servers[i]) i < getServerCount
-		{
-			// get server + any other necessary data
-			servers[i]._clientSocket -
-			servers[i]._serverSocket -
-			if (openSockets() < 0) // take servers[i]
-				exit(EXIT_FAILURE); // need proper error handling
-		}
-
-	*/
+	*this = copy;
 }
 
 Socket &Socket::operator=(const Socket &socket)
 {
 	if (this != &socket)
 	{
-		// clear all attributes || set to 0
-
 		this->_sockfd = socket._sockfd;
-		this->_connection = socket._connection;
+		this->_maxConnections = socket._maxConnections;
 		this->_sockaddr = socket._sockaddr;
 		this->_addrlen = socket._addrlen;
+		this->_reuseaddr = socket._reuseaddr;
+		this->_flags = socket._flags;
 	}
 	return *this;
 }
 
 Socket::~Socket()
 {
-	// clear all attributes (e.g. _addrlen.clear())
-	// || set back to 0
+	// freeaddrinfo
+	protectedClose(_sockfd);
 }
+
 
 /* methods */
 
-void Socket::closeSockets()
+void		Socket::openServerSocket(const Server &servInstance)
 {
-	close(this->_connection);
-	close(this->_sockfd);
+	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		throw std::runtime_error("Error socketing sock\n");
+
+	_flags = fcntl(_sockfd, F_GETFL, 0);
+	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
+	{
+		protectedClose(_sockfd);
+		throw std::runtime_error("Error setting nonblocking\n");
+	}
+
+	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
+		throw std::runtime_error("Error setsockopt sock\n");
+
+	memset(&_sockaddr, 0, sizeof(_sockaddr));
+	_sockaddr.sin_family = AF_INET;
+	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	_sockaddr.sin_port = htons(servInstance.getPort());
+	_addrlen = sizeof(_sockaddr);
+
+	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
+	{
+		protectedClose(_sockfd);
+		throw std::runtime_error("Error binding sock\n");
+	}
+
+	if (listen(_sockfd, _maxConnections) < 0)
+	{
+		protectedClose(_sockfd);
+		throw std::runtime_error("Error listening for connections\n");
+	}
+	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
 }
 
-// handling multiple connections
-// opening clientSocket + serverSocket, then pass to epoll()
-int Socket::openSockets()
+
+void 		Socket::openClientSocket()
 {
-	// create socket (IPv4, TCP)
-	_sockfd = socket(AF_INET, SOCK_STREAM, 0); // listening socket
-	if (_sockfd == -1)
-		return (std::cout << "failed to create socket\n", -1);
-	// std::cout << "successfully created socket\n";
+	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		throw std::runtime_error("Error socketing sock\n");
 
-	// set socket to non-blocking
+	_flags = fcntl(_sockfd, F_GETFL, 0);
+	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
+	{
+		protectedClose(_sockfd);
+		throw std::runtime_error("Error setting client socket to nonblocking\n");
+	}
+}
 
-	// listen to port 9999 on any address
-	// htons to convert a number to network byte order
 
-	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = INADDR_ANY;
-	_sockaddr.sin_port = htons(9999);
+/* getters */
 
-	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, sizeof(_sockaddr)) < 0)
-		return (std::cout << "failed to bind to port 9999\n", -1);
-	std::cout << "binding to port 9999 successful\n";
+int					Socket::getSockfd() const
+{
+	return this->_sockfd;
+}
 
-	// start listening, hold at most 10 connections in the queue
-	if (listen(_sockfd, 10) < 0)
-		return (std::cout << "failed to listen on socket\n", -1);
-	std::cout << "listening successfully\n";
+struct sockaddr_in	Socket::getSockaddr() const
+{
+	return this->_sockaddr;
+}
 
-	// grab a connection from the queue
-	_addrlen = sizeof(_sockaddr);
-	_connection = accept(_sockfd, (struct sockaddr *)&_sockaddr, (socklen_t *)&_addrlen);
-	if (_connection < 0)
-		return (std::cout << "failed to grab connection\n", -1);
+socklen_t			Socket::getAddrlen() const
+{
+	return this->_addrlen;
+}
 
-	std::cout << "successfully made connection\n";
+/* setters */
 
-	// unncessary bit, leaving for testing
+void				Socket::setSockfd(int fd)
+{
+	this->_sockfd = fd;
+}
 
-	// read fromm the connection
-	// char	buffer[100];
-	// size_t	bytesRead = read(_connection, buffer, 100);
-	//(void) bytesRead;
-	// std::cout << "message from connection: " << buffer;
+void				Socket::setSockaddr(struct sockaddr_in &sockaddr)
+{
+	this->_sockaddr = sockaddr;
+}
 
-	//// send message to the connection
-	// std::string	response = "nice chatting with you connection :)";
-	// send(_connection, response.c_str(), response.size(), 0);
-
-	return 1; // success :)
+void				Socket::setAddrlen(socklen_t &addrlen)
+{
+	this->_addrlen = addrlen;
 }

@@ -1,13 +1,22 @@
 
 
-- struct vector location - what is this for? location of server...
-	locations in config same as this?
-	what do i do with this?
+**TODOTODOTODO**
 
-- server and socket are the same right? also for both of us... check this
 
-- look into multiple sockets , how handle, how work, what
-	std::vector<Server> _servers;
 
-- server + client stuff - get this clear
+2) stuff in main - figure out with julius (multiple server monitoring etc //server[1]...)
+
+3) protected close function
+
+
+
+
+-----------------------------------------------------------------
+
+**WHEREIAT**
+
+- got two client sort of versions in epoll loop, testing extra server stuff
+
+- not totally erroring, curl give HTTP 0.9 not allowed
+- browser no message page not found :( locahost refused to connect / not allowed something
 

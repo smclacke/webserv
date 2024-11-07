@@ -6,9 +6,10 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 13:28:11 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/07 16:08:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
+
 
 #include "../../include/web.hpp"
 
@@ -25,10 +26,12 @@ Webserv::Webserv(void)
 
 Webserv::Webserv(std::string config)
 {
-	std::cout << "config: " << config << std::endl;
+	//std::cout << "config: " << config << std::endl;
+	_epoll.initEpoll();
 	if (config.empty())
 	{
 		Server default_server;
+		_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket());
 		_servers.push_back(default_server);
 		return;
 	}
@@ -65,9 +68,6 @@ Webserv::~Webserv(void)
 
 /* member functions */
 
-void Webserv::start(void)
-{
-}
 
 /* setters */
 

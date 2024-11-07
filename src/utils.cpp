@@ -1,25 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   run.cpp                                            :+:    :+:            */
+/*   utils.cpp                                          :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
+/*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/10/22 15:25:39 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/10/30 15:54:02 by jde-baai      ########   odam.nl         */
+/*   Created: 2024/11/06 17:47:42 by smclacke      #+#    #+#                 */
+/*   Updated: 2024/11/06 17:49:59 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/web.hpp"
+#include "../include/web.hpp"
 
-void run(Webserv wserv)
+void		protectedClose(int fd)
 {
-	// epoll first then assign servers and socket to the instance of epoll()
-	// initEpoll()
-
-	Socket sock(wserv);
-
-	// assign sockets/servers to Epoll monitoring
-
-	sock.closeSockets();
+	if (fd)
+	{
+		if (close(fd) < 0)
+			throw std::runtime_error("Close() failed\n");
+	}
 }
