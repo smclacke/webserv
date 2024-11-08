@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/08 15:12:46 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/08 16:32:55 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -190,6 +190,10 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 	dirMap[directive](ss, line_n, loc);
 }
 
+/**
+ * @note check if the location path exists
+ * after perhaps replace path and root with just path if the root overwrite it but need to figure out how that works :)
+ */
 s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
 {
 	(void)file;
