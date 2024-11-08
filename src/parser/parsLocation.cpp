@@ -6,13 +6,16 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:54:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/08 15:12:46 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include <functional>
 
+/**
+ * @note check if root dir actually exists
+ */
 static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string root;
@@ -108,6 +111,9 @@ static void parseAutoindex(std::stringstream &ss, int line_n, s_location &loc)
 		loc.autoindex = false;
 }
 
+/**
+ * @note check if the dir actually exists? add the dir to the root dir?
+ */
 static void parseUploadDir(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string dir;
