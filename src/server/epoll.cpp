@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/06 18:17:24 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/11 16:20:08 by eugene        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,8 +128,8 @@ void		Epoll::serverSockConnect(Socket &client)
 	else 
 	{
 		setNonBlocking(_newfd);
-		addConnectionEpoll(_newfd, _epfd, _event);
 		std::cout << "Successfully made connection\n";
+		addConnectionEpoll(_newfd, _epfd, _event);
 	}
 }
 
@@ -144,7 +144,7 @@ void		Epoll::monitor(Socket &server, Socket &client)
 	
 	/* Client socket */
 	connectClient();
-	std::cout << "Client connected to server successfuly \n";
+	std::cout << "Client connected to server successfully \n";
 	_event = addSocketEpoll(_clientfd, _epfd, eSocket::Client);
 
 	/* Monitor Loop */
