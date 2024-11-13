@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:21:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/13 14:44:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server.hpp"
+#include <filesystem>
 
 enum class SizeUnit
 {
@@ -120,6 +121,7 @@ void Server::printServer(void)
 	std::cout << "Server Name: " << _serverName << std::endl;
 	std::cout << "Host: " << _host << std::endl;
 	std::cout << "Port: " << _port << std::endl;
+	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Client Max Body Size: " << _clientMaxBodySize << "byte" << std::endl;
 	std::cout << "Error Pages:" << _errorPage.size() << std::endl;
 	for (const auto &errorPage : _errorPage)
@@ -292,6 +294,20 @@ void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 	else
 		throw eConf("No size identifier found(m/g/k)", line_n);
 	setClientMaxBodySize(maxBodySize);
+}
+
+void Server::parseRoot(std::stringstream &ss, int line_n)
+{
+	std::string root;
+	std::string unexpected;
+	if (!(ss >> root))
+		throw eConf("No value provided for directive", line_n);
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	root = "server_files" + root;
+	if (!std::filesystem::exists(root)) // ignore the redline - compilation is fine
+		throw eConf("Root directory does not exist", line_n);
+	_root = root;
 }
 
 /* setters */

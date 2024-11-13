@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:45:21 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/13 14:39:00 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ void findServerDirective(Server &serv, std::string &line, int line_n)
 		{"listen", &Server::parseListen},
 		{"error_page", &Server::parseErrorPage},
 		{"client_max_body_size", &Server::parseClientMaxBody},
-	};
+		{"root", &Server::parseRoot}};
 	if (SerdirMap.find(directive) == SerdirMap.end())
 		throw eConf("Invalid directive found: " + directive, line_n);
 	SerdirMap[directive](serv, ss, line_n);

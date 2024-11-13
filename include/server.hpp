@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/06 14:39:13 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/13 14:10:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define SERVER_HPP
 
 #include "web.hpp"
+#include "socket.hpp"
 #include <vector>
 #include <string>
 #include <iostream>
@@ -79,6 +80,7 @@ private:
 	std::string _serverName;
 	std::string _host;
 	int _port;
+	std::string _root;
 	std::vector<s_ePage> _errorPage;
 	size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
 	std::vector<s_location> _location;
@@ -105,6 +107,7 @@ public:
 	void parseListen(std::stringstream &ss, int line_n);
 	void parseErrorPage(std::stringstream &ss, int line_n);
 	void parseClientMaxBody(std::stringstream &ss, int line_n);
+	void parseRoot(std::stringstream &ss, int line_n);
 
 	/* setters */
 	void setServerName(std::string serverName);
