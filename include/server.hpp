@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 14:10:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/13 15:22:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ const std::unordered_map<std::string, eHttpMethod> StringToHttpMethod = {
 struct s_location
 {
 	std::string path = "/";
-	std::string root = "/var/www/html";		 // Default to standard web root
+	std::string root = "";					 // Default to standard web root
 	size_t client_body_buffer_size = 8192;	 // Default buffer size, 8 KB
 	std::list<eHttpMethod> allowed_methods;	 // Default: will be set to GET, POST, DELETE in parseLocation if empty
 	std::string redir_url = "";				 // No redirection by default
@@ -113,6 +113,7 @@ public:
 	void setServerName(std::string serverName);
 	void setHost(std::string host);
 	void setPort(int port);
+	void setRoot(std::string root);
 	void setErrorPage(std::vector<s_ePage> errorPage);
 	void setClientMaxBodySize(size_t clientMaxBodySize);
 	void setLocation(std::vector<s_location> location);
@@ -123,6 +124,7 @@ public:
 	std::string const &getServerName(void) const;
 	const std::string &getHost(void) const;
 	const int &getPort(void) const;
+	const std::string &getRoot(void) const;
 	const std::vector<s_ePage> &getErrorPage(void) const;
 	const size_t &getClientMaxBodySize(void) const;
 	const std::vector<s_location> &getLocation(void) const;

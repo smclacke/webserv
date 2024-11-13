@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 14:19:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/13 15:37:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -117,6 +117,26 @@ const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
 	{eHttpStatusCode::NetworkAuthenticationRequired, "Network Authentication Required"}};
 
 /* member functions */
+
+std::string findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
+{
+	std::string longestMatch;
+
+	for (const auto &location : locationBlocks)
+	{
+		// Check if the location is a prefix of the request URI
+		if (requestUri.find(location.path) == 0)
+		{ // Check if the requestUri starts with location
+			// If it's a longer match than the current longestMatch, update it
+			if (location.path.length() > longestMatch.length())
+			{
+				longestMatch = location.path;
+			}
+		}
+	}
+
+	return longestMatch;
+}
 
 std::string httpHandler::parseResponse(const std::string &httpRequest)
 {

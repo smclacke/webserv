@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 14:44:42 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/13 15:27:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,6 +29,7 @@ Server::Server(void)
 	_serverName = "default_server";
 	_host = "127.0.0.01";
 	_port = 8080;
+	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -59,7 +60,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n)
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -337,6 +338,11 @@ void Server::setPort(int port)
 	_port = port;
 }
 
+void Server::setRoot(std::string root)
+{
+	_root = root;
+}
+
 void Server::setErrorPage(std::vector<s_ePage> errorPage)
 {
 	_errorPage = errorPage;
@@ -376,6 +382,11 @@ const std::string &Server::getHost(void) const
 const int &Server::getPort(void) const
 {
 	return _port;
+}
+
+const std::string &Server::getRoot(void) const
+{
+	return _root;
 }
 
 const std::vector<s_ePage> &Server::getErrorPage(void) const
