@@ -6,10 +6,9 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/07 16:08:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/14 17:40:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
-
 
 #include "../../include/web.hpp"
 
@@ -31,7 +30,8 @@ Webserv::Webserv(std::string config)
 	if (config.empty())
 	{
 		Server default_server;
-		_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket());
+		addServerToEpoll(default_server);
+		_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket(), 0);
 		_servers.push_back(default_server);
 		return;
 	}
@@ -67,6 +67,38 @@ Webserv::~Webserv(void)
 }
 
 /* member functions */
+void		Webserv::addServerToEpoll(Server &server)
+{
+	t_fds	thisFd;
+
+	/* Server socket */
+	thisFd._serverfd = server.getServerSocket().getSockfd();
+	thisFd._clientfd = server.getClientSocket().getSockfd();
+	thisFd._serveraddlen = server.getServerSocket().getAddrlen();
+	thisFd._serveraddr = server.getServerSocket().getSockaddr();
+	thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
+	
+	/* Client socket */
+	_epoll.connectClient(thisFd);
+	std::cout << "Client connected to server successfully \n";
+	thisFd._event = _epoll.addSocketEpoll(thisFd._clientfd, _epoll.getEpfd(), eSocket::Client);
+}
+
+void		Webserv::monitorServers(std::vector<Server> &servers)
+{
+	for (size_t i = 0; i < getServerCount(); ++i)
+	{
+		_epoll.monitor(servers[i].getServerSocket(), servers[i].getClientSocket(), i);
+		
+	}
+	//for (size_t i = 0; i < getServerCount(); ++i)
+	//{	
+		// figure out how to close vector of fds
+		//_epoll.closeDelete(_epoll._fds[i]._serverfd, _epoll.getEpfd());
+		//closeDelete(_fds[_fdIndex]._clientfd, _epfd);
+		//std::cout << "\nClosed server socket and deleted from Epoll\n";
+	//}
+}
 
 
 /* setters */
@@ -104,4 +136,9 @@ Server &Webserv::getServer(std::string name)
 		return *it; // Return the found server
 	}
 	throw std::runtime_error("Server not found"); // Handle the case where the server is not found
+}
+
+Epoll	&Webserv::getEpoll()
+{
+	return this->_epoll;
 }

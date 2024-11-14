@@ -6,13 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:52:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/14 16:57:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 
-/* Epoll utils*/
+/* Epoll utils */
 
 std::string Epoll::generateHttpResponse(const std::string &message)
 {
@@ -105,3 +105,4 @@ void		Epoll::closeDelete(int fd, int epfd)
 	protectedClose(fd);
 	epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
 }
+

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/14 15:39:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/14 17:36:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,22 +20,28 @@ enum class eSocket;
 
 #define MAX_EVENTS 10
 
+typedef struct s_fds
+{
+	int					_serverfd;
+	int					_clientfd;
+	socklen_t			_serveraddlen;
+	struct sockaddr_in	_serveraddr;
+	struct epoll_event	_event;
+	struct epoll_event	_events[MAX_EVENTS];
+	int					_newfd;
+	socklen_t			_newaddlen;
+	struct sockaddr_in	_newaddr;
+
+}				t_fds;
+
 class Epoll
 {
 	private:
 		int					_epfd;
-		int					_serverfd;
-		int					_clientfd;
+		std::vector<t_fds>	_fds;
 		int					_numEvents;
-		socklen_t			_serveraddlen;
-		struct sockaddr_in	_serveraddr;
-		struct epoll_event	_event;
-		struct epoll_event	_events[MAX_EVENTS];
-		int					_newfd;
-		socklen_t			_newaddlen;
-		struct sockaddr_in	_newaddr;
 
-	
+
 	public:
 		Epoll();
 		Epoll(const Epoll &copy);
@@ -44,28 +50,21 @@ class Epoll
 
 		/* methods */
 		void					initEpoll();
-		void					connectClient();
-		void					monitor(Socket &server, Socket &client);
-		void					serverSockConnect(Socket &server);
-		void					readClient(int i);
-		void					sendResponse(int i);
+		void					connectClient(t_fds fd);
+		void					monitor(Socket &server, Socket &client, size_t i);
+		void					serverSockConnect(Socket &server, t_fds fd);
+		void					readClient(t_fds fd, int i);
+		void					sendResponse(t_fds fd, int i);
 
 		
 		/* getters */
 		int						getEpfd() const;
-		int						getServerfd() const;
-		int						getClientfd() const;
+		std::vector<t_fds>		getAllFds() const;
 		int						getNumEvents() const;
-		socklen_t				getServeraddlen() const;
-		struct sockaddr_in		getServeraddr() const;
 
 		/* setters */
 		void					setEpfd(int fd);
-		void					setServerfd(int fd);
-		void					setClientfd(int fd);
 		void					setNumEvents(int numEvents);
-		void					setServeraddlen(socklen_t addrlen);
-		void					setServeraddr(struct sockaddr_in addr);
 
 		/* utils -> epoll_utils.cpp */
 		std::string				generateHttpResponse(const std::string &message);
