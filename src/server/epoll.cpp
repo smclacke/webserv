@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/14 17:39:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/14 18:01:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,7 +134,11 @@ void		Epoll::serverSockConnect(Socket &server, t_fds fd)
 
 void		Epoll::monitor(Socket &server, Socket &client, size_t i)
 {
+	/* Client socket */
 	(void) client;
+	connectClient(_fds[i]);
+	std::cout << "Client connected to server successfully \n";
+	_fds[i]._event = addSocketEpoll(_fds[i]._clientfd, _epfd, eSocket::Client);
 	while (true)
 	{
 		_numEvents = epoll_wait(_epfd, &_fds[i]._event, 10, -1);
@@ -181,6 +185,11 @@ int					Epoll::getNumEvents() const
 void				Epoll::setEpfd(int fd)
 {
 	this->_epfd = fd;
+}
+
+void				Epoll::setFd(t_fds fd, size_t i)
+{
+	this->_fds[i] = fd;
 }
 
 void				Epoll::setNumEvents(int numEvents)

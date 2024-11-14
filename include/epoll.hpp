@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/14 17:36:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/14 17:59:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,6 +64,7 @@ class Epoll
 
 		/* setters */
 		void					setEpfd(int fd);
+		void					setFd(t_fds fd, size_t i);
 		void					setNumEvents(int numEvents);
 
 		/* utils -> epoll_utils.cpp */

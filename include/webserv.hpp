@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/14 17:29:05 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/14 17:58:47 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ public:
 
 	/* member functions */
 	void				monitorServers(std::vector<Server> &servers);
-	void				addServerToEpoll(Server &server);
+	void				addServerToEpoll(Server &server, size_t i);
 
 	/* Setters */
 	void				addServer(Server &server);
