@@ -28,7 +28,7 @@ else if server root.epmty() == false -> put server root in front of locaiton pat
 - try to see if that exists otherwise return bad request
 
 
-2. In location parsing check if the directories actually exist otherwise return
+2. In location parsing check if the directories actually exist otherwise return -- > done, yet to be tested
 3. After location parsing add the relative paths of root or path in front of the other potential paths in a location -depends on 1
 
 4 Update the port and host to different datatypes in case those are requested by epoll();

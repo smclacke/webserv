@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 15:27:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/14 16:38:18 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		if (pos != std::string::npos)
 		{
 			s_location loc = parseLocation(file, line, line_n);
+			checkLocationPaths(loc, _root, line_n);
 			if (loc.client_body_buffer_size > this->_clientMaxBodySize)
 				throw eConf("client_body_buffer_size exceeds server's maximum size limit", line_n);
 			this->addLocation(loc);
@@ -305,9 +306,9 @@ void Server::parseRoot(std::stringstream &ss, int line_n)
 		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
-	root = "server_files" + root;
+	root = "." + root;
 	if (!std::filesystem::exists(root)) // ignore the redline - compilation is fine
-		throw eConf("Root directory does not exist", line_n);
+		throw eConf("Root directory \'" + root + "\'does not exist", line_n);
 	_root = root;
 }
 

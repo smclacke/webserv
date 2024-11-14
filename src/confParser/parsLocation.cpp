@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 15:02:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/14 16:31:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -244,7 +244,6 @@ s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
 		loc.index_files.push_back("index.html");
 		loc.index_files.push_back("index.htm");
 	}
-	// change location -> add root in front of the path, in front of the other paths as well such as cgi
 	return (loc);
 }
 

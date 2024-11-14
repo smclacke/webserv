@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 14:39:00 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/14 16:51:51 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,39 @@ void lineStrip(std::string &line)
 		line.erase(line.find(';'), std::string::npos);
 	line.erase(0, line.find_first_not_of(" \t\n\r\f\v")); // erase start whitespace
 	line.erase(line.find_last_not_of(" \t\n\r\f\v") + 1);
+}
+
+/**
+ * @brief checks if the paths(path, root, cgi_path) exist, otherwise throws eConf
+ */
+void checkLocationPaths(s_location &loc, std::string const root, int const line_n)
+{
+	// check root path
+	if (loc.root.empty() == false)
+	{
+		if (!std::filesystem::exists(loc.root)) // ignore the redline - compilation is fine
+			throw eConf("Root directory \'" + loc.root + "\'does not exist", line_n);
+
+		std::string combined;
+		combined = "." + loc.root + loc.path;	// check path
+		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
+			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
+
+		combined = "." + loc.root + loc.cgi_path; // check cgi path
+		if (!std::filesystem::exists(combined))	  // ignore the redline - compilation is fine
+			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
+	}
+	else
+	{
+		std::string combined;
+		combined = "." + root + loc.path;		// check loc path
+		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
+			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
+
+		combined = "." + root + loc.cgi_path;	// check cgi_path
+		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
+			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
+	}
 }
 
 void findServerDirective(Server &serv, std::string &line, int line_n)
