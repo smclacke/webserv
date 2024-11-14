@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/11 16:20:08 by eugene        ########   odam.nl         */
+/*   Updated: 2024/11/14 15:39:32 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,10 +115,10 @@ void		Epoll::sendResponse(int i)
 	protectedClose(_events[i].data.fd);
 }
 
-void		Epoll::serverSockConnect(Socket &client)
+void		Epoll::serverSockConnect(Socket &server)
 {
-	_newaddlen = client.getAddrlen();
-	_newaddr = client.getSockaddr();
+	_newaddlen = server.getAddrlen();
+	_newaddr = server.getSockaddr();
 	_newfd = accept(_serverfd, (struct sockaddr *)&_newaddr, &_newaddlen);
 	if (_newfd < 0)
 	{
@@ -157,7 +157,7 @@ void		Epoll::monitor(Socket &server, Socket &client)
 		for (int i = 0; i < _numEvents; ++i)
 		{
 			if (_events[i].data.fd == _serverfd)
-				serverSockConnect(client);
+				serverSockConnect(server);
 			else if (_events[i].events & EPOLLIN)
 				readClient(i);
 			else if (_events[i].events & EPOLLOUT)
