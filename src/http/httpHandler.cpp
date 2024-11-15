@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 16:16:55 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 16:20:22 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -194,6 +194,8 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 		getline(split, key, ':');
 		getline(split >> std::ws, value);
 		eRequestHeader headerType = toEHeader(key);
+		if (headerType == Invalid)
+			return (generateHttpResponse(eHttpStatusCode::BadRequest));
 		_request.headers.push_back(std::make_pair(headerType, value)); // or use {headerType, value}
 	}
 
