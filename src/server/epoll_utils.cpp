@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 17:22:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:17:46 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 		protectedClose(sockfd);
 		throw std::runtime_error("Error adding socket to epoll\n");
 	}
-	std::cout << "Successfully added " << sortSocket << " socket to epoll\n";
+	std::cout << sortSocket << " added to epoll\n";
 	return event;
 }
 
@@ -64,7 +64,7 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 		protectedClose(connection);
 		throw std::runtime_error("Error adding connection to epoll\n");
 	}
-	std::cout << "Successfully added connection to epoll\n";
+	std::cout << "New connection added to epoll\n";
 }
 
 
@@ -77,7 +77,7 @@ void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
 		protectedClose(fd);
 		throw std::runtime_error("Failed to modify client socket for writing\n");
 	}
-	std::cout << "Successfully modified client socket for writing\n";
+	std::cout << "Modified client socket for writing\n";
 }
 
 void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
@@ -89,7 +89,7 @@ void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
 		protectedClose(fd);
 		throw std::runtime_error("Failed to modify client socket for reading\n");
 	}
-	std::cout << "Successfully modified client socket for reading\n";
+	std::cout << "Modified client socket for reading\n";
 }
 
 

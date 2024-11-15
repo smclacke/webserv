@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:11:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:24:25 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ Webserv::Webserv(std::string config)
 		Server default_server;
 		_servers.push_back(default_server);
 
-		Server default_server2(9999);
-		_servers.push_back(default_server2);
+		//Server default_server2(9999);
+		//_servers.push_back(default_server2);
 
 		return ;
 	}

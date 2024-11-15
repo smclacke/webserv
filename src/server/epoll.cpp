@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:10:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:18:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -128,7 +128,7 @@ void		Epoll::makeNewConnection(std::shared_ptr<Socket> &server, t_fds fd)
 	else 
 	{
 		setNonBlocking(newfd);
-		std::cout << "Successfully made new connection\n";
+		std::cout << "\nNew connection made\n";
 		addConnectionEpoll(newfd, _epfd, fd._event);
 	}
 	
