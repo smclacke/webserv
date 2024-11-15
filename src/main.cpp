@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/14 17:58:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 14:35:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{
 				Server serv = wserv.getServer(i);
-				wserv.addServerToEpoll(serv, i);
+				wserv.addServerToEpoll(serv);
 			}
 			wserv.monitorServers(wserv.getallServer());
 		}

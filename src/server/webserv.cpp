@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/14 17:58:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 14:51:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,7 @@ Webserv::Webserv(std::string config)
 	if (config.empty())
 	{
 		Server default_server;
-		addServerToEpoll(default_server, 0);
+		addServerToEpoll(default_server);
 		_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket(), 0);
 		_servers.push_back(default_server);
 		return;
@@ -67,7 +67,7 @@ Webserv::~Webserv(void)
 }
 
 /* member functions */
-void		Webserv::addServerToEpoll(Server &server, size_t i)
+void		Webserv::addServerToEpoll(Server &server)
 {
 	t_fds	thisFd;
 
@@ -78,12 +78,7 @@ void		Webserv::addServerToEpoll(Server &server, size_t i)
 	thisFd._serveraddr = server.getServerSocket().getSockaddr();
 	thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
 	
-
-	_epoll.setFd(thisFd, i);
-	///* Client socket */
-	//_epoll.connectClient(thisFd);
-	//std::cout << "Client connected to server successfully \n";
-	//thisFd._event = _epoll.addSocketEpoll(thisFd._clientfd, _epoll.getEpfd(), eSocket::Client);
+	_epoll.setFd(thisFd);
 }
 
 void		Webserv::monitorServers(std::vector<Server> &servers)

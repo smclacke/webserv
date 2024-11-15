@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/14 18:01:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 15:07:03 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ void		Epoll::readClient(t_fds fd, int i)
 void		Epoll::sendResponse(t_fds fd, int i)
 {
 	const char	*response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+	
 	ssize_t	bytesWritten = write(fd._events[i].data.fd, response, strlen(response));
 
 	if (bytesWritten == -1)
@@ -132,10 +133,12 @@ void		Epoll::serverSockConnect(Socket &server, t_fds fd)
 	}
 }
 
+// i for fd index, j for event index
 void		Epoll::monitor(Socket &server, Socket &client, size_t i)
 {
 	/* Client socket */
 	(void) client;
+
 	connectClient(_fds[i]);
 	std::cout << "Client connected to server successfully \n";
 	_fds[i]._event = addSocketEpoll(_fds[i]._clientfd, _epfd, eSocket::Client);
@@ -145,14 +148,18 @@ void		Epoll::monitor(Socket &server, Socket &client, size_t i)
 		if (_numEvents == -1)
 			throw std::runtime_error("epoll_wait failed\n");
 
-		for (int i = 0; i < _numEvents; ++i)
+		for (int j = 0; j < _numEvents; ++j)
 		{
-			if (_fds[i]._events[i].data.fd == _fds[i]._serverfd)
+			//std::cout << "fd events = " << _fds[i]._events[j].data.fd << "\n";
+			//std::cout << "serverfd = " << _fds[i]._serverfd << "\n";
+			//std::cout << "clientfd = " << _fds[i]._clientfd << "\n";
+			//std::cout << "events events = " << _fds[i]._events[j].events << "\n";
+			if (_fds[i]._events[j].data.fd == _fds[i]._serverfd)
 				serverSockConnect(server, _fds[i]);
-			else if (_fds[i]._events[i].events & EPOLLIN)
-				readClient(_fds[i], i);
-			else if (_fds[i]._events[i].events & EPOLLOUT)
-				sendResponse(_fds[i], i);
+			else if (_fds[i]._events[j].events & EPOLLIN)
+				readClient(_fds[i], j);
+			else if (_fds[i]._events[j].events & EPOLLOUT)
+				sendResponse(_fds[i], j);
 		}
 	}
 	// move this to after all servers have been monitored, clean up at end?
@@ -175,6 +182,11 @@ std::vector<t_fds>	Epoll::getAllFds() const
 	return this->_fds;
 }
 
+t_fds				Epoll::getFd(size_t i) const
+{
+	return this->_fds[i];
+}
+
 int					Epoll::getNumEvents() const
 {
 	return this->_numEvents;
@@ -187,9 +199,9 @@ void				Epoll::setEpfd(int fd)
 	this->_epfd = fd;
 }
 
-void				Epoll::setFd(t_fds fd, size_t i)
+void				Epoll::setFd(t_fds fd)
 {
-	this->_fds[i] = fd;
+	this->_fds.push_back(fd);
 }
 
 void				Epoll::setNumEvents(int numEvents)
