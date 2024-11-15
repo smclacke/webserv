@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 15:56:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 16:10:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,10 @@ int main(int argc, char **argv)
 			if (argc == 2)
 				config = std::string(argv[1]);
 			Webserv wserv(config);
+			std::cout << "returned to main\n";
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{
+				std::cout << "in main for\n";
 				Server serv = wserv.getServer(i);
 				wserv.addServerToEpoll(serv);
 			}

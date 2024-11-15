@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 15:54:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 16:18:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,52 +25,46 @@ Webserv::Webserv(void)
 
 Webserv::Webserv(std::string config)
 {
-	//std::cout << "config: " << config << std::endl;
 	_epoll.initEpoll();
 	if (config.empty())
 	{
-		Server default_server(8080);
-		//addServerToEpoll(default_server);
-		//_epoll.monitor(default_server.getServerSocket(), 0);
-		// clean up here
-		
-		// testing multiple 
-		Server default_server2(9999);
+		Server default_server;
 		_servers.push_back(default_server);
-		_servers.push_back(default_server2);
-		addServerToEpoll(default_server2);
-		addServerToEpoll(default_server);
 
-		//_epoll.monitor(default_server.getServerSocket(), 0);
-		monitorServers(getallServer());
-		// testing multiple
-		
-		return;
+		//Server default_server2(9999);
+		//_servers.push_back(default_server2);
+
+		std::cout << "successfully created default server(s)\n";
+		std::cout << "in webserv, count = " << getServerCount() << "\n";
+		return ;
 	}
-	std::ifstream file(config);
-	if (!file.is_open())
-		throw std::runtime_error("unable to open file: \"" + config + "\"");
-	std::string line;
-	int line_n = 0; // keeps track of the line_number for accurate error outputs
-	while (std::getline(file, line))
+	else
 	{
-		++line_n;
-		lineStrip(line);
-		if (line.empty()) // skip empty lines
-			continue;
-		if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
+		std::ifstream file(config);
+		if (!file.is_open())
+			throw std::runtime_error("unable to open file: \"" + config + "\"");
+		std::string line;
+		int line_n = 0; // keeps track of the line_number for accurate error outputs
+		while (std::getline(file, line))
 		{
-			Server nServer = Server(file, line_n);
-			_servers.push_back(nServer);
-			if (_servers.size() == 10)
+			++line_n;
+			lineStrip(line);
+			if (line.empty()) // skip empty lines
+				continue;
+			if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
 			{
-				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
-				return;
+				Server nServer = Server(file, line_n);
+				_servers.push_back(nServer);
+				if (_servers.size() == 10)
+				{
+					std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
+					return;
+				}
+				continue;
 			}
-			continue;
+			else
+				throw eConf("line : \"" + line + "\": not recognized", line_n);
 		}
-		else
-			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
 }
 
