@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 15:37:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 16:16:55 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,32 +118,30 @@ const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
 
 /* member functions */
 
-std::string findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
+s_location findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
 {
-	std::string longestMatch;
+	s_location longestMatch;
 
 	for (const auto &location : locationBlocks)
 	{
 		// Check if the location is a prefix of the request URI
 		if (requestUri.find(location.path) == 0)
 		{ // Check if the requestUri starts with location
-			// If it's a longer match than the current longestMatch, update it
-			if (location.path.length() > longestMatch.length())
+			if (location.path.length() > longestMatch.path.length())
 			{
-				longestMatch = location.path;
+				longestMatch = location;
 			}
 		}
 	}
-
 	return longestMatch;
 }
 
 std::string httpHandler::parseResponse(const std::string &httpRequest)
 {
-
 	std::istringstream ss(httpRequest);
 	std::string requestLine;
-	const std::unordered_map<std::string, std::string> httpHeaders;
+
+	// what this function generates:
 
 	// Get the request line
 	std::getline(ss, requestLine);
@@ -151,76 +149,89 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 
 	/* handle request line -> to be turned into seperate function*/
 	std::istringstream requestss(requestLine);
-	std::string methodstring, uri, version;
-	if (!(requestss >> methodstring >> uri >> version))
+	std::string methodstring, version;
+	if (!(requestss >> methodstring >> _request.uri >> version))
 		return (generateHttpResponse(eHttpStatusCode::BadRequest));
 
+	// check version
 	if (version != "HTTP/1.1")
 		return (generateHttpResponse(eHttpStatusCode::HTTPVersionNotSupported));
-	// Parse the request line
-	eHttpMethod method = _server.allowedHttpMethod(methodstring);
-	if (method == eHttpMethod::INVALID)
+
+	// check METHOD
+	_request.method = _server.allowedHttpMethod(methodstring);
+	if (_request.method == eHttpMethod::INVALID) // method check
 		return (generateHttpResponse(eHttpStatusCode::MethodNotAllowed));
 
-	// Find the relevant location for the URI
-	s_location loc;
-	bool locationFound = false;
-	bool cgi = false;
-	std::string path = "";
-	for (const auto &location : _server.getLocation())
+	// URI match against location
+	_request.loc = findLongestPrefixMatch(_request.uri, _server.getLocation());
+	if (_request.loc.cgi_ext == _request.uri.substr(_request.uri.find_last_of(".") + 1)) // cgi extension
 	{
-		if (uri.compare(0, location.path.length(), location.path) == 0) // Check if the URI starts with the location path
-		{
-			loc = location;
-			locationFound = true;
-			path = loc.root + uri;
-			if (!loc.cgi_path.empty()) // Check if CGI path is defined
-			{
-				if (uri.compare(uri.length() - location.cgi_ext.length(), location.cgi_ext.length(), location.cgi_ext) == 0 &&
-					uri.length() > location.cgi_ext.length())
-				{ // Check if the URI matches the CGI extension
-					// Handle CGI request
-					cgi = true;
-					path = location.cgi_path;
-					if (!std::ifstream(path))
-						return (generateHttpResponse(eHttpStatusCode::NotFound));
-				}
-			}
-			break; // relevant location found
-		}
-	}
-	if (cgi == true)
-	{
-		// call cgi function
-	}
-	if (locationFound) // a non cgi call
-	{
-		if (!std::ifstream(path))
+		cgi = true;
+		if (!_request.loc.root.empty())
+			_request.path = "." + _request.loc.root + _request.uri;
+		else
+			_request.path = "." + _server.getRoot() + _request.uri;
+		if (!std::filesystem::exists(_request.path))
 			return (generateHttpResponse(eHttpStatusCode::NotFound));
-		// call request function with path and pass location
 	}
-	else // non cgi and no relevant location - check if it exists anyway as full uri
+	else
 	{
-		if (!std::ifstream(uri))
+		if (!_request.loc.root.empty())
+			_request.path = "." + _request.loc.root + _request.uri;
+		else
+			_request.path = "." + _server.getRoot() + _request.uri;
+		if (!std::filesystem::exists(_request.path))
 			return (generateHttpResponse(eHttpStatusCode::NotFound));
-		// call request
 	}
-
-	// do something with uri? -> check for .cgi extension? check for existing path?
-	std::istringstream requestLineStream(requestLine);
-
-	std::cout << "Method: " << methodstring << std::endl;
-	std::cout << "URI: " << uri << std::endl;
-	std::cout << "Version: " << version << std::endl;
 
 	// Read headers
 	std::string header;
+	std::string key, value;
 	while (std::getline(ss, header) && !header.empty())
 	{
 		std::cout << "Header: " << header << std::endl;
+		std::istringstream split(header);
+		getline(split, key, ':');
+		getline(split >> std::ws, value);
+		eRequestHeader headerType = toEHeader(key);
+		_request.headers.push_back(std::make_pair(headerType, value)); // or use {headerType, value}
 	}
-	std::string response = "reply";
+
+	// Skip the empty line between headers and body
+	std::string emptyLine;
+	std::getline(ss, emptyLine); // This will read the \r\n line
+	if (!emptyLine.empty())
+	{
+		// Handle error: expected an empty line but got something else
+		return generateHttpResponse(eHttpStatusCode::BadRequest);
+	}
+
+	// get body
+	std::string body;
+	while (std::getline(ss, body))
+	{
+		_request.body.append(body);
+	}
+
+	std::string response;
+	if (_request.cgi == true)
+		cgiRequest();
+	else
+		stdRequest();
 	return (response);
+}
+
+/* private functions */
+
+eRequestHeader httpHandler::toEHeader(const std::string &header)
+{
+	static const std::unordered_map<std::string, eRequestHeader> headerMap = {
+		{"Host", Host},
+		{"User-Agent", UserAgent},
+		{"Content-Type", ContentType},
+		{"Content-Length", ContentLength}};
+	auto it = headerMap.find(header);
+	return it != headerMap.end() ? it->second : Invalid;
 }
 
 std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
