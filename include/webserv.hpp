@@ -6,14 +6,13 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 14:03:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:06:11 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEBSERV_HPP
 #define WEBSERV_HPP
 
-#include <vector>
 #include "server.hpp"
 
 class Server;

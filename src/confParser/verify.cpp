@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:12:24 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:10:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
+#include "../../include/error.hpp"
 
 /**
  * @brief checks if the location brackets are correct

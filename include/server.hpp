@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 15:22:13 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:20:35 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,11 +14,6 @@
 #define SERVER_HPP
 
 #include "web.hpp"
-#include "socket.hpp"
-#include <vector>
-#include <string>
-#include <iostream>
-#include <unordered_map>
 
 enum class eHttpMethod
 {
@@ -73,6 +68,8 @@ struct s_ePage
 	std::string path;
 	int code;
 };
+
+class Socket;
 
 class Server
 {

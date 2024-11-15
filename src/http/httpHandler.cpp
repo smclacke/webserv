@@ -6,15 +6,14 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 16:20:22 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:10:26 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 #include "../../include/server.hpp"
 #include "../../include/error.hpp"
-#include <unordered_map>
-#include <string>
+#include "../../include/web.hpp"
 
 /* constructor and deconstructor */
 

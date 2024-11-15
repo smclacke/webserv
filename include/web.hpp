@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/14 16:35:44 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:18:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@
 #include <list>
 #include <deque>
 #include <utility>
+#include <unordered_map>
 
 // Network includes
 #include <poll.h>		//maybe actually C include? - might not need if sys/epoll
@@ -58,15 +59,12 @@
 #include <limits.h>
 #include <errno.h>
 
-/* classes */
-#include "webserv.hpp"
-#include "server.hpp"
-#include "socket.hpp"
-#include "error.hpp"
-#include "httpHandler.hpp"
+/* forward declarations*/
+struct s_location;
+class Server;
+class Webserv;
 
 /* enums, defines and errors */
-struct s_location;
 
 enum class eSocket
 {

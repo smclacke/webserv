@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/06 14:55:58 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:03:10 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define HTTP_HANDLER_HPP
 
 #include "web.hpp"
+#include "server.hpp"
 
 enum class eHttpStatusCode
 {
@@ -75,12 +76,38 @@ enum class eHttpStatusCode
 	NetworkAuthenticationRequired = 511
 };
 
+enum eRequestHeader
+{
+	Host,
+	UserAgent,
+	ContentType,
+	ContentLength,
+	Invalid
+};
+
+enum class eHttpMethod;
+struct s_location;
+
+struct s_request
+{
+	eHttpMethod method;
+	std::string uri;
+	s_location loc;
+	std::string path;
+	std::vector<std::pair<eRequestHeader, std::string>> headers;
+	std::string body;
+	bool cgi = false;
+};
+
 class httpHandler
 {
 private:
 	Server &_server;
-	std::string getStatusMessage(eHttpStatusCode statusCode);
+	s_request _request;
 	std::string generateHttpResponse(eHttpStatusCode statusCode);
+	eRequestHeader toEHeader(const std::string &header);
+	std::string cgiRequest(void);
+	std::string stdRequest(void);
 
 public:
 	/* consturctor and deconstructor */

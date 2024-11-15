@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 14:02:05 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:09:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/web.hpp"
+#include "../../include/webserv.hpp"
+#include "../../include/error.hpp"
 
 /* constructors */
 
