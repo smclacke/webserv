@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 16:18:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:11:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,9 @@ Webserv::Webserv(std::string config)
 		Server default_server;
 		_servers.push_back(default_server);
 
-		//Server default_server2(9999);
-		//_servers.push_back(default_server2);
+		Server default_server2(9999);
+		_servers.push_back(default_server2);
 
-		std::cout << "successfully created default server(s)\n";
-		std::cout << "in webserv, count = " << getServerCount() << "\n";
 		return ;
 	}
 	else
@@ -73,34 +71,49 @@ Webserv::~Webserv(void)
 }
 
 /* member functions */
-void		Webserv::addServerToEpoll(Server &server)
-{
-	t_fds	thisFd;
-
-	/* Server socket */
-	thisFd._serverfd = server.getServerSocket().getSockfd();
-	thisFd._clientfd = server.getClientSocket().getSockfd();
-	thisFd._serveraddlen = server.getServerSocket().getAddrlen();
-	thisFd._serveraddr = server.getServerSocket().getSockaddr();
-	thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
-
-	_epoll.setFd(thisFd);
-}
-
-void		Webserv::monitorServers(std::vector<Server> &servers)
+void		Webserv::addServersToEpoll()
 {
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		_epoll.monitor(servers[i].getServerSocket(), i);
-		
+		t_fds	thisFd;
+
+		thisFd._serverfd = getServer(i).getServerSocket()->getSockfd();
+		thisFd._clientfd = getServer(i).getClientSocket()->getSockfd();
+		thisFd._serveraddlen = getServer(i).getServerSocket()->getAddrlen();
+		thisFd._serveraddr = getServer(i).getServerSocket()->getSockaddr();
+		thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
+
+		_epoll.setFd(thisFd);
 	}
-	//for (size_t i = 0; i < getServerCount(); ++i)
-	//{	
-		// figure out how to close vector of fds
-		//_epoll.closeDelete(_epoll._fds[i]._serverfd, _epoll.getEpfd());
-		//closeDelete(_fds[_fdIndex]._clientfd, _epfd);
-		//std::cout << "\nClosed server socket and deleted from Epoll\n";
-	//}
+}
+
+// will also need to add file(s) to Epoll monitoring
+void		Webserv::monitorServers(std::vector<Server> &servers)
+{
+	while (true)
+	{
+		for (size_t i = 0; i < getServerCount(); ++i)
+		{
+			t_fds	thisFd = _epoll.getFd(i);
+			_epoll.connectClient(thisFd);
+			std::cout << "Client [" << i << "] connected to server successfully\n";
+			thisFd._event = _epoll.addSocketEpoll(thisFd._clientfd, _epoll.getEpfd(), eSocket::Client);
+			int numEvents = epoll_wait(_epoll.getEpfd(), thisFd._events, 10, -1);
+			if (numEvents == -1)
+				throw std::runtime_error("epoll_wait() failed\n");
+
+			for (int j = 0; j < numEvents; ++j)
+			{
+				if (thisFd._events[j].data.fd == thisFd._serverfd)
+					_epoll.makeNewConnection(servers[i].getServerSocket(), thisFd);
+				// check here connection timeout, delete 
+				else if (thisFd._events[j].events & EPOLLIN)
+					_epoll.readIncomingMessage(thisFd, j);
+				else if (thisFd._events[j].events & EPOLLOUT)
+					_epoll.sendOutgoingResponse(thisFd, j);
+			}
+		}
+	}
 }
 
 

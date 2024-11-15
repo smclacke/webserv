@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 15:41:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 17:03:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,7 +23,7 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void) : _port(8080), _serverSocket(*this, eSocket::Server), _clientSocket(*this, eSocket::Client)
+Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
@@ -45,7 +45,7 @@ Server::Server(void) : _port(8080), _serverSocket(*this, eSocket::Server), _clie
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(*this, eSocket::Server), _clientSocket(*this, eSocket::Client)
+Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
@@ -348,12 +348,12 @@ void Server::setLocation(std::vector<s_location> location)
 	_location = location;
 }
 
-void Server::setServerSocket(Socket serverSocket)
+void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 {
 	_serverSocket = serverSocket;
 }
 
-void Server::setClientSocket(Socket clientSocket)
+void Server::setClientSocket(std::shared_ptr<Socket> clientSocket)
 {
 	_clientSocket = clientSocket;
 }
@@ -389,12 +389,12 @@ const std::vector<s_location> &Server::getLocation(void) const
 	return _location;
 }
 
-Socket &Server::getServerSocket(void)
+std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
 }
 
-Socket &Server::getClientSocket(void)
+std::shared_ptr<Socket> &Server::getClientSocket(void)
 {
 	return _clientSocket;
 }

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/06 17:53:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 17:54:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,10 +54,15 @@ Socket &Socket::operator=(const Socket &socket)
 	return *this;
 }
 
+/**
+ * @brief Destroy the Socket:: Socket object
+ * @note check if the close works correctly
+ */
 Socket::~Socket()
 {
+	std::cout << "Socket deconstr" << std::endl;
 	// freeaddrinfo
-	protectedClose(_sockfd);
+	//protectedClose(_sockfd);
 }
 
 

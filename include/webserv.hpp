@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 14:34:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 17:42:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,29 +22,30 @@ class Epoll;
 
 class Webserv
 {
-private:
-	std::vector<Server> _servers;
-	Epoll 				_epoll;
+	private:
+		std::vector<Server> _servers;
+		Epoll 				_epoll;
 
-public:
-	/* constructors */
-	Webserv(void);
-	Webserv(std::string config);
-	~Webserv(void);
+	public:
+		/* constructors */
+		Webserv(void);
+		Webserv(std::string config);
+		~Webserv(void);
 
-	/* member functions */
-	void				monitorServers(std::vector<Server> &servers);
-	void				addServerToEpoll(Server &server);
+		/* member functions */
 
-	/* Setters */
-	void				addServer(Server &server);
+		void				addServersToEpoll();
+		void				monitorServers(std::vector<Server> &servers);
 
-	/* getters */
-	std::vector<Server>	&getallServer();
-	size_t				getServerCount(void) const;
-	Server				&getServer(size_t index);
-	Server				&getServer(std::string name);
-	Epoll				&getEpoll();
+		/* Setters */
+		void				addServer(Server &server);
+
+		/* getters */
+		std::vector<Server>	&getallServer();
+		size_t				getServerCount(void) const;
+		Server				&getServer(size_t index);
+		Server				&getServer(std::string name);
+		Epoll				&getEpoll();
 };
 
 #endif /* WEBSERV_HPP */

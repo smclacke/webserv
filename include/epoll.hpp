@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 15:31:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:08:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,22 @@ enum class eSocket;
 
 #define MAX_EVENTS 10
 
+typedef struct s_connections
+{
+	int							_conFd;
+	socklen_t					_conAddLen;
+	struct sockaddr_in			_conAddr;
+}				t_connections;
+
 typedef struct s_fds
 {
-	int					_serverfd;
-	int					_clientfd;
-	socklen_t			_serveraddlen;
-	struct sockaddr_in	_serveraddr;
-	struct epoll_event	_event;
-	struct epoll_event	_events[MAX_EVENTS];
-	int					_newfd;
-	socklen_t			_newaddlen;
-	struct sockaddr_in	_newaddr;
-
+	int							_serverfd;
+	int							_clientfd;
+	socklen_t					_serveraddlen;
+	struct sockaddr_in			_serveraddr;
+	struct epoll_event			_event;
+	struct epoll_event			_events[MAX_EVENTS];
+	std::vector<t_connections> 	_connection;
 }				t_fds;
 
 class Epoll
@@ -51,12 +55,10 @@ class Epoll
 		/* methods */
 		void					initEpoll();
 		void					connectClient(t_fds fd);
-		void					monitor(Socket &server, size_t i);
-		void					serverSockConnect(Socket &server, t_fds fd);
-		void					readClient(t_fds fd, int i);
-		void					sendResponse(t_fds fd, int i);
+		void					makeNewConnection(std::shared_ptr<Socket> &server, t_fds fd);
+		void					readIncomingMessage(t_fds fd, int i);
+		void					sendOutgoingResponse(t_fds fd, int i);
 
-		
 		/* getters */
 		int						getEpfd() const;
 		std::vector<t_fds>		getAllFds() const;
