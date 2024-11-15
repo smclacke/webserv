@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 14:50:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 15:31:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ class Epoll
 		/* methods */
 		void					initEpoll();
 		void					connectClient(t_fds fd);
-		void					monitor(Socket &server, Socket &client, size_t i);
+		void					monitor(Socket &server, size_t i);
 		void					serverSockConnect(Socket &server, t_fds fd);
 		void					readClient(t_fds fd, int i);
 		void					sendResponse(t_fds fd, int i);

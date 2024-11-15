@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 14:51:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 15:54:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,22 @@ Webserv::Webserv(std::string config)
 	_epoll.initEpoll();
 	if (config.empty())
 	{
-		Server default_server;
-		addServerToEpoll(default_server);
-		_epoll.monitor(default_server.getServerSocket(), default_server.getClientSocket(), 0);
+		Server default_server(8080);
+		//addServerToEpoll(default_server);
+		//_epoll.monitor(default_server.getServerSocket(), 0);
+		// clean up here
+		
+		// testing multiple 
+		Server default_server2(9999);
 		_servers.push_back(default_server);
+		_servers.push_back(default_server2);
+		addServerToEpoll(default_server2);
+		addServerToEpoll(default_server);
+
+		//_epoll.monitor(default_server.getServerSocket(), 0);
+		monitorServers(getallServer());
+		// testing multiple
+		
 		return;
 	}
 	std::ifstream file(config);
@@ -77,7 +89,7 @@ void		Webserv::addServerToEpoll(Server &server)
 	thisFd._serveraddlen = server.getServerSocket().getAddrlen();
 	thisFd._serveraddr = server.getServerSocket().getSockaddr();
 	thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
-	
+
 	_epoll.setFd(thisFd);
 }
 
@@ -85,7 +97,7 @@ void		Webserv::monitorServers(std::vector<Server> &servers)
 {
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		_epoll.monitor(servers[i].getServerSocket(), servers[i].getClientSocket(), i);
+		_epoll.monitor(servers[i].getServerSocket(), i);
 		
 	}
 	//for (size_t i = 0; i < getServerCount(); ++i)

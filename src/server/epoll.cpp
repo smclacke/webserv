@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 15:07:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 15:36:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -134,26 +134,20 @@ void		Epoll::serverSockConnect(Socket &server, t_fds fd)
 }
 
 // i for fd index, j for event index
-void		Epoll::monitor(Socket &server, Socket &client, size_t i)
+void		Epoll::monitor(Socket &server, size_t i)
 {
 	/* Client socket */
-	(void) client;
-
 	connectClient(_fds[i]);
 	std::cout << "Client connected to server successfully \n";
 	_fds[i]._event = addSocketEpoll(_fds[i]._clientfd, _epfd, eSocket::Client);
 	while (true)
 	{
-		_numEvents = epoll_wait(_epfd, &_fds[i]._event, 10, -1);
+		_numEvents = epoll_wait(_epfd, _fds[i]._events, 10, -1);
 		if (_numEvents == -1)
 			throw std::runtime_error("epoll_wait failed\n");
 
 		for (int j = 0; j < _numEvents; ++j)
 		{
-			//std::cout << "fd events = " << _fds[i]._events[j].data.fd << "\n";
-			//std::cout << "serverfd = " << _fds[i]._serverfd << "\n";
-			//std::cout << "clientfd = " << _fds[i]._clientfd << "\n";
-			//std::cout << "events events = " << _fds[i]._events[j].events << "\n";
 			if (_fds[i]._events[j].data.fd == _fds[i]._serverfd)
 				serverSockConnect(server, _fds[i]);
 			else if (_fds[i]._events[j].events & EPOLLIN)

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/05 16:57:07 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/15 15:40:11 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,6 +89,7 @@ class Server
 
 	public:
 		Server(void);
+		Server(int portnum);
 		Server &operator=(const Server &rhs);
 		Server(std::ifstream &file, int &line_n);
 		~Server(void);

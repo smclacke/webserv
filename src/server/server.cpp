@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/07 16:10:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 15:41:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,28 @@ enum class SizeUnit
  * @note	to be removed.
  */
 Server::Server(void) : _port(8080), _serverSocket(*this, eSocket::Server), _clientSocket(*this, eSocket::Client)
+{
+	_serverName = "default_server";
+	_host = "127.0.0.01";
+	_errorPage.push_back({"/404.html", 404});
+	_clientMaxBodySize = 10;
+	s_location loc;
+	loc.allowed_methods.push_back(eHttpMethod::GET);
+	loc.allowed_methods.push_back(eHttpMethod::POST);
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);
+	loc.index_files.push_back("index.html");
+	loc.index_files.push_back("index.htm");
+	loc.index = "index.html";
+	loc.cgi_ext = ".php";
+	loc.cgi_path = "/usr/bin/php-cgi";
+	_location.push_back(loc);
+}
+
+/**
+ * @brief	data filler for testing
+ * @note	to be removed.
+ */
+Server::Server(int portnum) : _port(portnum), _serverSocket(*this, eSocket::Server), _clientSocket(*this, eSocket::Client)
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
