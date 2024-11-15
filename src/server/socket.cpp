@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:08:55 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:30:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,23 +26,6 @@ Socket::Socket(eSocket type)
 	{
 		// do server socket things
 	}
-}
-
-Socket::Socket(const Webserv &servers)
-{
-	(void)servers; // wll actually use ... somehow sometime
-
-	/*
-		for (servers[i]) i < getServerCount
-		{
-			// get server + any other necessary data
-			servers[i]._clientSocket -
-			servers[i]._serverSocket -
-			if (openSockets() < 0) // take servers[i]
-				exit(EXIT_FAILURE); // need proper error handling
-		}
-
-	*/
 }
 
 Socket &Socket::operator=(const Socket &socket)

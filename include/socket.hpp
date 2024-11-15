@@ -6,16 +6,15 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:14:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:30:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef SOCKET_HPP
 #define SOCKET_HPP
 
-#include "webserv.hpp"
+#include "web.hpp"
 
-class Webserv;
 enum class eSocket;
 
 class Socket
@@ -30,7 +29,6 @@ private:
 public:
 	Socket();
 	Socket(eSocket type);
-	Socket(const Webserv &servers);
 	Socket &operator=(const Socket &Socket);
 	~Socket();
 
@@ -38,7 +36,7 @@ public:
 
 	int openSockets();
 	void closeSockets();
-	void initEpoll(Socket &sock);
+	// void initEpoll(Socket &sock);
 };
 
 #endif /* SOCKET_HPP */
