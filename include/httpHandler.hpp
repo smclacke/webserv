@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:03:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 12:40:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,7 @@
 
 enum class eHttpStatusCode
 {
+	NotSet = 0,
 	Continue = 100,
 	SwitchingProtocols = 101,
 	OK = 200,
@@ -90,6 +91,7 @@ struct s_location;
 
 struct s_request
 {
+	eHttpStatusCode statusCode = eHttpStatusCode::NotSet;
 	eHttpMethod method;
 	std::string uri;
 	s_location loc;

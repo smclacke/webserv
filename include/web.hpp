@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:18:16 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 12:32:19 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 #include <cstdio>
 #include <memory>	  // shared pointers header
 #include <filesystem> // for directory checking
+#include <optional>
 
 // CPP containers
 #include <algorithm>

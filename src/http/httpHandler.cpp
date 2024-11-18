@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:10:26 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 13:01:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,6 +58,7 @@ Body -> after headers and appears after a blank line inbetween
 */
 
 const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
+	{eHttpStatusCode::NotSet, "Bad Request"},
 	{eHttpStatusCode::Continue, "Continue"},
 	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
 	{eHttpStatusCode::OK, "OK"},
@@ -135,6 +136,22 @@ s_location findLongestPrefixMatch(const std::string &requestUri, const std::vect
 	return longestMatch;
 }
 
+/**
+ * @brief finds the corresponding value to a headerKey
+ * @return returns the value of the header or std::nullopt if header doesnt exist
+ */
+std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey)
+{
+	for (const auto &header : request.headers)
+	{
+		if (header.first == headerKey)
+		{
+			return header.second;
+		}
+	}
+	return std::nullopt;
+}
+
 std::string httpHandler::parseResponse(const std::string &httpRequest)
 {
 	std::istringstream ss(httpRequest);
@@ -143,9 +160,11 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	// what this function generates:
 
 	// Get the request line
-	std::getline(ss, requestLine);
-	std::cout << "Request Line: " << requestLine << std::endl;
-
+	if (!std::getline(ss, requestLine))
+	{
+		std::cerr << "Failed to read request line" << std::endl;
+		return generateHttpResponse(eHttpStatusCode::BadRequest);
+	}
 	/* handle request line -> to be turned into seperate function*/
 	std::istringstream requestss(requestLine);
 	std::string methodstring, version;
@@ -197,21 +216,15 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 			return (generateHttpResponse(eHttpStatusCode::BadRequest));
 		_request.headers.push_back(std::make_pair(headerType, value)); // or use {headerType, value}
 	}
-
-	// Skip the empty line between headers and body
-	std::string emptyLine;
-	std::getline(ss, emptyLine); // This will read the \r\n line
-	if (!emptyLine.empty())
+	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
+	if (length.has_value() && (std::stoi(length.value()) != 0))
 	{
-		// Handle error: expected an empty line but got something else
-		return generateHttpResponse(eHttpStatusCode::BadRequest);
-	}
-
-	// get body
-	std::string body;
-	while (std::getline(ss, body))
-	{
-		_request.body.append(body);
+		// get body
+		std::string body;
+		while (std::getline(ss, body))
+		{
+			_request.body.append(body);
+		}
 	}
 
 	std::string response;
@@ -237,6 +250,8 @@ eRequestHeader httpHandler::toEHeader(const std::string &header)
 
 std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
 {
+	if (statusCode == eHttpStatusCode::NotSet)
+		statusCode = eHttpStatusCode::BadRequest;
 	std::string message;
 	auto it = statusMessages.find(statusCode);
 	if (it != statusMessages.end())
