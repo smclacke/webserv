@@ -397,7 +397,41 @@ Example flow:
 	The sockets (client and server) are the actual objects that manage the connections, while the server coordinates the connections and communication.
 
 
+###################################################################################################################################
+###################################################################################################################################
 
+**step by step through start to finish with all epoll + multiple servers**
+**step by step through start to finish with all epoll + multiple servers**
+
+(using jovi example)
+
+main {
+set servers from config - juluis handles this and gives me the servers
+create serversocket - happens when instaniating the servers (each by default have a server socket) - can get rid of client socket tho?
+createpollloop - webserv/epoll after everything is initied 
+}
+
+// create server socketS and all to epoll
+- socket - setsockopt - bind - listen
+
+// poll loop
+while (true) ... 
+check poll fds aren't empty
+ - handle client activity
+ - poll size (using poll()) so if 0 continue loop 
+		else if > 0 + < pollsize
+			if pollin, accept connection, handle client data, or file read
+			if pollout, get client count, get client (get state - response/sending)
+			
+ 
+
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------------------------
 
 
 #########################################################################
