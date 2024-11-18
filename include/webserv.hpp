@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:37:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:27:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,8 +22,8 @@ class Epoll;
 class Webserv
 {
 	private:
-		std::vector<std::shared_ptr<Server>> _servers;
-		Epoll 				_epoll;
+		std::vector<std::shared_ptr<Server>>	_servers;
+		Epoll 									_epoll;
 
 	public:
 		/* constructors */
@@ -32,7 +32,6 @@ class Webserv
 		~Webserv(void);
 
 		/* member functions */
-
 		void				addServersToEpoll();
 		void				monitorServers(std::vector<std::shared_ptr<Server>> &servers);
 
@@ -40,11 +39,11 @@ class Webserv
 		void				addServer(std::shared_ptr<Server> server);
 
 		/* getters */
-		std::shared_ptr<Server> getServer(size_t index);
-		std::shared_ptr<Server> getServer(std::string name);
-		std::vector<std::shared_ptr<Server>> &getallServer();
-		size_t getServerCount(void) const;
-		Epoll				&getEpoll();
+		std::shared_ptr<Server> 				getServer(size_t index);
+		std::shared_ptr<Server> 				getServer(std::string name);
+		std::vector<std::shared_ptr<Server>>	&getAllServers();
+		size_t 									getServerCount(void) const;
+		Epoll									&getEpoll();
 };
 
 #endif /* WEBSERV_HPP */

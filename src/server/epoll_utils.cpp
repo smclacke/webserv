@@ -6,15 +6,19 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:23:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:26:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
 
+/**
+ * @todo removed http response function and use Julius' stuff
+ * @todo check closeDelete order
+ */
+
 /* Epoll utils */
-// will remove and use Julius' function
 std::string Epoll::generateHttpResponse(const std::string &message)
 {
 	size_t	contentLength = message.size();
@@ -55,7 +59,7 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 	return event;
 }
 
- void		Epoll::addConnectionEpoll(int connection, int epfd, struct epoll_event event)
+void		Epoll::addConnectionEpoll(int connection, int epfd, struct epoll_event event)
 {
 	event.events = EPOLLIN;
 	event.data.fd = connection;
@@ -92,16 +96,15 @@ void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
 	std::cout << "Modified client socket for reading\n";
 }
 
-
 void		Epoll::setNonBlocking(int connection)
 {
 	int	flag = fcntl(connection, F_GETFL, 0);
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
+// check order of this
 void		Epoll::closeDelete(int fd, int epfd)
 {
 	protectedClose(fd);
 	epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
 }
-

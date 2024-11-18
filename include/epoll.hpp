@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 17:09:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:28:47 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,30 +40,29 @@ enum class clientStatus
 
 typedef struct s_clients
 {
-	int							_conFd;
-	socklen_t					_conAddLen;
-	struct sockaddr_in			_conAddr;
+	int							_fd;
+	socklen_t					_addLen;
+	struct sockaddr_in			_addr;
 }				t_clients;
 
-typedef struct s_fds
+typedef struct s_serverData
 {
-	int											_serverfd;
-	int											_clientfd; //socket
+	int											_serverSock;
+	int											_clientSock;
 	std::unordered_map<int, timePoint>			_clientStatus;
-	std::vector<t_clients> 						_clients;
-	socklen_t									_serveraddlen;
-	struct sockaddr_in							_serveraddr;
+	std::vector<t_clients> 						_clients;	// connections for server socket to accept
+	socklen_t									_serverAddlen;
+	struct sockaddr_in							_serverAddr;
 	struct epoll_event							_event;
 	struct epoll_event							_events[MAX_EVENTS];
-}				t_fds;
+}				t_serverData;
 
 class Epoll
 {
 	private:
-		int					_epfd;
-		std::vector<t_fds>	_fds;
-		int					_numEvents;
-
+		int								_epfd;
+		std::vector<t_serverData>		_serverData;
+		int								_numEvents;
 
 	public:
 		Epoll();
@@ -72,32 +71,32 @@ class Epoll
 		~Epoll();
 
 		/* methods */
-		void					initEpoll();
-		void					clientStatus(t_fds fd);
-		void					connectClient(t_fds fd);
-		void					makeNewConnection(std::shared_ptr<Socket> &server, t_fds fd);
-		void					readIncomingMessage(t_fds fd, int i);
-		void					sendOutgoingResponse(t_fds fd, int i);
+		void							initEpoll();
+		void							clientStatus(t_serverData server);
+		void							connectClient(t_serverData server);
+		void							makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server);
+		void							readIncomingMessage(t_serverData server, int i);
+		void							sendOutgoingResponse(t_serverData server, int i);
 
 		/* getters */
-		int						getEpfd() const;
-		std::vector<t_fds>		getAllFds() const;
-		t_fds					getFd(size_t i) const;
-		int						getNumEvents() const;
+		int								getEpfd() const;
+		std::vector<t_serverData>		getAllServers() const;
+		t_serverData					getServer(size_t i) const;
+		int								getNumEvents() const;
 
 		/* setters */
-		void					setEpfd(int fd);
-		void					setFd(t_fds fd);
-		void					setNumEvents(int numEvents);
+		void							setEpfd(int fd);
+		void							setServer(t_serverData server);
+		void							setNumEvents(int numEvents);
 
 		/* utils -> epoll_utils.cpp */
-		std::string				generateHttpResponse(const std::string &message);
-		struct epoll_event		addSocketEpoll(int sockfd, int epfd, eSocket type);
-		void					addConnectionEpoll(int connection, int epfd, struct epoll_event event);
-		void					switchOUTMode(int fd, int epfd, struct epoll_event event);
-		void					switchINMode(int fd, int epfd, struct epoll_event event);
-		void					setNonBlocking(int connection);
-		void					closeDelete(int fd, int epfd);
+		std::string						generateHttpResponse(const std::string &message);
+		struct epoll_event				addSocketEpoll(int sockfd, int epfd, eSocket type);
+		void							addConnectionEpoll(int connection, int epfd, struct epoll_event event);
+		void							switchOUTMode(int fd, int epfd, struct epoll_event event);
+		void							switchINMode(int fd, int epfd, struct epoll_event event);
+		void							setNonBlocking(int connection);
+		void							closeDelete(int fd, int epfd);
 };
 
 #endif /* EPOLL_HPP */

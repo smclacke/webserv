@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 17:10:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:32:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "../../include/error.hpp"
 
 /* constructors */
-
 /**
  * @brief default constructor in case no config file was provided.
  */
@@ -28,16 +27,17 @@ Webserv::Webserv(void)
 Webserv::Webserv(std::string config)
 {
     std::cout << "Webserv booting up" << std::endl;
-    std::cout << "config: " << config << std::endl;
 	_epoll.initEpoll();
     if (config.empty())
     {
+		std::cout << "default configuration\n";
         auto default_server = std::make_shared<Server>(8080);
         _servers.push_back(default_server);
         auto default_server2 = std::make_shared<Server>(9999);
         _servers.push_back(default_server2);
         return;
     }
+    std::cout << "config: " << config << std::endl;
     std::ifstream file(config);
     if (!file.is_open())
         throw std::runtime_error("unable to open file: \"" + config + "\"");
@@ -76,20 +76,22 @@ void		Webserv::addServersToEpoll()
 	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		t_fds	thisFd;
+		t_serverData	thisServer;
 
-		thisFd._serverfd = getServer(i)->getServerSocket()->getSockfd();
-		thisFd._serveraddlen = getServer(i)->getServerSocket()->getAddrlen();
-		thisFd._serveraddr = getServer(i)->getServerSocket()->getSockaddr();
-		thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
+		thisServer._serverSock = getServer(i)->getServerSocket()->getSockfd();
+		thisServer._clientSock = getServer(i)->getClientSocket()->getSockfd();
+		thisServer._serverAddlen = getServer(i)->getServerSocket()->getAddrlen();
+		thisServer._serverAddr = getServer(i)->getServerSocket()->getSockaddr();
+		thisServer._event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
 
-		_epoll.setFd(thisFd);
-		std::cout << "Added server [" << i << "] to epoll monitoring,\n\t listening on port: " << getServer(i)->getPort() << "\n";
+		_epoll.setServer(thisServer);
+		std::cout << "Added server [" << i << "] sockets to epoll monitoring,\n\t listening on port: " << getServer(i)->getPort() << "\n";
 	}
 	std::cout << "--------------------------\n";
 }
 
-// will also need to add file(s) to Epoll monitoring
+// <<<< add files to epoll >>>>>
+
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~\n";
@@ -100,27 +102,27 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 	{
 		for (size_t i = 0; i < getServerCount(); ++i)
 		{
-			if (_epoll.getFd(i)._serverfd < 0)
+			if (_epoll.getServer(i)._serverSock < 0)
 			{
 				std::cout << "server fd < 0\n";
 				throw std::runtime_error("Server fd is < 0\n");
 			}
-			t_fds	thisFd = _epoll.getFd(i);
+			t_serverData	thisServer = _epoll.getServer(i);
 
 			 // client activity...
-			_epoll.connectClient(thisFd);
+			_epoll.connectClient(thisServer);
 		
-			int numEvents = epoll_wait(_epoll.getEpfd(), thisFd._events, 10, TIMEOUT);
+			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
 			if (numEvents == -1)
 				throw std::runtime_error("epoll_wait() failed\n");
 			else if (numEvents == 0) // double check this
 				continue ;
 			for (int j = 0; j < numEvents; ++j)
 			{
-				if (thisFd._events[j].events & EPOLLIN)
+				if (thisServer._events[j].events & EPOLLIN)
 				{
 
-				// handle server socket if (j < thisFd (?))
+				// handle server socket if (j < thisServer (?))
 					// acceptconnection
 					
 				// handle client socket
@@ -131,7 +133,7 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 					//else handle files
 					
 				}
-				else if (thisFd._events[j].events & EPOLLOUT)
+				else if (thisServer._events[j].events & EPOLLOUT)
 				{
 					//if (client...) 
 						// if get client status + check response or send
@@ -146,34 +148,31 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 					// break ;
 					
 				// OLD VERSION
-				//if (thisFd._events[j].data.fd == thisFd._serverfd)
-				//	_epoll.makeNewConnection(servers[i]->getServerSocket(), thisFd);
+				//if (thisServer._events[j].data.fd == thisServer._serverfd)
+				//	_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
 				//// check here connection timeout, delete 
-				//else if (thisFd._events[j].events & EPOLLIN)
-				//	_epoll.readIncomingMessage(thisFd, j);
-				//else if (thisFd._events[j].events & EPOLLOUT)
-				//	_epoll.sendOutgoingResponse(thisFd, j);
+				//else if (thisServer._events[j].events & EPOLLIN)
+				//	_epoll.readIncomingMessage(thisServer, j);
+				//else if (thisServer._events[j].events & EPOLLOUT)
+				//	_epoll.sendOutgoingResponse(thisServer, j);
 			}
 		}
 	}
 }
 
-
 /* setters */
-
 void Webserv::addServer(std::shared_ptr<Server> server)
 {
 	_servers.push_back(server);
 }
 
 /* getters */
-
 std::shared_ptr<Server> Webserv::getServer(size_t index)
 {
 	return _servers[index];
 }
 
-std::vector<std::shared_ptr<Server>> &Webserv::getallServer()
+std::vector<std::shared_ptr<Server>> &Webserv::getAllServers()
 {
 	return _servers;
 }

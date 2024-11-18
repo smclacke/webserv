@@ -6,14 +6,17 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:47:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:21:52 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/socket.hpp"
 
-/* constructors */
+/**
+ * @todo correct destruction + clean up
+ */
 
+/* constructors */
 Socket::Socket() {}
 
 Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _reuseaddr(1), _flags(0)
@@ -65,7 +68,6 @@ Socket::~Socket()
 	//protectedClose(_sockfd);
 }
 
-
 /* methods */
 void		Socket::openServerSocket(const Server &servInstance)
 {
@@ -102,8 +104,6 @@ void		Socket::openServerSocket(const Server &servInstance)
 	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
 }
 
-
-
 void 		Socket::openClientSocket()
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -117,9 +117,7 @@ void 		Socket::openClientSocket()
 	}
 }
 
-
 /* getters */
-
 int					Socket::getSockfd() const
 {
 	return this->_sockfd;
@@ -136,7 +134,6 @@ socklen_t			Socket::getAddrlen() const
 }
 
 /* setters */
-
 void				Socket::setSockfd(int fd)
 {
 	this->_sockfd = fd;

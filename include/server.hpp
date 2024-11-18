@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:54:45 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:27:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 
 #include "web.hpp"
 #include "socket.hpp"
-
-//enum class eSocket;
 
 enum class eHttpMethod
 {
@@ -122,15 +120,15 @@ class Server
 		void setClientSocket(std::shared_ptr<Socket> clientSocket);
 
 		/* getters */
-		std::string const &getServerName(void) const;
-		const std::string &getHost(void) const;
-		const int &getPort(void) const;
-		const std::string &getRoot(void) const;
-		const std::vector<s_ePage> &getErrorPage(void) const;
-		const size_t &getClientMaxBodySize(void) const;
-		const std::vector<s_location> &getLocation(void) const;
-		std::shared_ptr<Socket> &getServerSocket(void);
-		std::shared_ptr<Socket> &getClientSocket(void);
+		std::string const 				&getServerName(void) const;
+		const std::string 				&getHost(void) const;
+		const int 						&getPort(void) const;
+		const std::string 				&getRoot(void) const;
+		const std::vector<s_ePage> 		&getErrorPage(void) const;
+		const size_t 					&getClientMaxBodySize(void) const;
+		const std::vector<s_location> 	&getLocation(void) const;
+		std::shared_ptr<Socket>		 	&getServerSocket(void);
+		std::shared_ptr<Socket>		 	&getClientSocket(void);
 };
 
 #endif /* SERVER_HPP */

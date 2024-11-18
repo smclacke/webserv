@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:28:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:30:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 			config = std::string(argv[1]);
 		Webserv wserv(config);
 		wserv.addServersToEpoll();
-		wserv.monitorServers(wserv.getallServer());
+		wserv.monitorServers(wserv.getAllServers());
 	}
 	catch (eConf &e)
 	{

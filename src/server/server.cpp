@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 16:26:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 18:22:54 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,6 +77,8 @@ Server &Server::operator=(const Server &rhs)
 		_errorPage = rhs._errorPage;
 		_clientMaxBodySize = rhs._clientMaxBodySize;
 		_location = rhs._location;
+		_serverSocket = rhs._serverSocket;
+		_clientSocket = rhs._clientSocket;
 	}
 	return *this;
 }
@@ -335,7 +337,6 @@ void Server::parseRoot(std::stringstream &ss, int line_n)
 }
 
 /* setters */
-
 void Server::addLocation(s_location route)
 {
 	_location.push_back(route);
@@ -386,6 +387,11 @@ void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 	_serverSocket = serverSocket;
 }
 
+void Server::setClientSocket(std::shared_ptr<Socket> clientSocket)
+{
+	_clientSocket = clientSocket;
+}
+
 /* getters */
 const std::string &Server::getServerName(void) const
 {
@@ -425,4 +431,9 @@ const std::vector<s_location> &Server::getLocation(void) const
 std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
+}
+
+std::shared_ptr<Socket> &Server::getClientSocket(void)
+{
+	return _clientSocket;
 }
