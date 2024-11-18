@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:27:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:57:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this))
+Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
@@ -35,7 +35,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 	s_location loc;
 	loc.allowed_methods.push_back(eHttpMethod::GET);
 	loc.allowed_methods.push_back(eHttpMethod::POST);
-	loc.allowed_methods.push_back(eHttpMethod::DELETE);
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);	
 	loc.index_files.push_back("index.html");
 	loc.index_files.push_back("index.htm");
 	loc.index = "index.html";
@@ -48,11 +48,10 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
-	_port = 8080;
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
@@ -387,11 +386,6 @@ void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 	_serverSocket = serverSocket;
 }
 
-void Server::setClientSocket(std::shared_ptr<Socket> clientSocket)
-{
-	_clientSocket = clientSocket;
-}
-
 /* getters */
 const std::string &Server::getServerName(void) const
 {
@@ -431,9 +425,4 @@ const std::vector<s_location> &Server::getLocation(void) const
 std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
-}
-
-std::shared_ptr<Socket> &Server::getClientSocket(void)
-{
-	return _clientSocket;
 }

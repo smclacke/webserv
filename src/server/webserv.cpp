@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:28:29 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:40:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,7 @@ Webserv::~Webserv(void)
 /* member functions */
 void		Webserv::addServersToEpoll()
 {
+	std::cout << "------------------------------\n\n";
 	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
@@ -100,6 +101,8 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 	{
 		for (size_t i = 0; i < getServerCount(); ++i)
 		{
+			if (_epoll.getFd(i)._serverfd < 0)
+				throw std::runtime_error("Server fd is < 0\n");
 			t_fds	thisFd = _epoll.getFd(i);
 			
 			// do i need to connect client here?

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:27:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:54:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "web.hpp"
 #include "socket.hpp"
 
-enum class eSocket;
+//enum class eSocket;
 
 enum class eHttpMethod
 {
@@ -85,6 +85,7 @@ class Server
 		size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
 		std::vector<s_location> _location;
 		std::shared_ptr<Socket> _serverSocket;
+		std::shared_ptr<Socket> _clientSocket;
 
 	public:
 		Server(void);
@@ -118,6 +119,7 @@ class Server
 		void setClientMaxBodySize(size_t clientMaxBodySize);
 		void setLocation(std::vector<s_location> location);
 		void setServerSocket(std::shared_ptr<Socket> serverSocket);
+		void setClientSocket(std::shared_ptr<Socket> clientSocket);
 
 		/* getters */
 		std::string const &getServerName(void) const;
@@ -128,6 +130,7 @@ class Server
 		const size_t &getClientMaxBodySize(void) const;
 		const std::vector<s_location> &getLocation(void) const;
 		std::shared_ptr<Socket> &getServerSocket(void);
+		std::shared_ptr<Socket> &getClientSocket(void);
 };
 
 #endif /* SERVER_HPP */
