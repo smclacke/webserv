@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 13:53:07 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 16:01:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,24 +24,6 @@ httpHandler::httpHandler(Server &server) : _server(server)
 httpHandler::~httpHandler(void)
 {
 }
-
-// default cgi request to unpack
-std::string cgi = "POST /cgi-bin/script.cgi HTTP/1.1\r\n"
-				  "Host: www.example.com\r\n"
-				  "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3\r\n"
-				  "Content-Type: application/x-www-form-urlencoded\r\n"
-				  "Content-Length: 27\r\n"
-				  "\r\n"
-				  "name=John&age=30\r\n";
-
-// default POST request to unpack
-std::string post = "POST /submit-form HTTP/1.1\r\n"
-				   "Host: www.example.com\r\n"
-				   "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3\r\n"
-				   "Content-Type: application/x-www-form-urlencoded\r\n"
-				   "Content-Length: 27\r\n"
-				   "\r\n"
-				   "name=John&age=30\r\n";
 
 /*
 Request line - "method request_URI HTTP version"
@@ -159,9 +141,11 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	// Get the request line
 	if (!parseRequestLine(ss))
 		return (generateHttpResponse(_request.statusCode));
+	std::cout << "Good request line" << std::endl; // to be removed
 
 	if (!parseHeaders(ss))
 		return (generateHttpResponse(_request.statusCode));
+	std::cout << "Good header lines" << std::endl;
 	// parse body
 	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
 	if (length.has_value() && (std::stoi(length.value()) != 0))
@@ -253,9 +237,16 @@ bool httpHandler::parseRequestLine(std::istringstream &ss)
 
 	// URI match against location
 	_request.loc = findLongestPrefixMatch(_request.uri, _server.getLocation());
-	if (_request.loc.cgi_ext == _request.uri.substr(_request.uri.find_last_of(".") + 1)) // cgi extension
+	size_t pos = _request.uri.find_last_of(".");
+	if (pos != std::string::npos)
 	{
-		cgi = true;
+		std::string extension = _request.uri.substr(pos);
+		if (extension == _request.loc.cgi_ext)
+			_request.cgi = true;
+	}
+	if (_request.cgi == true)
+	{
+		std::cout << "This request is a cgi request" << std::endl;
 		if (!_request.loc.root.empty())
 			_request.path = "." + _request.loc.root + _request.uri;
 		else
@@ -286,8 +277,10 @@ bool httpHandler::parseHeaders(std::istringstream &ss)
 	// Read headers
 	std::string header;
 	std::string key, value;
-	while (std::getline(ss, header) && !header.empty())
+	while (std::getline(ss, header) && !header.empty() && header != "\r")
 	{
+		if (header.back() == '\r')
+			header.pop_back();
 		std::cout << "Header: " << header << std::endl;
 		std::istringstream split(header);
 		getline(split, key, ':');

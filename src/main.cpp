@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:07:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 16:01:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,23 @@ int main(int argc, char **argv)
 	{
 		try
 		{
+			// default cgi request to unpack
+			std::string cgi = "POST /loc2dir/cgi_path/test_file.php HTTP/1.1\r\n"
+							  "Host: www.example.com\r\n"
+							  "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3\r\n"
+							  "Content-Type: application/x-www-form-urlencoded\r\n"
+							  "Content-Length: 27\r\n"
+							  "\r\n"
+							  "name=John&age=30\r\n";
+
+			// default POST request to unpack
+			std::string std = "POST /images HTTP/1.1\r\n"
+							  "Host: www.example.com\r\n"
+							  "User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3\r\n"
+							  "Content-Type: application/x-www-form-urlencoded\r\n"
+							  "Content-Length: 27\r\n"
+							  "\r\n"
+							  "name=John&age=30\r\n";
 			verifyInput(argc, argv);
 			std::string config = "";
 			if (argc == 2)
@@ -27,9 +44,15 @@ int main(int argc, char **argv)
 			// monitor
 			for (size_t i = 0; i < wserv.getServerCount(); ++i)
 			{
-				std::shared_ptr<Server> serv = wserv.getServer(i); // Get shared pointer to server
-				serv->printServer();							   // Call printServer on the existing server
+				std::shared_ptr<Server> serv = wserv.getServer(i);
+				serv->printServer();
 			}
+			std::cout << "\n=============================\n"
+					  << std::endl;
+			std::shared_ptr<Server> serv = wserv.getServer(0);
+			std::string response = serv->handleRequest(std);
+			std::cout << "\nResponse:\n"
+					  << response << std::endl;
 		}
 		catch (eConf &e)
 		{
