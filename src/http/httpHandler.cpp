@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 13:01:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 13:53:07 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -140,7 +140,7 @@ s_location findLongestPrefixMatch(const std::string &requestUri, const std::vect
  * @brief finds the corresponding value to a headerKey
  * @return returns the value of the header or std::nullopt if header doesnt exist
  */
-std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey)
+std::optional<std::string> httpHandler::findHeaderValue(const s_request &request, eRequestHeader headerKey)
 {
 	for (const auto &header : request.headers)
 	{
@@ -155,67 +155,14 @@ std::optional<std::string> findHeaderValue(const s_request &request, eRequestHea
 std::string httpHandler::parseResponse(const std::string &httpRequest)
 {
 	std::istringstream ss(httpRequest);
-	std::string requestLine;
-
-	// what this function generates:
 
 	// Get the request line
-	if (!std::getline(ss, requestLine))
-	{
-		std::cerr << "Failed to read request line" << std::endl;
-		return generateHttpResponse(eHttpStatusCode::BadRequest);
-	}
-	/* handle request line -> to be turned into seperate function*/
-	std::istringstream requestss(requestLine);
-	std::string methodstring, version;
-	if (!(requestss >> methodstring >> _request.uri >> version))
-		return (generateHttpResponse(eHttpStatusCode::BadRequest));
+	if (!parseRequestLine(ss))
+		return (generateHttpResponse(_request.statusCode));
 
-	// check version
-	if (version != "HTTP/1.1")
-		return (generateHttpResponse(eHttpStatusCode::HTTPVersionNotSupported));
-
-	// check METHOD
-	_request.method = _server.allowedHttpMethod(methodstring);
-	if (_request.method == eHttpMethod::INVALID) // method check
-		return (generateHttpResponse(eHttpStatusCode::MethodNotAllowed));
-
-	// URI match against location
-	_request.loc = findLongestPrefixMatch(_request.uri, _server.getLocation());
-	if (_request.loc.cgi_ext == _request.uri.substr(_request.uri.find_last_of(".") + 1)) // cgi extension
-	{
-		cgi = true;
-		if (!_request.loc.root.empty())
-			_request.path = "." + _request.loc.root + _request.uri;
-		else
-			_request.path = "." + _server.getRoot() + _request.uri;
-		if (!std::filesystem::exists(_request.path))
-			return (generateHttpResponse(eHttpStatusCode::NotFound));
-	}
-	else
-	{
-		if (!_request.loc.root.empty())
-			_request.path = "." + _request.loc.root + _request.uri;
-		else
-			_request.path = "." + _server.getRoot() + _request.uri;
-		if (!std::filesystem::exists(_request.path))
-			return (generateHttpResponse(eHttpStatusCode::NotFound));
-	}
-
-	// Read headers
-	std::string header;
-	std::string key, value;
-	while (std::getline(ss, header) && !header.empty())
-	{
-		std::cout << "Header: " << header << std::endl;
-		std::istringstream split(header);
-		getline(split, key, ':');
-		getline(split >> std::ws, value);
-		eRequestHeader headerType = toEHeader(key);
-		if (headerType == Invalid)
-			return (generateHttpResponse(eHttpStatusCode::BadRequest));
-		_request.headers.push_back(std::make_pair(headerType, value)); // or use {headerType, value}
-	}
+	if (!parseHeaders(ss))
+		return (generateHttpResponse(_request.statusCode));
+	// parse body
 	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
 	if (length.has_value() && (std::stoi(length.value()) != 0))
 	{
@@ -223,10 +170,9 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 		std::string body;
 		while (std::getline(ss, body))
 		{
-			_request.body.append(body);
+			_request.body.append(body + "\n");
 		}
 	}
-
 	std::string response;
 	if (_request.cgi == true)
 		cgiRequest();
@@ -270,4 +216,89 @@ std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
 			 << message;
 
 	return response.str();
+}
+
+bool httpHandler::parseRequestLine(std::istringstream &ss)
+{
+	std::string requestLine;
+
+	// Get the request line
+	if (!std::getline(ss, requestLine))
+	{
+		std::cerr << "Failed to read request line" << std::endl;
+		_request.statusCode = eHttpStatusCode::BadRequest;
+		return (false);
+	}
+	/* prase request line */
+	std::istringstream requestss(requestLine);
+	std::string methodstring, version;
+	if (!(requestss >> methodstring >> _request.uri >> version))
+	{
+		_request.statusCode = eHttpStatusCode::BadRequest;
+		return (false);
+	}
+	// check version
+	if (version != "HTTP/1.1")
+	{
+		_request.statusCode = eHttpStatusCode::HTTPVersionNotSupported;
+		return (false);
+	}
+	// check METHOD
+	_request.method = _server.allowedHttpMethod(methodstring);
+	if (_request.method == eHttpMethod::INVALID) // method check
+	{
+		_request.statusCode = eHttpStatusCode::MethodNotAllowed;
+		return (false);
+	}
+
+	// URI match against location
+	_request.loc = findLongestPrefixMatch(_request.uri, _server.getLocation());
+	if (_request.loc.cgi_ext == _request.uri.substr(_request.uri.find_last_of(".") + 1)) // cgi extension
+	{
+		cgi = true;
+		if (!_request.loc.root.empty())
+			_request.path = "." + _request.loc.root + _request.uri;
+		else
+			_request.path = "." + _server.getRoot() + _request.uri;
+		if (!std::filesystem::exists(_request.path))
+		{
+			_request.statusCode = eHttpStatusCode::NotFound;
+			return (false);
+		}
+	}
+	else
+	{
+		if (!_request.loc.root.empty())
+			_request.path = "." + _request.loc.root + _request.uri;
+		else
+			_request.path = "." + _server.getRoot() + _request.uri;
+		if (!std::filesystem::exists(_request.path))
+		{
+			_request.statusCode = eHttpStatusCode::NotFound;
+			return (false);
+		}
+	}
+	return (true);
+}
+
+bool httpHandler::parseHeaders(std::istringstream &ss)
+{
+	// Read headers
+	std::string header;
+	std::string key, value;
+	while (std::getline(ss, header) && !header.empty())
+	{
+		std::cout << "Header: " << header << std::endl;
+		std::istringstream split(header);
+		getline(split, key, ':');
+		getline(split >> std::ws, value);
+		eRequestHeader headerType = toEHeader(key);
+		if (headerType == Invalid)
+		{
+			_request.statusCode = eHttpStatusCode::BadRequest;
+			return (false);
+		}
+		_request.headers.push_back(std::make_pair(headerType, value)); // or use {headerType, value}
+	}
+	return (true);
 }
