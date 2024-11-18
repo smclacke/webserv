@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:57:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 16:26:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,7 +48,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";

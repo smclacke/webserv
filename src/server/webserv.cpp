@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:40:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 16:31:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,6 @@ Webserv::~Webserv(void)
 /* member functions */
 void		Webserv::addServersToEpoll()
 {
-	std::cout << "------------------------------\n\n";
 	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
@@ -85,7 +84,7 @@ void		Webserv::addServersToEpoll()
 		thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
 
 		_epoll.setFd(thisFd);
-		std::cout << "Added server [" << i << "] to epoll monitoring\n";
+		std::cout << "Added server [" << i << "] to epoll monitoring,\n\t listening on port: " << getServer(i)->getPort() << "\n";
 	}
 	std::cout << "--------------------------\n";
 }
@@ -105,7 +104,6 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 				throw std::runtime_error("Server fd is < 0\n");
 			t_fds	thisFd = _epoll.getFd(i);
 			
-			// do i need to connect client here?
 			_epoll.connectClient(thisFd);
 			// does this need to be added to epoll here too?
 			// does client need to be a socket already or shall i just create server sockets and then accept new connections?
