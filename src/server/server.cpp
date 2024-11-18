@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:27:11 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 11:21:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,7 @@ void Server::printServer(void)
 		std::cout << "  Index: " << (location.index.empty() ? "None" : location.index) << std::endl;
 		std::cout << "  CGI Ext: " << (location.cgi_ext.empty() ? "None" : location.cgi_ext) << std::endl;
 		std::cout << "  CGI Path: " << (location.cgi_path.empty() ? "None" : location.cgi_path) << std::endl;
+		std::cout << "  -------- location end --------  " << std::endl;
 	}
 }
 

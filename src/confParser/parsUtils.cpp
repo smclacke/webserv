@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:11:14 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 11:16:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ void checkLocationPaths(s_location &loc, std::string const root, int const line_
 	// check root path
 	if (loc.root.empty() == false)
 	{
-		if (!std::filesystem::exists(loc.root)) // ignore the redline - compilation is fine
+		if (!std::filesystem::exists("." + loc.root)) // ignore the redline - compilation is fine
 			throw eConf("Root directory \'" + loc.root + "\'does not exist", line_n);
 
 		std::string combined;
@@ -44,9 +44,9 @@ void checkLocationPaths(s_location &loc, std::string const root, int const line_
 		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
 			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
 
-		combined = "." + loc.root + loc.cgi_path; // check cgi path
-		if (!std::filesystem::exists(combined))	  // ignore the redline - compilation is fine
-			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
+		combined = "." + loc.root + loc.path + loc.cgi_path; // check cgi path
+		if (!std::filesystem::exists(combined))				 // ignore the redline - compilation is fine
+			throw eConf("cgi directory \'" + combined + "\' does not exist", line_n);
 	}
 	else
 	{
@@ -55,9 +55,9 @@ void checkLocationPaths(s_location &loc, std::string const root, int const line_
 		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
 			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
 
-		combined = "." + root + loc.cgi_path;	// check cgi_path
-		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
-			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
+		combined = "." + root + loc.path + loc.cgi_path; // check cgi_path
+		if (!std::filesystem::exists(combined))			 // ignore the redline - compilation is fine
+			throw eConf("cgi directory \'" + combined + "\' does not exist", line_n);
 	}
 }
 

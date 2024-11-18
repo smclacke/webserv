@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:09:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 11:22:18 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,12 +20,14 @@
  */
 Webserv::Webserv(void)
 {
+	std::cout << "Webserv booting up" << std::endl;
 	auto default_server = std::make_shared<Server>();
 	_servers.push_back(default_server);
 }
 
 Webserv::Webserv(std::string config)
 {
+	std::cout << "Webserv booting up" << std::endl;
 	std::cout << "config: " << config << std::endl;
 	if (config.empty())
 	{
@@ -62,7 +64,7 @@ Webserv::Webserv(std::string config)
 
 Webserv::~Webserv(void)
 {
-	std::cout << "Hello i am the Webserv deconstructor" << std::endl;
+	std::cout << "Webserv shutting down" << std::endl;
 }
 
 /* member functions */
