@@ -6,11 +6,14 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 17:03:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:32:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/server.hpp"
+#include "../../include/error.hpp"
+#include "../../include/httpHandler.hpp"
+#include <filesystem>
 
 enum class SizeUnit
 {
@@ -49,6 +52,8 @@ Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Soc
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
+	_port = 8080;
+	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -77,7 +82,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n)
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -96,6 +101,7 @@ Server::Server(std::ifstream &file, int &line_n)
 		if (pos != std::string::npos)
 		{
 			s_location loc = parseLocation(file, line, line_n);
+			checkLocationPaths(loc, _root, line_n);
 			if (loc.client_body_buffer_size > this->_clientMaxBodySize)
 				throw eConf("client_body_buffer_size exceeds server's maximum size limit", line_n);
 			this->addLocation(loc);
@@ -112,6 +118,13 @@ Server::~Server()
 }
 
 /* member functions */
+
+std::string Server::handleRequest(const std::string &request)
+{
+	httpHandler parser(*this);
+	std::string response = parser.parseResponse(request);
+	return (response);
+}
 
 /**
  * @brief finds if the HHTP methods exists
@@ -132,6 +145,7 @@ void Server::printServer(void)
 	std::cout << "Server Name: " << _serverName << std::endl;
 	std::cout << "Host: " << _host << std::endl;
 	std::cout << "Port: " << _port << std::endl;
+	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Client Max Body Size: " << _clientMaxBodySize << "byte" << std::endl;
 	std::cout << "Error Pages:" << _errorPage.size() << std::endl;
 	for (const auto &errorPage : _errorPage)
@@ -177,6 +191,7 @@ void Server::printServer(void)
 		std::cout << "  Index: " << (location.index.empty() ? "None" : location.index) << std::endl;
 		std::cout << "  CGI Ext: " << (location.cgi_ext.empty() ? "None" : location.cgi_ext) << std::endl;
 		std::cout << "  CGI Path: " << (location.cgi_path.empty() ? "None" : location.cgi_path) << std::endl;
+		std::cout << "  -------- location end --------  " << std::endl;
 	}
 }
 
@@ -306,6 +321,20 @@ void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 	setClientMaxBodySize(maxBodySize);
 }
 
+void Server::parseRoot(std::stringstream &ss, int line_n)
+{
+	std::string root;
+	std::string unexpected;
+	if (!(ss >> root))
+		throw eConf("No value provided for directive", line_n);
+	if (ss >> unexpected)
+		throw eConf("Unexpected value found: " + unexpected, line_n);
+	root = "." + root;
+	if (!std::filesystem::exists(root)) // ignore the redline - compilation is fine
+		throw eConf("Root directory \'" + root + "\'does not exist", line_n);
+	_root = root;
+}
+
 /* setters */
 
 void Server::addLocation(s_location route)
@@ -331,6 +360,11 @@ void Server::setHost(std::string host)
 void Server::setPort(int port)
 {
 	_port = port;
+}
+
+void Server::setRoot(std::string root)
+{
+	_root = root;
 }
 
 void Server::setErrorPage(std::vector<s_ePage> errorPage)
@@ -372,6 +406,11 @@ const std::string &Server::getHost(void) const
 const int &Server::getPort(void) const
 {
 	return _port;
+}
+
+const std::string &Server::getRoot(void) const
+{
+	return _root;
 }
 
 const std::vector<s_ePage> &Server::getErrorPage(void) const

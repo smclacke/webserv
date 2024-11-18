@@ -6,13 +6,18 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/01 15:54:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/15 18:11:43 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
+#include "../../include/error.hpp"
+#include "../../include/server.hpp"
 #include <functional>
 
+/**
+ * @note check if root dir actually exists
+ */
 static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string root;
@@ -108,6 +113,9 @@ static void parseAutoindex(std::stringstream &ss, int line_n, s_location &loc)
 		loc.autoindex = false;
 }
 
+/**
+ * @note check if the dir actually exists? add the dir to the root dir?
+ */
 static void parseUploadDir(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string dir;
@@ -184,6 +192,10 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 	dirMap[directive](ss, line_n, loc);
 }
 
+/**
+ * @note check if the location path exists
+ * after perhaps replace path and root with just path if the root overwrite it but need to figure out how that works :)
+ */
 s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
 {
 	(void)file;

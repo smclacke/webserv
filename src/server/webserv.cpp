@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:24:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:40:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/web.hpp"
+#include "../../include/webserv.hpp"
+#include "../../include/error.hpp"
 
 /* constructors */
 
@@ -19,55 +20,51 @@
  */
 Webserv::Webserv(void)
 {
-	Server default_server;
+	std::cout << "Webserv booting up" << std::endl;
+	auto default_server = std::make_shared<Server>();
 	_servers.push_back(default_server);
 }
 
 Webserv::Webserv(std::string config)
 {
-	_epoll.initEpoll();
-	if (config.empty())
-	{
-		Server default_server;
-		_servers.push_back(default_server);
-
-		//Server default_server2(9999);
-		//_servers.push_back(default_server2);
-
-		return ;
-	}
-	else
-	{
-		std::ifstream file(config);
-		if (!file.is_open())
-			throw std::runtime_error("unable to open file: \"" + config + "\"");
-		std::string line;
-		int line_n = 0; // keeps track of the line_number for accurate error outputs
-		while (std::getline(file, line))
-		{
-			++line_n;
-			lineStrip(line);
-			if (line.empty()) // skip empty lines
-				continue;
-			if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
-			{
-				Server nServer = Server(file, line_n);
-				_servers.push_back(nServer);
-				if (_servers.size() == 10)
-				{
-					std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
-					return;
-				}
-				continue;
-			}
-			else
-				throw eConf("line : \"" + line + "\": not recognized", line_n);
-		}
-	}
+    std::cout << "Webserv booting up" << std::endl;
+    std::cout << "config: " << config << std::endl;
+    if (config.empty())
+    {
+        auto default_server = std::make_shared<Server>();
+        _servers.push_back(default_server);
+        return;
+    }
+    std::ifstream file(config);
+    if (!file.is_open())
+        throw std::runtime_error("unable to open file: \"" + config + "\"");
+    std::string line;
+    int line_n = 0; // keeps track of the line_number for accurate error outputs
+    while (std::getline(file, line))
+    {
+        ++line_n;
+        lineStrip(line);
+        if (line.empty()) // skip empty lines
+            continue;
+        if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
+        {
+            auto nServer = std::make_shared<Server>(file, line_n);
+            _servers.push_back(nServer);
+            if (_servers.size() == 10)
+            {
+                std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
+                return;
+            }
+            continue;
+        }
+        else
+            throw eConf("line : \"" + line + "\": not recognized", line_n);
+    }
 }
 
 Webserv::~Webserv(void)
 {
+	std::cout << "Webserv shutting down" << std::endl;
 }
 
 /* member functions */
@@ -77,10 +74,10 @@ void		Webserv::addServersToEpoll()
 	{
 		t_fds	thisFd;
 
-		thisFd._serverfd = getServer(i).getServerSocket()->getSockfd();
-		thisFd._clientfd = getServer(i).getClientSocket()->getSockfd();
-		thisFd._serveraddlen = getServer(i).getServerSocket()->getAddrlen();
-		thisFd._serveraddr = getServer(i).getServerSocket()->getSockaddr();
+		thisFd._serverfd = getServer(i)->getServerSocket()->getSockfd();
+		thisFd._clientfd = getServer(i)->getClientSocket()->getSockfd();
+		thisFd._serveraddlen = getServer(i)->getServerSocket()->getAddrlen();
+		thisFd._serveraddr = getServer(i)->getServerSocket()->getSockaddr();
 		thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
 
 		_epoll.setFd(thisFd);
@@ -88,7 +85,7 @@ void		Webserv::addServersToEpoll()
 }
 
 // will also need to add file(s) to Epoll monitoring
-void		Webserv::monitorServers(std::vector<Server> &servers)
+void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
 	while (true)
 	{
@@ -105,7 +102,7 @@ void		Webserv::monitorServers(std::vector<Server> &servers)
 			for (int j = 0; j < numEvents; ++j)
 			{
 				if (thisFd._events[j].data.fd == thisFd._serverfd)
-					_epoll.makeNewConnection(servers[i].getServerSocket(), thisFd);
+					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisFd);
 				// check here connection timeout, delete 
 				else if (thisFd._events[j].events & EPOLLIN)
 					_epoll.readIncomingMessage(thisFd, j);
@@ -119,33 +116,33 @@ void		Webserv::monitorServers(std::vector<Server> &servers)
 
 /* setters */
 
-void Webserv::addServer(Server &server)
+void Webserv::addServer(std::shared_ptr<Server> server)
 {
 	_servers.push_back(server);
 }
 
 /* getters */
 
-std::vector<Server> &Webserv::getallServer()
+std::shared_ptr<Server> Webserv::getServer(size_t index)
 {
-	return (_servers);
+	return _servers[index];
+}
+
+std::vector<std::shared_ptr<Server>> &Webserv::getallServer()
+{
+	return _servers;
 }
 
 size_t Webserv::getServerCount(void) const
 {
-	return (_servers.size());
+	return _servers.size();
 }
 
-Server &Webserv::getServer(size_t index)
+std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
-	return (_servers.at(index));
-}
-
-Server &Webserv::getServer(std::string name)
-{
-	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const Server &server)
+	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
 						   {
-							   return server.getServerName() == name; // Assuming you have a method to get the server name
+							   return server->getServerName() == name; // Assuming you have a method to get the server name
 						   });
 	if (it != _servers.end())
 	{

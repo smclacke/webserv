@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 17:03:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:35:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,9 +14,6 @@
 #define SERVER_HPP
 
 #include "web.hpp"
-#include <vector>
-#include <string>
-#include <iostream>
 #include "socket.hpp"
 
 enum class eSocket;
@@ -33,7 +30,7 @@ enum class eHttpMethod
 	INVALID
 };
 
-const std::map<eHttpMethod, std::string> HttpMethodToString = {
+const std::unordered_map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::GET, "GET"},
 	{eHttpMethod::POST, "POST"},
 	{eHttpMethod::DELETE, "DELETE"},
@@ -43,7 +40,7 @@ const std::map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::PATCH, "PATCH"},
 };
 
-const std::map<std::string, eHttpMethod> StringToHttpMethod = {
+const std::unordered_map<std::string, eHttpMethod> StringToHttpMethod = {
 	{"GET", eHttpMethod::GET},
 	{"POST", eHttpMethod::POST},
 	{"DELETE", eHttpMethod::DELETE},
@@ -56,7 +53,7 @@ const std::map<std::string, eHttpMethod> StringToHttpMethod = {
 struct s_location
 {
 	std::string path = "/";
-	std::string root = "/var/www/html";		 // Default to standard web root
+	std::string root = "";					 // Default to standard web root
 	size_t client_body_buffer_size = 8192;	 // Default buffer size, 8 KB
 	std::list<eHttpMethod> allowed_methods;	 // Default: will be set to GET, POST, DELETE in parseLocation if empty
 	std::string redir_url = "";				 // No redirection by default
@@ -75,12 +72,15 @@ struct s_ePage
 	int code;
 };
 
+class Socket;
+
 class Server
 {
 	private:
 		std::string _serverName;
 		std::string _host;
 		int _port;
+		std::string _root;
 		std::vector<s_ePage> _errorPage;
 		size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
 		std::vector<s_location> _location;
@@ -94,39 +94,43 @@ class Server
 		Server(std::ifstream &file, int &line_n);
 		~Server(void);
 
-		/* Member functions */
-		eHttpMethod allowedHttpMethod(std::string &str);
-		void printServer(void);
+	/* Member functions */
+	std::string handleRequest(const std::string &request);
+	eHttpMethod allowedHttpMethod(std::string &str);
+	void printServer(void);
 
 		/* add */
-		void addLocation(s_location route);
-		void addErrorPage(s_ePage errorPage);
+	void addLocation(s_location route);
+	void addErrorPage(s_ePage errorPage);
 
-		/* directives */
-		void parseServerName(std::stringstream &ss, int line_n);
-		void parseListen(std::stringstream &ss, int line_n);
-		void parseErrorPage(std::stringstream &ss, int line_n);
-		void parseClientMaxBody(std::stringstream &ss, int line_n);
+	/* directives */
+	void parseServerName(std::stringstream &ss, int line_n);
+	void parseListen(std::stringstream &ss, int line_n);
+	void parseErrorPage(std::stringstream &ss, int line_n);
+	void parseClientMaxBody(std::stringstream &ss, int line_n);
+	void parseRoot(std::stringstream &ss, int line_n);
 
-		/* setters */
-		void setServerName(std::string serverName);
-		void setHost(std::string host);
-		void setPort(int port);
-		void setErrorPage(std::vector<s_ePage> errorPage);
-		void setClientMaxBodySize(size_t clientMaxBodySize);
-		void setLocation(std::vector<s_location> location);
-		void setServerSocket(std::shared_ptr<Socket> serverSocket);
-		void setClientSocket(std::shared_ptr<Socket> clientSocket);
+	/* setters */
+	void setServerName(std::string serverName);
+	void setHost(std::string host);
+	void setPort(int port);
+	void setRoot(std::string root);
+	void setErrorPage(std::vector<s_ePage> errorPage);
+	void setClientMaxBodySize(size_t clientMaxBodySize);
+	void setLocation(std::vector<s_location> location);
+	void setServerSocket(std::shared_ptr<Socket> serverSocket);
+	void setClientSocket(std::shared_ptr<Socket> clientSocket);
 
-		/* getters */
-		std::string const &getServerName(void) const;
-		const std::string &getHost(void) const;
-		const int &getPort(void) const;
-		const std::vector<s_ePage> &getErrorPage(void) const;
-		const size_t &getClientMaxBodySize(void) const;
-		const std::vector<s_location> &getLocation(void) const;
-		std::shared_ptr<Socket> &getServerSocket(void);
-		std::shared_ptr<Socket> &getClientSocket(void);
+	/* getters */
+	std::string const &getServerName(void) const;
+	const std::string &getHost(void) const;
+	const int &getPort(void) const;
+	const std::string &getRoot(void) const;
+	const std::vector<s_ePage> &getErrorPage(void) const;
+	const size_t &getClientMaxBodySize(void) const;
+	const std::vector<s_location> &getLocation(void) const;
+	std::shared_ptr<Socket> &getServerSocket(void);
+	std::shared_ptr<Socket> &getClientSocket(void);
 };
 
 #endif /* SERVER_HPP */

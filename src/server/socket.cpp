@@ -6,11 +6,11 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 17:54:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:31:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/web.hpp"
+#include "../../include/socket.hpp"
 
 /* constructors */
 
@@ -67,7 +67,6 @@ Socket::~Socket()
 
 
 /* methods */
-
 void		Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -102,6 +101,7 @@ void		Socket::openServerSocket(const Server &servInstance)
 	}
 	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
 }
+
 
 
 void 		Socket::openClientSocket()

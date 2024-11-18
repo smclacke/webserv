@@ -6,11 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:17:46 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:32:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
+#include "../../include/epoll.hpp"
 
 /* Epoll utils */
 
