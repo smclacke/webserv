@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:49:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 17:09:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,26 +17,44 @@
 
 class Webserv;
 class Socket;
+
 enum class eSocket;
 
-#define MAX_EVENTS 10
+using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
-typedef struct s_connections
+enum class clientStatus
+{
+	PARSING = 0,
+	BEGIN = 1,
+	READING = 2,
+	WRITING = 3,
+	ERROR = 4,
+	READY = 5,
+	RESONSE = 6,
+	SENDING = 7
+};
+
+#define MAX_EVENTS 10
+#define TIMEOUT 30000 // milliseconds
+#define BUFFER_SIZE 1024
+
+typedef struct s_clients
 {
 	int							_conFd;
 	socklen_t					_conAddLen;
 	struct sockaddr_in			_conAddr;
-}				t_connections;
+}				t_clients;
 
 typedef struct s_fds
 {
-	int							_serverfd;
-	int							_clientfd;
-	socklen_t					_serveraddlen;
-	struct sockaddr_in			_serveraddr;
-	struct epoll_event			_event;
-	struct epoll_event			_events[MAX_EVENTS];
-	std::vector<t_connections> 	_connection;
+	int											_serverfd;
+	int											_clientfd; //socket
+	std::unordered_map<int, timePoint>			_clientStatus;
+	std::vector<t_clients> 						_clients;
+	socklen_t									_serveraddlen;
+	struct sockaddr_in							_serveraddr;
+	struct epoll_event							_event;
+	struct epoll_event							_events[MAX_EVENTS];
 }				t_fds;
 
 class Epoll
@@ -55,6 +73,7 @@ class Epoll
 
 		/* methods */
 		void					initEpoll();
+		void					clientStatus(t_fds fd);
 		void					connectClient(t_fds fd);
 		void					makeNewConnection(std::shared_ptr<Socket> &server, t_fds fd);
 		void					readIncomingMessage(t_fds fd, int i);

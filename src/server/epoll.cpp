@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 16:30:52 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 17:07:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,6 +60,25 @@ void		Epoll::initEpoll()
 	if (_epfd < 0)
 		throw std::runtime_error("Error creating Epoll instance\n");
 	std::cout << "Successfully created Epoll instance\n";
+}
+
+void		Epoll::clientStatus(t_fds fd)
+{
+	auto now = std::chrono::steady_clock::now();
+	
+	for (auto it = fd._clientStatus.begin(); it != fd._clientStatus.end();)
+	{
+		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
+		if (elapsed.count() >= (TIMEOUT / 1000))
+		{
+			protectedClose(it->first);
+			// remove fd from epoll
+			// delete client(it->first)
+			// it = _clientStatus.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 void		Epoll::connectClient(t_fds fd)

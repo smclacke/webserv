@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:54:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 17:08:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,10 +15,6 @@
 
 #include "web.hpp"
 #include "server.hpp"
-
-#define BUFFER_SIZE 1000
-
-//enum class eSocket;
 
 class Socket
 {
