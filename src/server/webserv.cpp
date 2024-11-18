@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 15:22:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:28:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,6 @@ void		Webserv::addServersToEpoll()
 		t_fds	thisFd;
 
 		thisFd._serverfd = getServer(i)->getServerSocket()->getSockfd();
-		thisFd._clientfd = getServer(i)->getClientSocket()->getSockfd();
 		thisFd._serveraddlen = getServer(i)->getServerSocket()->getAddrlen();
 		thisFd._serveraddr = getServer(i)->getServerSocket()->getSockaddr();
 		thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);

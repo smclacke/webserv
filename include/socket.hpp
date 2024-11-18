@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:34:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:28:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 
 #include "web.hpp"
 #include "server.hpp"
-
-enum class eSocket;
 
 #define BUFFER_SIZE 1000
 
@@ -32,14 +30,13 @@ class Socket
 
 	public:
 		Socket();
-		Socket(const Server &servInstance, eSocket type);
+		Socket(const Server &servInstance);
 		Socket(const Socket &copy);
 		Socket &operator=(const Socket &Socket);
 		~Socket();
 
 		/* methods */
 		void					openServerSocket(const Server &serInstance);
-		void					openClientSocket();
 
 		/* getters */
 		int						getSockfd() const;
