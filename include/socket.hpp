@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:30:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:16:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,29 +14,43 @@
 #define SOCKET_HPP
 
 #include "web.hpp"
+#include "server.hpp"
 
 enum class eSocket;
 
+#define BUFFER_SIZE 1000
+
 class Socket
 {
-private:
-	int _sockfd;
-	int _connection;
-	// std::vector<int>	_connections;
-	sockaddr_in _sockaddr;
-	unsigned long _addrlen;
+	private:
+		int						_sockfd;
+		size_t					_maxConnections;
+		struct sockaddr_in		_sockaddr;
+		socklen_t				_addrlen;
+		int						_reuseaddr;
+		int						_flags;
 
-public:
-	Socket();
-	Socket(eSocket type);
-	Socket &operator=(const Socket &Socket);
-	~Socket();
+	public:
+		Socket();
+		Socket(const Server &servInstance, eSocket type);
+		Socket(const Socket &copy);
+		Socket &operator=(const Socket &Socket);
+		~Socket();
 
-	/* methods */
+		/* methods */
+		void					openServerSocket(const Server &serInstance);
+		void					openClientSocket();
 
-	int openSockets();
-	void closeSockets();
-	// void initEpoll(Socket &sock);
+		/* getters */
+		int						getSockfd() const;
+		struct sockaddr_in		getSockaddr() const;
+		socklen_t				getAddrlen() const;
+
+		/* setters */
+		void					setSockfd(int fd);
+		void					setSockaddr(struct sockaddr_in &sockaddr);
+		void					setAddrlen(socklen_t &addrlen);
+
 };
 
 #endif /* SOCKET_HPP */

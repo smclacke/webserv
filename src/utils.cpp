@@ -1,27 +1,22 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   error.cpp                                          :+:    :+:            */
+/*   utils.cpp                                          :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/11/18 14:04:41 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:17:51 by smclacke      ########   odam.nl         */
+/*   Created: 2024/11/18 14:06:02 by smclacke      #+#    #+#                 */
+/*   Updated: 2024/11/18 14:06:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/error.hpp"
+#include "../include/web.hpp"
 
-eConf::eConf(const std::string &msg, int line) : _msg(msg), _line(line)
+void		protectedClose(int fd)
 {
-}
-
-const char *eConf::what() const throw()
-{
-	return _msg.c_str();
-}
-
-int eConf::line() const
-{
-	return _line;
+	if (fd)
+	{
+		if (close(fd) < 0)
+			throw std::runtime_error("Close() failed\n");
+	}
 }

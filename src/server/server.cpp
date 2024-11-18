@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 11:21:21 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/18 14:14:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void)
+Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
@@ -44,8 +44,6 @@ Server::Server(void)
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
-	Socket _clientSocket(eSocket::Client);
-	Socket _serverSocket(eSocket::Server);
 }
 
 Server &Server::operator=(const Server &rhs)
@@ -362,12 +360,12 @@ void Server::setLocation(std::vector<s_location> location)
 	_location = location;
 }
 
-void Server::setServerSocket(Socket serverSocket)
+void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 {
 	_serverSocket = serverSocket;
 }
 
-void Server::setClientSocket(Socket clientSocket)
+void Server::setClientSocket(std::shared_ptr<Socket> clientSocket)
 {
 	_clientSocket = clientSocket;
 }
@@ -408,12 +406,12 @@ const std::vector<s_location> &Server::getLocation(void) const
 	return _location;
 }
 
-const Socket &Server::getServerSocket(void) const
+std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
 }
 
-const Socket &Server::getClientSocket(void) const
+std::shared_ptr<Socket> &Server::getClientSocket(void)
 {
 	return _clientSocket;
 }

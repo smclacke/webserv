@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/11/15 18:30:58 by jde-baai      ########   odam.nl          #
+#    Updated: 2024/11/18 14:00:35 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,9 +32,11 @@ SRC_FILES := main.cpp					\
 			confParser/parsUtils.cpp		\
 			confParser/verify.cpp			\
 			server/epoll.cpp			\
+			server/epoll_utils.cpp		\
 			server/server.cpp			\
 			server/socket.cpp			\
 			server/webserv.cpp			\
+			utils.cpp					\
 
 
 SRC := $(addprefix src/, $(SRC_FILES))
