@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:32:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:23:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../include/epoll.hpp"
 
 /* Epoll utils */
-
+// will remove and use Julius' function
 std::string Epoll::generateHttpResponse(const std::string &message)
 {
 	size_t	contentLength = message.size();
@@ -52,7 +52,6 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 		protectedClose(sockfd);
 		throw std::runtime_error("Error adding socket to epoll\n");
 	}
-	std::cout << sortSocket << " added to epoll\n";
 	return event;
 }
 

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:40:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 15:22:15 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,10 +29,13 @@ Webserv::Webserv(std::string config)
 {
     std::cout << "Webserv booting up" << std::endl;
     std::cout << "config: " << config << std::endl;
+	_epoll.initEpoll();
     if (config.empty())
     {
-        auto default_server = std::make_shared<Server>();
+        auto default_server = std::make_shared<Server>(8080);
         _servers.push_back(default_server);
+        auto default_server2 = std::make_shared<Server>(9999);
+        _servers.push_back(default_server2);
         return;
     }
     std::ifstream file(config);
@@ -70,6 +73,7 @@ Webserv::~Webserv(void)
 /* member functions */
 void		Webserv::addServersToEpoll()
 {
+	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
 		t_fds	thisFd;
@@ -81,20 +85,29 @@ void		Webserv::addServersToEpoll()
 		thisFd._event = _epoll.addSocketEpoll(thisFd._serverfd, _epoll.getEpfd(), eSocket::Server);
 
 		_epoll.setFd(thisFd);
+		std::cout << "Added server [" << i << "] to epoll monitoring\n";
 	}
+	std::cout << "--------------------------\n";
 }
 
 // will also need to add file(s) to Epoll monitoring
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
+	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~\n";
+	std::cout << "Entering monitoring loop\n";
+	std::cout << "~~~~~~~~~~~~~~~~~~~~~~\n\n";
+
 	while (true)
 	{
 		for (size_t i = 0; i < getServerCount(); ++i)
 		{
 			t_fds	thisFd = _epoll.getFd(i);
+			
+			// do i need to connect client here?
 			_epoll.connectClient(thisFd);
-			std::cout << "Client [" << i << "] connected to server successfully\n";
-			thisFd._event = _epoll.addSocketEpoll(thisFd._clientfd, _epoll.getEpfd(), eSocket::Client);
+			// does this need to be added to epoll here too?
+			// does client need to be a socket already or shall i just create server sockets and then accept new connections?
+		
 			int numEvents = epoll_wait(_epoll.getEpfd(), thisFd._events, 10, -1);
 			if (numEvents == -1)
 				throw std::runtime_error("epoll_wait() failed\n");
