@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 18:32:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 19:47:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,14 @@ void		Webserv::addServersToEpoll()
 	std::cout << "--------------------------\n";
 }
 
-// <<<< add files to epoll >>>>>
+void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
+{
+	int		fileFd = open(file.c_str(), O_RDONLY);
+	
+	if (fileFd == -1)
+		throw std::runtime_error("Failed to open file\n");
+	_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
+}
 
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
@@ -109,8 +116,8 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			}
 			t_serverData	thisServer = _epoll.getServer(i);
 
-			 // client activity...
 			_epoll.connectClient(thisServer);
+			_epoll.clientStatus(thisServer);
 		
 			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
 			if (numEvents == -1)
@@ -121,40 +128,30 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			{
 				if (thisServer._events[j].events & EPOLLIN)
 				{
-
-				// handle server socket if (j < thisServer (?))
-					// acceptconnection
-					
-				// handle client socket
-					// if (client ...)
-						// handle Client stuff
-						
-				// handle other fds
-					//else handle files
-					
+					if (thisServer._events[j].data.fd == thisServer._serverSock)				// server socket
+						_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
+					else if (thisServer._events[j].data.fd == thisServer._clientSock)			// client scoket 
+						_epoll.handleClient();
+					else
+						_epoll.handleFile();
 				}
 				else if (thisServer._events[j].events & EPOLLOUT)
 				{
-					//if (client...) 
-						// if get client status + check response or send
-							// send client stuff
-						// else handle client stuff
-					// 
-					//else handle fd write
-						
+					if (thisServer._events[j].data.fd == thisServer._clientSock)
+					{
+						if (thisServer.getClientState() == clientState::RESPONSE || thisServer.getClientState() == clientState::SENDING)
+							_epoll.sendClientData();
+						else
+							_epoll.handleClient();
+					}
+					else
+						_epoll.handleWrite();
 				}
-				//else if (EPOLLHUP ...)
+				else if (EPOLLHUP)
+				{
 					// hang up happened on fd, clean up (?)
-					// break ;
-					
-				// OLD VERSION
-				//if (thisServer._events[j].data.fd == thisServer._serverfd)
-				//	_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
-				//// check here connection timeout, delete 
-				//else if (thisServer._events[j].events & EPOLLIN)
-				//	_epoll.readIncomingMessage(thisServer, j);
-				//else if (thisServer._events[j].events & EPOLLOUT)
-				//	_epoll.sendOutgoingResponse(thisServer, j);
+					break ;
+				}
 			}
 		}
 	}

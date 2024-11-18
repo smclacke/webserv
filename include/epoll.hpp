@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 18:28:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 19:40:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,7 @@ enum class eSocket;
 
 using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
-enum class clientStatus
+enum class clientState
 {
 	PARSING = 0,
 	BEGIN = 1,
@@ -30,7 +30,7 @@ enum class clientStatus
 	WRITING = 3,
 	ERROR = 4,
 	READY = 5,
-	RESONSE = 6,
+	RESPONSE = 6,
 	SENDING = 7
 };
 
@@ -41,20 +41,26 @@ enum class clientStatus
 typedef struct s_clients
 {
 	int							_fd;
-	socklen_t					_addLen;
 	struct sockaddr_in			_addr;
+	socklen_t					_addLen;
 }				t_clients;
 
 typedef struct s_serverData
 {
-	int											_serverSock;
-	int											_clientSock;
-	std::unordered_map<int, timePoint>			_clientStatus;
-	std::vector<t_clients> 						_clients;	// connections for server socket to accept
-	socklen_t									_serverAddlen;
-	struct sockaddr_in							_serverAddr;
-	struct epoll_event							_event;
-	struct epoll_event							_events[MAX_EVENTS];
+	int															_serverSock;
+	int															_clientSock;
+	std::unordered_map<int, timePoint>							_clientStatus;
+	enum clientState											_clientState;
+	std::vector<t_clients> 										_clients;	// connections for server socket to accept
+	socklen_t													_serverAddlen;
+	struct sockaddr_in											_serverAddr;
+	struct epoll_event											_event;
+	struct epoll_event											_events[MAX_EVENTS];
+
+	/* methods */
+	void								addClient(int sock, struct sockaddr_in addr, int len);
+	void								setClientState(enum clientState state);
+	enum clientState					getClientState();
 }				t_serverData;
 
 class Epoll
@@ -77,6 +83,10 @@ class Epoll
 		void							makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server);
 		void							readIncomingMessage(t_serverData server, int i);
 		void							sendOutgoingResponse(t_serverData server, int i);
+		void							handleClient();
+		void							handleFile();
+		void							handleWrite();
+		void							sendClientData();
 
 		/* getters */
 		int								getEpfd() const;
@@ -92,7 +102,7 @@ class Epoll
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
 		struct epoll_event				addSocketEpoll(int sockfd, int epfd, eSocket type);
-		void							addConnectionEpoll(int connection, int epfd, struct epoll_event event);
+		void							addToEpoll(int fd, int epfd, struct epoll_event event);
 		void							switchOUTMode(int fd, int epfd, struct epoll_event event);
 		void							switchINMode(int fd, int epfd, struct epoll_event event);
 		void							setNonBlocking(int connection);

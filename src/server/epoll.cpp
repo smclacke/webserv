@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 18:30:10 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 19:46:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,39 +139,70 @@ void		Epoll::sendOutgoingResponse(t_serverData server, int i)
 	protectedClose(server._events[i].data.fd);
 }
 
-void		Epoll::makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server)
+void	Epoll::makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server)
 {
-	socklen_t newaddlen = serverSock->getAddrlen();
-	struct sockaddr_in newaddr = serverSock->getSockaddr();
-	int newfd = accept(server._serverSock, (struct sockaddr *)&newaddr, &newaddlen);
-	if (newfd < 0)
+	(void) serverSock;
+	int						newSock;
+	struct sockaddr_in		clientAddr;
+	socklen_t				addrLen = sizeof(clientAddr);
+
+	newSock = accept(server._serverSock, (struct sockaddr *)&clientAddr, &addrLen);
+	if (newSock < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
 		return ;
 	}
 	else 
 	{
-		setNonBlocking(newfd);
-		std::cout << "\nNew connection made\n";
-		addConnectionEpoll(newfd, _epfd, server._event);
+		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
+		setNonBlocking(newSock);
+		addToEpoll(newSock, _epfd, server._event);
+		server.addClient(newSock, clientAddr, addrLen);
+		server._clientStatus[newSock] = std::chrono::steady_clock::now();
+		server.setClientState(clientState::PARSING);
 	}
-	
-	// handle incoming in vector of connections
+}
 
-	//fd._connection._conAddLen = server->getAddrlen();
-	//fd._newaddr = server->getSockaddr();
-	//fd._newfd = accept(fd._serverfd, (struct sockaddr *)&fd._newaddr, &fd._newaddlen);
-	//if (fd._newfd < 0)
-	//{
-	//	std::cerr << "Error accepting new connection\n";
-	//	return ;
-	//}
-	//else 
-	//{
-	//	setNonBlocking(fd._newfd);
-	//	std::cout << "Successfully made new connection\n";
-	//	addConnectionEpoll(fd._newfd, _epfd, fd._event);
-	//}
+void	Epoll::handleClient()
+{
+	// add file to epoll (error page)
+}
+
+void	Epoll::handleFile()
+{
+	
+}
+
+void	Epoll::handleWrite()
+{
+	
+}
+
+void	Epoll::sendClientData()
+{
+	
+}
+
+/* serverData methods */
+void	s_serverData::addClient(int sock, struct sockaddr_in addr, int len)
+{
+	t_clients	newClient;
+
+	newClient._fd = sock;
+	newClient._addr = addr;
+	newClient._addLen = len;
+
+	_clients.push_back(newClient);
+}
+
+void	s_serverData::setClientState(enum clientState state)
+{
+	this->_clientState = state;
+}
+
+enum clientState		s_serverData::getClientState()
+{
+	return this->_clientState;
 }
 
 /* getters */
@@ -180,13 +211,12 @@ int					Epoll::getEpfd() const
 	return this->_epfd;
 }
 
-
 std::vector<t_serverData>	Epoll::getAllServers() const
 {
 	return this->_serverData;
 }
 
-t_serverData				Epoll::getServer(size_t i) const
+t_serverData		Epoll::getServer(size_t i) const
 {
 	return this->_serverData[i];
 }
@@ -202,9 +232,9 @@ void				Epoll::setEpfd(int fd)
 	this->_epfd = fd;
 }
 
-void				Epoll::setServer(t_serverData fd)
+void				Epoll::setServer(t_serverData server)
 {
-	this->_serverData.push_back(fd);
+	this->_serverData.push_back(server);
 }
 
 void				Epoll::setNumEvents(int numEvents)
