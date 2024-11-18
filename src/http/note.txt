@@ -45,7 +45,9 @@ directory -> url ends with "/$" . index / auto-index check-> return file or not 
 
 ---
 1. Test the HTTP parse reading
-2. Check what type of response it should below
+-- works 
+2. Check what type of response it should be
+-- works
 3. Figure out differences between GET POST DELETE
 4. write cgi response
 5. write default response
