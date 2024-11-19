@@ -20,3 +20,11 @@
 - not totally erroring, curl give HTTP 0.9 not allowed
 - browser no message page not found :( locahost refused to connect / not allowed something
 
+
+
+recv vs read?
+write vs send? both?
+
+switch modes?
+
+

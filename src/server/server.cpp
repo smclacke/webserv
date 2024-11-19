@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:05:05 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:22:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,7 +30,28 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
-	_port = 8080;
+	_errorPage.push_back({"/404.html", 404});
+	_clientMaxBodySize = 10;
+	s_location loc;
+	loc.allowed_methods.push_back(eHttpMethod::GET);
+	loc.allowed_methods.push_back(eHttpMethod::POST);
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);	
+	loc.index_files.push_back("index.html");
+	loc.index_files.push_back("index.htm");
+	loc.index = "index.html";
+	loc.cgi_ext = ".php";
+	loc.cgi_path = "/usr/bin/php-cgi";
+	_location.push_back(loc);
+}
+
+/**
+ * @brief	data filler for testing
+ * @note	to be removed.
+ */
+Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+{
+	_serverName = "default_server";
+	_host = "127.0.0.01";
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 8192;
@@ -56,11 +77,13 @@ Server &Server::operator=(const Server &rhs)
 		_errorPage = rhs._errorPage;
 		_clientMaxBodySize = rhs._clientMaxBodySize;
 		_location = rhs._location;
+		_serverSocket = rhs._serverSocket;
+		_clientSocket = rhs._clientSocket;
 	}
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"), _clientMaxBodySize(8192)
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -313,7 +336,6 @@ void Server::parseRoot(std::stringstream &ss, int line_n)
 }
 
 /* setters */
-
 void Server::addLocation(s_location route)
 {
 	_location.push_back(route);

@@ -6,14 +6,17 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:15:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 17:44:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/socket.hpp"
 
-/* constructors */
+/**
+ * @todo correct destruction + clean up
+ */
 
+/* constructors */
 Socket::Socket() {}
 
 Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _reuseaddr(1), _flags(0)
@@ -54,12 +57,16 @@ Socket &Socket::operator=(const Socket &socket)
 	return *this;
 }
 
+/**
+ * @brief Destroy the Socket:: Socket object
+ * @note check if the close works correctly
+ */
 Socket::~Socket()
 {
+	std::cout << "Socket deconstr" << std::endl;
 	// freeaddrinfo
-	protectedClose(_sockfd);
+	//protectedClose(_sockfd);
 }
-
 
 /* methods */
 void		Socket::openServerSocket(const Server &servInstance)
@@ -97,8 +104,6 @@ void		Socket::openServerSocket(const Server &servInstance)
 	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
 }
 
-
-
 void 		Socket::openClientSocket()
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -112,9 +117,7 @@ void 		Socket::openClientSocket()
 	}
 }
 
-
 /* getters */
-
 int					Socket::getSockfd() const
 {
 	return this->_sockfd;
@@ -131,7 +134,6 @@ socklen_t			Socket::getAddrlen() const
 }
 
 /* setters */
-
 void				Socket::setSockfd(int fd)
 {
 	this->_sockfd = fd;

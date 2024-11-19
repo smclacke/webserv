@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:09:42 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:21:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,12 +216,8 @@ void httpHandler::parseChunkedBody(std::istringstream &ss)
  */
 void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 {
-	if (_request.loc.client_body_buffer_size > length)
-	{
-		std::cerr << "Request body too large: " << length << " bytes" << std::endl;
-		_request.statusCode = eHttpStatusCode::PayloadTooLarge;
-		return;
-	}
+	(void) length;
+	// Implement fixed-length body parsing logic here
 	std::string bodyLine;
 	while (std::getline(ss, bodyLine) && bodyLine != "0\r")
 	{
@@ -239,6 +235,7 @@ void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 
 void httpHandler::decodeContentEncoding(std::stringstream &body, const std::string &encoding)
 {
+	(void) body;
 	if (encoding == "identity")
 	{
 		return;

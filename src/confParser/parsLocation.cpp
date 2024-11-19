@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:05:28 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:23:12 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,7 +235,7 @@ s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, si
 		findLocationDirective(line, line_n, loc);
 	}
 	/* assigning defaults in case of no directives */
-	if (loc.client_body_buffer_size = std::numeric_limits<size_t>::max())
+	if (loc.client_body_buffer_size == std::numeric_limits<size_t>::max())
 		loc.client_body_buffer_size = maxbody;
 	if (loc.allowed_methods.size() == 0)
 	{

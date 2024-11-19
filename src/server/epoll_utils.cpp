@@ -6,15 +6,19 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:19:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 15:04:06 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
 
-/* Epoll utils */
+/**
+ * @todo removed http response function and use Julius' stuff
+ * @todo check closeDelete order
+ */
 
+/* Epoll utils */
 std::string Epoll::generateHttpResponse(const std::string &message)
 {
 	size_t	contentLength = message.size();
@@ -52,47 +56,45 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 		protectedClose(sockfd);
 		throw std::runtime_error("Error adding socket to epoll\n");
 	}
-	std::cout << sortSocket << " added to epoll\n";
 	return event;
 }
 
- void		Epoll::addConnectionEpoll(int connection, int epfd, struct epoll_event event)
+void		Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
 {
 	event.events = EPOLLIN;
-	event.data.fd = connection;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, connection, &event) < 0)
+	event.data.fd = fd;
+	if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
-		protectedClose(connection);
-		throw std::runtime_error("Error adding connection to epoll\n");
+		protectedClose(fd);
+		throw std::runtime_error("Error adding fd to epoll\n");
 	}
-	std::cout << "New connection added to epoll\n";
+	std::cout << "New fd added to epoll\n";
 }
 
 
 void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
 {
-	event.events = EPOLLOUT;
+	event.events = EPOLLOUT | EPOLLHUP;
 	event.data.fd = fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Failed to modify client socket for writing\n");
+		throw std::runtime_error("Failed to modify socket to EPOLLOUT\n");
 	}
-	std::cout << "Modified client socket for writing\n";
+	std::cout << "Modified socket to EPOLLOUT mode\n";
 }
 
 void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
 {
-	event.events = EPOLLIN;
+	event.events = EPOLLIN | EPOLLHUP;
 	event.data.fd = fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Failed to modify client socket for reading\n");
+		throw std::runtime_error("Failed to modify socket to EPOLLIN\n");
 	}
-	std::cout << "Modified client socket for reading\n";
+	std::cout << "Modified socket to EPOLLIN mode\n";
 }
-
 
 void		Epoll::setNonBlocking(int connection)
 {
@@ -105,4 +107,3 @@ void		Epoll::closeDelete(int fd, int epfd)
 	protectedClose(fd);
 	epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
 }
-

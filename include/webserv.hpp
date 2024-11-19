@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:04:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/18 19:44:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,26 +21,30 @@ class Epoll;
 
 class Webserv
 {
-private:
-	std::vector<std::shared_ptr<Server>> _servers;
-	Epoll 				_epoll;
+	private:
+		std::vector<std::shared_ptr<Server>>	_servers;
+		Epoll 									_epoll;
 
-public:
-	/* constructors */
-	Webserv(void);
-	Webserv(std::string config);
-	~Webserv(void);
+	public:
+		/* constructors */
+		Webserv(void);
+		Webserv(std::string config);
+		~Webserv(void);
 
-	/* member functions */
+		/* member functions */
+		void				addServersToEpoll();
+		void				addFilesToEpoll(s_serverData clientSock, std::string file);
+		void				monitorServers(std::vector<std::shared_ptr<Server>> &servers);
 
-	/* Setters */
-	void addServer(std::shared_ptr<Server> server);
+		/* Setters */
+		void				addServer(std::shared_ptr<Server> server);
 
-	/* getters */
-	std::shared_ptr<Server> getServer(size_t index);
-	std::shared_ptr<Server> getServer(std::string name);
-	std::vector<std::shared_ptr<Server>> &getallServer();
-	size_t getServerCount(void) const;
+		/* getters */
+		std::shared_ptr<Server> 				getServer(size_t index);
+		std::shared_ptr<Server> 				getServer(std::string name);
+		std::vector<std::shared_ptr<Server>>	&getAllServers();
+		size_t 									getServerCount(void) const;
+		Epoll									&getEpoll();
 };
 
 #endif /* WEBSERV_HPP */
