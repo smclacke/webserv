@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 19:40:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 14:41:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,8 @@ enum class clientState
 
 #define MAX_EVENTS 10
 #define TIMEOUT 30000 // milliseconds
-#define BUFFER_SIZE 1024
+#define READ_BUFFER_SIZE 4096
+#define WRITE_BUFFER_SIZE 4096
 
 typedef struct s_clients
 {
@@ -49,9 +50,9 @@ typedef struct s_serverData
 {
 	int															_serverSock;
 	int															_clientSock;
-	std::unordered_map<int, timePoint>							_clientStatus;
+	std::unordered_map<int, timePoint>							_clientTime;
 	enum clientState											_clientState;
-	std::vector<t_clients> 										_clients;	// connections for server socket to accept
+	std::vector<t_clients> 										_clients;		// connections for server socket to accept
 	socklen_t													_serverAddlen;
 	struct sockaddr_in											_serverAddr;
 	struct epoll_event											_event;
@@ -78,15 +79,12 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
-		void							clientStatus(t_serverData server);
+		void							clientTime(t_serverData server);
 		void							connectClient(t_serverData server);
 		void							makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server);
-		void							readIncomingMessage(t_serverData server, int i);
-		void							sendOutgoingResponse(t_serverData server, int i);
-		void							handleClient();
+		void							handleRead(t_serverData server, int i);
+		void							handleWrite(t_serverData server, int i);
 		void							handleFile();
-		void							handleWrite();
-		void							sendClientData();
 
 		/* getters */
 		int								getEpfd() const;

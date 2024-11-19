@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 19:39:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 15:04:06 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,26 +74,26 @@ void		Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
 
 void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
 {
-	event.events = EPOLLOUT;
+	event.events = EPOLLOUT | EPOLLHUP;
 	event.data.fd = fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Failed to modify client socket for writing\n");
+		throw std::runtime_error("Failed to modify socket to EPOLLOUT\n");
 	}
-	std::cout << "Modified client socket for writing\n";
+	std::cout << "Modified socket to EPOLLOUT mode\n";
 }
 
 void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
 {
-	event.events = EPOLLIN;
+	event.events = EPOLLIN | EPOLLHUP;
 	event.data.fd = fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Failed to modify client socket for reading\n");
+		throw std::runtime_error("Failed to modify socket to EPOLLIN\n");
 	}
-	std::cout << "Modified client socket for reading\n";
+	std::cout << "Modified socket to EPOLLIN mode\n";
 }
 
 void		Epoll::setNonBlocking(int connection)
@@ -102,7 +102,6 @@ void		Epoll::setNonBlocking(int connection)
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-// check order of this
 void		Epoll::closeDelete(int fd, int epfd)
 {
 	protectedClose(fd);

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 19:47:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 15:08:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,9 +101,9 @@ void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
 
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
-	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~\n";
+	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
-	std::cout << "~~~~~~~~~~~~~~~~~~~~~~\n\n";
+	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~\n";
 
 	while (true)
 	{
@@ -116,40 +116,36 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			}
 			t_serverData	thisServer = _epoll.getServer(i);
 
-			_epoll.connectClient(thisServer);
-			_epoll.clientStatus(thisServer);
+			_epoll.connectClient(thisServer); // connect the client socket to the server socket
+			_epoll.clientTime(thisServer); // handle time, if TIMEOUT, close...
 		
 			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
 			if (numEvents == -1)
 				throw std::runtime_error("epoll_wait() failed\n");
-			else if (numEvents == 0) // double check this
+			else if (numEvents == 0)
 				continue ;
 			for (int j = 0; j < numEvents; ++j)
 			{
-				if (thisServer._events[j].events & EPOLLIN)
+				if (thisServer._events[j].data.fd == thisServer._serverSock)
 				{
-					if (thisServer._events[j].data.fd == thisServer._serverSock)				// server socket
-						_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
-					else if (thisServer._events[j].data.fd == thisServer._clientSock)			// client scoket 
-						_epoll.handleClient();
-					else
-						_epoll.handleFile();
+					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
+					std::cout << "handling new connection\n";
+				}
+				else if (thisServer._events[j].events & EPOLLIN)
+				{
+					_epoll.handleRead(thisServer, i);
+					std::cout << "handling read request\n";
 				}
 				else if (thisServer._events[j].events & EPOLLOUT)
 				{
-					if (thisServer._events[j].data.fd == thisServer._clientSock)
-					{
-						if (thisServer.getClientState() == clientState::RESPONSE || thisServer.getClientState() == clientState::SENDING)
-							_epoll.sendClientData();
-						else
-							_epoll.handleClient();
-					}
-					else
-						_epoll.handleWrite();
+					_epoll.handleWrite(thisServer, i);
+					std::cout << "handling write response\n";
 				}
 				else if (EPOLLHUP)
 				{
 					// hang up happened on fd, clean up (?)
+					// handle close connection
+					std::cout << "EPOLLHUP breaking\n";
 					break ;
 				}
 			}
