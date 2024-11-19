@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 15:18:24 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:08:41 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,41 +98,38 @@ void		Epoll::connectClient(t_serverData server)
 			protectedClose(_epfd);
 			throw std::runtime_error("Failed to connect client socket to server\n");
 		}
-		else
-			std::cout << "connection in progress...\n";
 	}
 }
 
 void		Epoll::handleRead(t_serverData server, int i)
 {
-	char	buffer[READ_BUFFER_SIZE];
-	//int		bytesRead = read(server._events[i].data.fd, buffer, sizeof(buffer) - 1);
-	// recv(client fd, buffer, sizeof(buffer), 0)
-	// use recv instead of read?
+	char			buffer[READ_BUFFER_SIZE];
+	std::string		request; // http request
+
 	ssize_t bytesRead = recv(server._clientSock, buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ; // no data available right now
+		
 		// recv failed
 		// epoll_ctl(EPOLL_CTL_DEL)
-		std::cout << "bytesread -1\n";
 		protectedClose(server._events[i].data.fd);
 		throw std::runtime_error("Reading from client socket failed\n");
 	}
 	else if (bytesRead == 0)
 	{
-		std::cout << "bytes read == 0\n";
 		// epoll_ctl(EPOLL_CTL_DEL)
 		protectedClose(server._events[i].data.fd);
 		std::cout << "Client disconnected\n";
 	}
 	else
 	{
-		std::cout << "read some bytes :D\n";
+		// read protocol
 		// process_incoming_data() - process a request, store it, or send a response.
 		buffer[bytesRead] = '\0';
-		std::cout << "Server received " << buffer << "\n";
+		request += buffer;
+		std::cout << "Server received " << request << "\n";
 		switchOUTMode(server._events[i].data.fd, _epfd, server._event);
 	}
 }
@@ -140,16 +137,13 @@ void		Epoll::handleRead(t_serverData server, int i)
 void		Epoll::handleWrite(t_serverData server, int i)
 {
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+	std::string	response1 = generateHttpResponse("this message from write");
 	size_t		write_offset = 0; // keeping track of where we are in buffer
 	
-	// send data to client
-	ssize_t	bytesWritten = write(server._events[i].data.fd, response, strlen(response));
-	// SEND
-	// send(client fd, write buffer + write offset, strlen write buffer - write offset, 0)
-	
+	ssize_t bytesWritten = send(server._events[i].data.fd, response + write_offset, strlen(response) - write_offset, 0);
+
 	if (bytesWritten == -1)
 	{
-		std::cout << "bbyteswritten -1\n";
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
 			return ; // no space in scoket's send buffer, wait for more space
 		std::cerr << "Write to client failed\n";
@@ -158,8 +152,9 @@ void		Epoll::handleWrite(t_serverData server, int i)
 	}
 	else if (bytesWritten > 0)
 	{
+		// write protocol
 		std::cout << "wrote some bytes :D\n";
-		write_offset += bytesWritten;	
+		write_offset += bytesWritten;
 
 		// if all data sent, stop watching for write events (oui?)
 		if (write_offset == strlen(response))

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 15:08:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 17:46:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,6 +85,7 @@ void		Webserv::addServersToEpoll()
 		thisServer._event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
 
 		_epoll.setServer(thisServer);
+		_epoll.connectClient(thisServer);
 		std::cout << "Added server [" << i << "] sockets to epoll monitoring,\n\t listening on port: " << getServer(i)->getPort() << "\n";
 	}
 	std::cout << "--------------------------\n";
@@ -110,15 +111,12 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 		for (size_t i = 0; i < getServerCount(); ++i)
 		{
 			if (_epoll.getServer(i)._serverSock < 0)
-			{
-				std::cout << "server fd < 0\n";
 				throw std::runtime_error("Server fd is < 0\n");
-			}
 			t_serverData	thisServer = _epoll.getServer(i);
-
-			_epoll.connectClient(thisServer); // connect the client socket to the server socket
+			
+			//_epoll.connectClient(thisServer); // connect the client socket to the server socket
 			_epoll.clientTime(thisServer); // handle time, if TIMEOUT, close...
-		
+
 			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
 			if (numEvents == -1)
 				throw std::runtime_error("epoll_wait() failed\n");
@@ -127,20 +125,11 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			for (int j = 0; j < numEvents; ++j)
 			{
 				if (thisServer._events[j].data.fd == thisServer._serverSock)
-				{
 					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
-					std::cout << "handling new connection\n";
-				}
 				else if (thisServer._events[j].events & EPOLLIN)
-				{
 					_epoll.handleRead(thisServer, i);
-					std::cout << "handling read request\n";
-				}
 				else if (thisServer._events[j].events & EPOLLOUT)
-				{
 					_epoll.handleWrite(thisServer, i);
-					std::cout << "handling write response\n";
-				}
 				else if (EPOLLHUP)
 				{
 					// hang up happened on fd, clean up (?)
