@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 16:52:22 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 17:22:56 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,6 @@
 #include "../../include/server.hpp"
 #include "../../include/error.hpp"
 #include "../../include/web.hpp"
-
-/* constructor and deconstructor */
-
-httpHandler::httpHandler(Server &server) : _server(server)
-{
-}
-
-httpHandler::~httpHandler(void)
-{
-}
 
 /*
 Request line - "method request_URI HTTP version"
@@ -40,38 +30,6 @@ Body -> after headers and appears after a blank line inbetween
 */
 
 /* member functions */
-
-s_location findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
-{
-	s_location longestMatch;
-
-	for (const auto &location : locationBlocks)
-	{
-		// Check if the location is a prefix of the request URI
-		if (requestUri.find(location.path) == 0)
-		{ // Check if the requestUri starts with location
-			if (location.path.length() > longestMatch.path.length())
-			{
-				longestMatch = location;
-			}
-		}
-	}
-	return longestMatch;
-}
-
-/**
- * @brief finds the corresponding value to a headerKey
- * @return returns the value of the header or std::nullopt if header doesnt exist
- */
-std::optional<std::string> httpHandler::findHeaderValue(const s_request &request, eRequestHeader headerKey)
-{
-	auto it = request.headers.find(headerKey);
-	if (it != request.headers.end())
-	{
-		return it->second;
-	}
-	return std::nullopt;
-}
 
 std::string httpHandler::parseResponse(const std::string &httpRequest)
 {
@@ -93,18 +51,6 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 }
 
 /* private functions */
-
-eRequestHeader httpHandler::toEHeader(const std::string &header)
-{
-	static const std::unordered_map<std::string, eRequestHeader> headerMap = {
-		{"Host", Host},
-		{"User-Agent", UserAgent},
-		{"Content-Type", ContentType},
-		{"Content-Length", ContentLength},
-		{"Transfer-Encoding", TransferEncoding}};
-	auto it = headerMap.find(header);
-	return it != headerMap.end() ? it->second : Invalid;
-}
 
 bool httpHandler::parseRequestLine(std::istringstream &ss)
 {
@@ -200,63 +146,111 @@ bool httpHandler::parseHeaders(std::istringstream &ss)
 }
 void httpHandler::parseBody(std::istringstream &ss)
 {
-	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
 	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
+	std::optional<std::string> contentEncoding = findHeaderValue(_request, eRequestHeader::ContentEncoding);
+	std::optional<std::string> contentLength = findHeaderValue(_request, eRequestHeader::ContentLength);
 
 	if (transferEncoding.has_value())
 	{
 		if (transferEncoding.value() == "chunked")
 		{
-			// Handle chunked transfer encoding
-			std::string chunkSizeLine;
-			while (std::getline(ss, chunkSizeLine))
-			{
-				if (!chunkSizeLine.empty() && chunkSizeLine.back() == '\r')
-					chunkSizeLine.pop_back();
-
-				std::istringstream chunkSizeStream(chunkSizeLine);
-				size_t chunkSize;
-				chunkSizeStream >> std::hex >> chunkSize;
-
-				if (chunkSize == 0)
-					break;
-
-				std::string chunkData(chunkSize, '\0');
-				ss.read(&chunkData[0], chunkSize);
-				_request.body << chunkData;
-
-				// Read the trailing \r\n after the chunk data
-				std::getline(ss, chunkSizeLine);
-			}
+			parseChunkedBody(ss);
 		}
-		else if (transferEncoding.value() != "Identity")
+		else if (transferEncoding.value() == "identity" && contentLength.has_value())
+		{
+			parseFixedLengthBody(ss, std::stoi(contentLength.value()));
+		}
+		else
 		{
 			std::cerr << "Unsupported Transfer-Encoding: " << transferEncoding.value() << std::endl;
 			_request.statusCode = eHttpStatusCode::NotImplemented;
 			return;
 		}
 	}
-	else if (length.has_value())
+	else if (contentLength.has_value())
 	{
-		// Handle non-chunked body with Content-Length
-		std::string bodyLine;
-		while (std::getline(ss, bodyLine) && bodyLine != "0\r")
-		{
-			if (!bodyLine.empty() && bodyLine.back() == '\r')
-				bodyLine.pop_back();
-			_request.body << bodyLine << "\n";
-		}
-		std::string bodyStr = _request.body.str();
-		if (!bodyStr.empty() && bodyStr.back() == '\n')
-		{
-			bodyStr.pop_back();
-			_request.body.str(bodyStr);
-		}
+		parseFixedLengthBody(ss, std::stoi(contentLength.value()));
 	}
 	else
 	{
 		std::cerr << "No Content-Length or Transfer-Encoding header present" << std::endl;
 		_request.statusCode = eHttpStatusCode::LengthRequired;
 		return;
+	}
+	if (contentEncoding.has_value())
+	{
+		decodeContentEncoding(_request.body, contentEncoding.value());
+	}
+}
+
+void httpHandler::parseChunkedBody(std::istringstream &ss)
+{
+	// Implement chunked body parsing logic here
+	// Handle chunked transfer encoding
+	std::string chunkSizeLine;
+	while (std::getline(ss, chunkSizeLine))
+	{
+		if (!chunkSizeLine.empty() && chunkSizeLine.back() == '\r')
+			chunkSizeLine.pop_back();
+
+		std::istringstream chunkSizeStream(chunkSizeLine);
+		size_t chunkSize;
+		chunkSizeStream >> std::hex >> chunkSize;
+
+		if (chunkSize == 0)
+			break;
+
+		std::string chunkData(chunkSize, '\0');
+		ss.read(&chunkData[0], chunkSize);
+		_request.body << chunkData;
+
+		// Read the trailing \r\n after the chunk data
+		std::getline(ss, chunkSizeLine);
+	}
+}
+
+/**
+ * @note do something with length
+ */
+void httpHandler::parseFixedLengthBody(std::istringstream &ss, int length)
+{
+	// Implement fixed-length body parsing logic here
+	std::string bodyLine;
+	while (std::getline(ss, bodyLine) && bodyLine != "0\r")
+	{
+		if (!bodyLine.empty() && bodyLine.back() == '\r')
+			bodyLine.pop_back();
+		_request.body << bodyLine << "\n";
+	}
+	std::string bodyStr = _request.body.str();
+	if (!bodyStr.empty() && bodyStr.back() == '\n')
+	{
+		bodyStr.pop_back();
+		_request.body.str(bodyStr);
+	}
+}
+
+void httpHandler::decodeContentEncoding(std::stringstream &body, const std::string &encoding)
+{
+	if (encoding == "identity")
+	{
+		return;
+	}
+	else if (encoding == "gzip")
+	{
+		// Implement gzip decoding logic here
+	}
+	else if (encoding == "deflate")
+	{
+		// Implement deflate decoding logic here
+	}
+	else if (encoding == "br")
+	{
+		// Implement Brotli decoding logic here
+	}
+	else
+	{
+		std::cerr << "Unsupported Content-Encoding: " << encoding << std::endl;
+		_request.statusCode = eHttpStatusCode::NotImplemented;
 	}
 }

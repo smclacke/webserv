@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 16:51:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 17:23:26 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ enum eRequestHeader
 	ContentType,
 	ContentLength,
 	TransferEncoding,
+	ContentEncoding,
 	Invalid
 };
 
@@ -114,12 +115,18 @@ private:
 	Server &_server;
 	s_request _request;
 
-	// parse
+	// utils
 	eRequestHeader toEHeader(const std::string &header);
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
+	s_location findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
+	// parse
 	bool parseRequestLine(std::istringstream &ss);
 	bool parseHeaders(std::istringstream &ss);
+	// parse body
 	void parseBody(std::istringstream &ss);
+	void parseChunkedBody(std::istringstream &ss);
+	void parseFixedLengthBody(std::istringstream &ss, int length);
+	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
 
 	// response
 	std::string generateHttpResponse(eHttpStatusCode statusCode);
