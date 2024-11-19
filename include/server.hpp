@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:13:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:02:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,17 +53,17 @@ const std::unordered_map<std::string, eHttpMethod> StringToHttpMethod = {
 struct s_location
 {
 	std::string path = "/";
-	std::string root = "";					 // Default to standard web root
-	size_t client_body_buffer_size = 8192;	 // Default buffer size, 8 KB
-	std::list<eHttpMethod> allowed_methods;	 // Default: will be set to GET, POST, DELETE in parseLocation if empty
-	std::string redir_url = "";				 // No redirection by default
-	int redirect_status = 0;				 // No redirection status by default (0 indicates no redirect)
-	std::list<std::string> index_files;		 // Standard index files
-	bool autoindex = false;					 // Directory listing off by default
-	std::string upload_dir = "/tmp/uploads"; // Default upload directory
-	std::string index = "index.html";		 // Primary index file if directory is requested
-	std::string cgi_ext = "";				 // No default CGI extension
-	std::string cgi_path = "";				 // No default CGI path
+	std::string root = "";												 // Default to standard web root
+	size_t client_body_buffer_size = std::numeric_limits<size_t>::max(); // Default buffer size will be set to server max
+	std::list<eHttpMethod> allowed_methods;								 // Default: will be set to GET, POST, DELETE in parseLocation if empty
+	std::string redir_url = "";											 // No redirection by default
+	int redirect_status = 0;											 // No redirection status by default (0 indicates no redirect)
+	std::list<std::string> index_files;									 // Standard index files
+	bool autoindex = false;												 // Directory listing off by default
+	std::string upload_dir = "/tmp/uploads";							 // Default upload directory
+	std::string index = "index.html";									 // Primary index file if directory is requested
+	std::string cgi_ext = "";											 // No default CGI extension
+	std::string cgi_path = "";											 // No default CGI path
 };
 
 struct s_ePage
@@ -87,18 +87,18 @@ private:
 	std::shared_ptr<Socket> _serverSocket;
 	std::shared_ptr<Socket> _clientSocket;
 
-	public:
-		Server(void);
-		Server &operator=(const Server &rhs);
-		Server(std::ifstream &file, int &line_n);
-		~Server(void);
+public:
+	Server(void);
+	Server &operator=(const Server &rhs);
+	Server(std::ifstream &file, int &line_n);
+	~Server(void);
 
 	/* Member functions */
 	std::string handleRequest(const std::string &request);
 	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 
-		/* add */
+	/* add */
 	void addLocation(s_location route);
 	void addErrorPage(s_ePage errorPage);
 

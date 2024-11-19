@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:11:43 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:05:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,7 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
  * @note check if the location path exists
  * after perhaps replace path and root with just path if the root overwrite it but need to figure out how that works :)
  */
-s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
+s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody)
 {
 	(void)file;
 	s_location loc;
@@ -235,6 +235,8 @@ s_location parseLocation(std::ifstream &file, std::string &line, int &line_n)
 		findLocationDirective(line, line_n, loc);
 	}
 	/* assigning defaults in case of no directives */
+	if (loc.client_body_buffer_size = std::numeric_limits<size_t>::max())
+		loc.client_body_buffer_size = maxbody;
 	if (loc.allowed_methods.size() == 0)
 	{
 		loc.allowed_methods.push_back(eHttpMethod::GET);

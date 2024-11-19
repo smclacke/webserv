@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   httpHandler.cpp                                    :+:    :+:            */
+/*   parse.cpp                                          :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 17:22:56 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:09:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,18 +31,20 @@ Body -> after headers and appears after a blank line inbetween
 
 /* member functions */
 
-std::string httpHandler::parseResponse(const std::string &httpRequest)
+std::string httpHandler::parseRequest(const std::string &httpRequest)
 {
 	std::istringstream ss(httpRequest);
 
 	// Get the request line
-	if (!parseRequestLine(ss))
+	parseRequestLine(ss);
+	if (_request.statusCode != eHttpStatusCode::NotSet)
 		return (generateHttpResponse(_request.statusCode));
-
-	if (!parseHeaders(ss))
+	parseHeaders(ss);
+	if (_request.statusCode != eHttpStatusCode::NotSet)
 		return (generateHttpResponse(_request.statusCode));
-	// parse body
 	parseBody(ss);
+	if (_request.statusCode != eHttpStatusCode::NotSet)
+		return (generateHttpResponse(_request.statusCode));
 	if (_request.cgi == true)
 		cgiRequest();
 	else
@@ -52,7 +54,7 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 
 /* private functions */
 
-bool httpHandler::parseRequestLine(std::istringstream &ss)
+void httpHandler::parseRequestLine(std::istringstream &ss)
 {
 	std::string requestLine;
 
@@ -61,28 +63,28 @@ bool httpHandler::parseRequestLine(std::istringstream &ss)
 	{
 		std::cerr << "Failed to read request line" << std::endl;
 		_request.statusCode = eHttpStatusCode::BadRequest;
-		return (false);
+		return;
 	}
-	/* prase request line */
+	/* parse request line */
 	std::istringstream requestss(requestLine);
 	std::string methodstring, version;
 	if (!(requestss >> methodstring >> _request.uri >> version))
 	{
 		_request.statusCode = eHttpStatusCode::BadRequest;
-		return (false);
+		return;
 	}
 	// check version
 	if (version != "HTTP/1.1")
 	{
 		_request.statusCode = eHttpStatusCode::HTTPVersionNotSupported;
-		return (false);
+		return;
 	}
 	// check METHOD
 	_request.method = _server.allowedHttpMethod(methodstring);
 	if (_request.method == eHttpMethod::INVALID) // method check
 	{
 		_request.statusCode = eHttpStatusCode::MethodNotAllowed;
-		return (false);
+		return;
 	}
 
 	// URI match against location
@@ -104,7 +106,7 @@ bool httpHandler::parseRequestLine(std::istringstream &ss)
 		if (!std::filesystem::exists(_request.path))
 		{
 			_request.statusCode = eHttpStatusCode::NotFound;
-			return (false);
+			return;
 		}
 	}
 	else
@@ -116,13 +118,12 @@ bool httpHandler::parseRequestLine(std::istringstream &ss)
 		if (!std::filesystem::exists(_request.path))
 		{
 			_request.statusCode = eHttpStatusCode::NotFound;
-			return (false);
+			return;
 		}
 	}
-	return (true);
 }
 
-bool httpHandler::parseHeaders(std::istringstream &ss)
+void httpHandler::parseHeaders(std::istringstream &ss)
 {
 	// Read headers
 	std::string header;
@@ -137,13 +138,14 @@ bool httpHandler::parseHeaders(std::istringstream &ss)
 		eRequestHeader headerType = toEHeader(key);
 		if (headerType == Invalid)
 		{
+			// add an enum with all possible headers and NotImplemented if it doesnt exist for us but does exist there
 			_request.statusCode = eHttpStatusCode::BadRequest;
-			return (false);
+			return;
 		}
 		_request.headers[headerType] = value; // Store in unordered_map
 	}
-	return (true);
 }
+
 void httpHandler::parseBody(std::istringstream &ss)
 {
 	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
@@ -158,7 +160,7 @@ void httpHandler::parseBody(std::istringstream &ss)
 		}
 		else if (transferEncoding.value() == "identity" && contentLength.has_value())
 		{
-			parseFixedLengthBody(ss, std::stoi(contentLength.value()));
+			parseFixedLengthBody(ss, std::stoul(contentLength.value()));
 		}
 		else
 		{
@@ -212,9 +214,14 @@ void httpHandler::parseChunkedBody(std::istringstream &ss)
 /**
  * @note do something with length
  */
-void httpHandler::parseFixedLengthBody(std::istringstream &ss, int length)
+void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 {
-	// Implement fixed-length body parsing logic here
+	if (_request.loc.client_body_buffer_size > length)
+	{
+		std::cerr << "Request body too large: " << length << " bytes" << std::endl;
+		_request.statusCode = eHttpStatusCode::PayloadTooLarge;
+		return;
+	}
 	std::string bodyLine;
 	while (std::getline(ss, bodyLine) && bodyLine != "0\r")
 	{

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 14:23:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:05:05 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 	_port = 8080;
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
-	_clientMaxBodySize = 10;
+	_clientMaxBodySize = 8192;
 	s_location loc;
 	loc.allowed_methods.push_back(eHttpMethod::GET);
 	loc.allowed_methods.push_back(eHttpMethod::POST);
@@ -60,7 +60,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files")
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"), _clientMaxBodySize(8192)
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -78,7 +78,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		size_t pos = line.find("location");
 		if (pos != std::string::npos)
 		{
-			s_location loc = parseLocation(file, line, line_n);
+			s_location loc = parseLocation(file, line, line_n, _clientMaxBodySize);
 			checkLocationPaths(loc, _root, line_n);
 			if (loc.client_body_buffer_size > this->_clientMaxBodySize)
 				throw eConf("client_body_buffer_size exceeds server's maximum size limit", line_n);
@@ -100,7 +100,7 @@ Server::~Server()
 std::string Server::handleRequest(const std::string &request)
 {
 	httpHandler parser(*this);
-	return (parser.parseResponse(request));
+	return (parser.parseRequest(request));
 }
 
 /**
