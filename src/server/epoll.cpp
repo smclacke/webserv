@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:08:41 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 19:11:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,7 @@ void		Epoll::clientTime(t_serverData server)
 		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
 		if (elapsed.count() >= (TIMEOUT / 1000))
 		{
-			std::cout << "timeout happened\n";
+			std::cout << "Client timed out\n";
 			protectedClose(it->first);
 			// remove server from epoll
 			// delete client(it->first)
@@ -92,13 +92,13 @@ void		Epoll::connectClient(t_serverData server)
 	{
 		if (errno != EINPROGRESS)
 		{
-			std::cout << "!= EINPROGRESS\n";
 			protectedClose(server._clientSock);
 			protectedClose(server._serverSock);
 			protectedClose(_epfd);
 			throw std::runtime_error("Failed to connect client socket to server\n");
 		}
 	}
+	std::cout << "Connected client socket to server\n";
 }
 
 void		Epoll::handleRead(t_serverData server, int i)
@@ -153,7 +153,6 @@ void		Epoll::handleWrite(t_serverData server, int i)
 	else if (bytesWritten > 0)
 	{
 		// write protocol
-		std::cout << "wrote some bytes :D\n";
 		write_offset += bytesWritten;
 
 		// if all data sent, stop watching for write events (oui?)

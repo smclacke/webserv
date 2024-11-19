@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:17:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 19:09:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,7 +86,7 @@ void		Webserv::addServersToEpoll()
 
 		_epoll.setServer(thisServer);
 		_epoll.connectClient(thisServer);
-		std::cout << "Added server [" << i << "] sockets to epoll monitoring,\n\t listening on port: " << getServer(i)->getPort() << "\n";
+		std::cout << "Added server [" << i << "] sockets to epoll monitoring\n";
 	}
 	std::cout << "--------------------------\n";
 }
@@ -104,7 +104,7 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
-	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~~~\n";
+	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
 	while (true)
 	{
@@ -113,15 +113,14 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			if (_epoll.getServer(i)._serverSock < 0)
 				throw std::runtime_error("Server fd is < 0\n");
 			t_serverData	thisServer = _epoll.getServer(i);
-			
-			//_epoll.connectClient(thisServer); // connect the client socket to the server socket
-			_epoll.clientTime(thisServer); // handle time, if TIMEOUT, close...
+			_epoll.clientTime(thisServer);
 
 			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
 			if (numEvents == -1)
 				throw std::runtime_error("epoll_wait() failed\n");
 			else if (numEvents == 0)
 				continue ;
+
 			for (int j = 0; j < numEvents; ++j)
 			{
 				if (thisServer._events[j].data.fd == thisServer._serverSock)
@@ -132,9 +131,9 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 					_epoll.handleWrite(thisServer, i);
 				else if (EPOLLHUP)
 				{
-					// hang up happened on fd, clean up (?)
+					// hang up happened on fd
 					// handle close connection
-					std::cout << "EPOLLHUP breaking\n";
+					std::cout << "EPOLLHUP -> breaking\n";
 					break ;
 				}
 			}
