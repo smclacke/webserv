@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:26:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:28:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,9 +97,9 @@ class Server
 		eHttpMethod allowedHttpMethod(std::string &str);
 		void printServer(void);
 
-	/* add */
-	void addLocation(s_location route);
-	void addErrorPage(s_ePage errorPage);
+		/* add */
+		void addLocation(s_location route);
+		void addErrorPage(s_ePage errorPage);
 
 		/* directives */
 		void parseServerName(std::stringstream &ss, int line_n);
