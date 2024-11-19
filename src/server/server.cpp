@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 18:22:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 18:18:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files")
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -123,8 +123,7 @@ Server::~Server()
 std::string Server::handleRequest(const std::string &request)
 {
 	httpHandler parser(*this);
-	std::string response = parser.parseResponse(request);
-	return (response);
+	return (parser.parseResponse(request));
 }
 
 /**

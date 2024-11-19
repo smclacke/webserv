@@ -6,39 +6,43 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/13 14:12:54 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 14:20:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "../../include/error.hpp"
-#include <unordered_map>
+#include "../../include/httpHandler.hpp"
 
-// const std::string HTTP_VERSION = "HTTP/1.1";
-// const std::string CONNECTION_CLOSE = "Connection: close";			// Default connection close
-// const std::string CONNECTION_KEEP_ALIVE = "Connection: keep-alive"; // Alternative for keep-alive
+#define LINEBREAK "\r\n"
+const std::string CONTENT_TYPE_TEXT = "Content-Type: text/plain";
+const std::string CONTENT_TYPE_HTML = "Content-Type: text/html";
+const std::string CONTENT_TYPE_JSON = "Content-Type: application/json";
+const std::string CONTENT_TYPE_XML = "Content-Type: application/xml";
+const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascript";
+const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
+const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
 
-// /* things about origin form and request target */
+std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
+{
+	std::string message;
+	auto it = statusMessages.find(statusCode);
+	if (it != statusMessages.end())
+		message = it->second;
+	else
+	{
+		message = "Bad request";
+		statusCode = eHttpStatusCode::BadRequest;
+	}
+	std::ostringstream response;
+	response << "HTTP/1.1 " << static_cast<int>(statusCode) << " " << message << "\r\n"
+			 << "Content-Type: text/plain\r\n"
+			 << "Content-Length: " << message.size() << "\r\n"
+			 << "Connection: close\r\n"
+			 << "\r\n"
+			 << message;
 
-// // Define common content types
-// const std::string CONTENT_TYPE_TEXT = "Content-Type: text/plain";
-// // const std::string CONTENT_TYPE_HTML = "Content-Type: text/html";
-// // const std::string CONTENT_TYPE_JSON = "Content-Type: application/json";
-// // const std::string CONTENT_TYPE_XML = "Content-Type: application/xml";
-// // const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascript";
-// // const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
-// // const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
+	return response.str();
+}
 
-// /**
-// The request line in an HTTP request message contains the method, URI, and HTTP version. Parsing this line is the first step in understanding the client’s request.
-// For example:
-
-// GET /path/to/resource HTTP/1.1
-//  */
-
-// /**
-//  linebreak:
-
-// #define LINEBREAK "\r\n"
 // linebreak in http = CRLF = \r\n
 
 // 		  +-------+-----------------------------+---------------+
@@ -155,61 +159,3 @@
 // ∗ Your server should work with one CGI (php-CGI, Python, and so forth).
 
 //  */
-
-// const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
-// 	{eHttpStatusCode::Continue, "Continue"},
-// 	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
-// 	{eHttpStatusCode::OK, "OK"},
-// 	{eHttpStatusCode::Created, "Created"},
-// 	{eHttpStatusCode::Accepted, "Accepted"},
-// 	{eHttpStatusCode::NonAuthoritativeInformation, "Non-Authoritative Information"},
-// 	{eHttpStatusCode::NoContent, "No Content"},
-// 	{eHttpStatusCode::ResetContent, "Reset Content"},
-// 	{eHttpStatusCode::PartialContent, "Partial Content"},
-// 	{eHttpStatusCode::MultipleChoices, "Multiple Choices"},
-// 	{eHttpStatusCode::MovedPermanently, "Moved Permanently"},
-// 	{eHttpStatusCode::Found, "Found"},
-// 	{eHttpStatusCode::SeeOther, "See Other"},
-// 	{eHttpStatusCode::NotModified, "Not Modified"},
-// 	{eHttpStatusCode::UseProxy, "Use Proxy"},
-// 	{eHttpStatusCode::TemporaryRedirect, "Temporary Redirect"},
-// 	{eHttpStatusCode::PermanentRedirect, "Permanent Redirect"},
-// 	{eHttpStatusCode::BadRequest, "Bad Request"},
-// 	{eHttpStatusCode::Unauthorized, "Unauthorized"},
-// 	{eHttpStatusCode::PaymentRequired, "Payment Required"},
-// 	{eHttpStatusCode::Forbidden, "Forbidden"},
-// 	{eHttpStatusCode::NotFound, "Not Found"},
-// 	{eHttpStatusCode::MethodNotAllowed, "Method Not Allowed"},
-// 	{eHttpStatusCode::NotAcceptable, "Not Acceptable"},
-// 	{eHttpStatusCode::ProxyAuthenticationRequired, "Proxy Authentication Required"},
-// 	{eHttpStatusCode::RequestTimeout, "Request Timeout"},
-// 	{eHttpStatusCode::Conflict, "Conflict"},
-// 	{eHttpStatusCode::Gone, "Gone"},
-// 	{eHttpStatusCode::LengthRequired, "Length Required"},
-// 	{eHttpStatusCode::PreconditionFailed, "Precondition Failed"},
-// 	{eHttpStatusCode::PayloadTooLarge, "Payload Too Large"},
-// 	{eHttpStatusCode::URITooLong, "URI Too Long"},
-// 	{eHttpStatusCode::UnsupportedMediaType, "Unsupported Media Type"},
-// 	{eHttpStatusCode::RangeNotSatisfiable, "Range Not Satisfiable"},
-// 	{eHttpStatusCode::ExpectationFailed, "Expectation Failed"},
-// 	{eHttpStatusCode::IAmATeapot, "I'm a teapot"},
-// 	{eHttpStatusCode::MisdirectedRequest, "Misdirected Request"},
-// 	{eHttpStatusCode::UnprocessableEntity, "Unprocessable Entity"},
-// 	{eHttpStatusCode::Locked, "Locked"},
-// 	{eHttpStatusCode::FailedDependency, "Failed Dependency"},
-// 	{eHttpStatusCode::UpgradeRequired, "Upgrade Required"},
-// 	{eHttpStatusCode::PreconditionRequired, "Precondition Required"},
-// 	{eHttpStatusCode::TooManyRequests, "Too Many Requests"},
-// 	{eHttpStatusCode::RequestHeaderFieldsTooLarge, "Request Header Fields Too Large"},
-// 	{eHttpStatusCode::UnavailableForLegalReasons, "Unavailable For Legal Reasons"},
-// 	{eHttpStatusCode::InternalServerError, "Internal Server Error"},
-// 	{eHttpStatusCode::NotImplemented, "Not Implemented"},
-// 	{eHttpStatusCode::BadGateway, "Bad Gateway"},
-// 	{eHttpStatusCode::ServiceUnavailable, "Service Unavailable"},
-// 	{eHttpStatusCode::GatewayTimeout, "Gateway Timeout"},
-// 	{eHttpStatusCode::HTTPVersionNotSupported, "HTTP Version Not Supported"},
-// 	{eHttpStatusCode::VariantAlsoNegotiates, "Variant Also Negotiates"},
-// 	{eHttpStatusCode::InsufficientStorage, "Insufficient Storage"},
-// 	{eHttpStatusCode::LoopDetected, "Loop Detected"},
-// 	{eHttpStatusCode::NotExtended, "Not Extended"},
-// 	{eHttpStatusCode::NetworkAuthenticationRequired, "Network Authentication Required"}};

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 17:44:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 15:31:00 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ std::string httpHandler::stdRequest(void)
 	std::cout << "Path: " << _request.path << std::endl;
 	for (const auto &header : _request.headers)
 		std::cout << "Header: " << header.first << " - " << header.second << std::endl;
-	std::cout << "Body: " << _request.body << std::endl;
+	std::cout << "Body: " << _request.body.str() << std::endl;
 	std::cout << "CGI: " << _request.cgi << std::endl;
-	return ("response");
+	return (generateHttpResponse(_request.statusCode));
 }
