@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 14:19:29 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 16:51:32 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,7 @@ enum eRequestHeader
 	UserAgent,
 	ContentType,
 	ContentLength,
+	TransferEncoding,
 	Invalid
 };
 
@@ -103,11 +104,10 @@ struct s_request
 	std::string uri;
 	s_location loc;
 	std::string path;
-	std::vector<std::pair<eRequestHeader, std::string>> headers;
-	std::string body;
+	std::unordered_map<eRequestHeader, std::string> headers; // Changed to unordered_map
+	std::stringstream body;
 	bool cgi = false;
 };
-
 class httpHandler
 {
 private:
@@ -119,6 +119,7 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	bool parseRequestLine(std::istringstream &ss);
 	bool parseHeaders(std::istringstream &ss);
+	void parseBody(std::istringstream &ss);
 
 	// response
 	std::string generateHttpResponse(eHttpStatusCode statusCode);
@@ -126,7 +127,7 @@ private:
 	std::string stdRequest(void);
 
 public:
-	/* consturctor and deconstructor */
+	/* constructor and deconstructor */
 	httpHandler(Server &server);
 	~httpHandler(void);
 

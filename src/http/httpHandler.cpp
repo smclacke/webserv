@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 14:27:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 16:52:22 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,12 +65,10 @@ s_location findLongestPrefixMatch(const std::string &requestUri, const std::vect
  */
 std::optional<std::string> httpHandler::findHeaderValue(const s_request &request, eRequestHeader headerKey)
 {
-	for (const auto &header : request.headers)
+	auto it = request.headers.find(headerKey);
+	if (it != request.headers.end())
 	{
-		if (header.first == headerKey)
-		{
-			return header.second;
-		}
+		return it->second;
 	}
 	return std::nullopt;
 }
@@ -86,20 +84,7 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	if (!parseHeaders(ss))
 		return (generateHttpResponse(_request.statusCode));
 	// parse body
-	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
-	if (length.has_value() && (std::stoi(length.value()) != 0))
-	{
-		// get body
-		std::string body;
-		while (std::getline(ss, body))
-		{
-			_request.body.append(body + "\n");
-		}
-		_request.body.pop_back(); // remove the last added \n
-		if (_request.body.back() == '\r')
-			_request.body.pop_back();
-	}
-	std::string response;
+	parseBody(ss);
 	if (_request.cgi == true)
 		cgiRequest();
 	else
@@ -115,7 +100,8 @@ eRequestHeader httpHandler::toEHeader(const std::string &header)
 		{"Host", Host},
 		{"User-Agent", UserAgent},
 		{"Content-Type", ContentType},
-		{"Content-Length", ContentLength}};
+		{"Content-Length", ContentLength},
+		{"Transfer-Encoding", TransferEncoding}};
 	auto it = headerMap.find(header);
 	return it != headerMap.end() ? it->second : Invalid;
 }
@@ -208,7 +194,69 @@ bool httpHandler::parseHeaders(std::istringstream &ss)
 			_request.statusCode = eHttpStatusCode::BadRequest;
 			return (false);
 		}
-		_request.headers.push_back(std::make_pair(headerType, value)); // or use {headerType, value}
+		_request.headers[headerType] = value; // Store in unordered_map
 	}
 	return (true);
+}
+void httpHandler::parseBody(std::istringstream &ss)
+{
+	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
+	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
+
+	if (transferEncoding.has_value())
+	{
+		if (transferEncoding.value() == "chunked")
+		{
+			// Handle chunked transfer encoding
+			std::string chunkSizeLine;
+			while (std::getline(ss, chunkSizeLine))
+			{
+				if (!chunkSizeLine.empty() && chunkSizeLine.back() == '\r')
+					chunkSizeLine.pop_back();
+
+				std::istringstream chunkSizeStream(chunkSizeLine);
+				size_t chunkSize;
+				chunkSizeStream >> std::hex >> chunkSize;
+
+				if (chunkSize == 0)
+					break;
+
+				std::string chunkData(chunkSize, '\0');
+				ss.read(&chunkData[0], chunkSize);
+				_request.body << chunkData;
+
+				// Read the trailing \r\n after the chunk data
+				std::getline(ss, chunkSizeLine);
+			}
+		}
+		else if (transferEncoding.value() != "Identity")
+		{
+			std::cerr << "Unsupported Transfer-Encoding: " << transferEncoding.value() << std::endl;
+			_request.statusCode = eHttpStatusCode::NotImplemented;
+			return;
+		}
+	}
+	else if (length.has_value())
+	{
+		// Handle non-chunked body with Content-Length
+		std::string bodyLine;
+		while (std::getline(ss, bodyLine) && bodyLine != "0\r")
+		{
+			if (!bodyLine.empty() && bodyLine.back() == '\r')
+				bodyLine.pop_back();
+			_request.body << bodyLine << "\n";
+		}
+		std::string bodyStr = _request.body.str();
+		if (!bodyStr.empty() && bodyStr.back() == '\n')
+		{
+			bodyStr.pop_back();
+			_request.body.str(bodyStr);
+		}
+	}
+	else
+	{
+		std::cerr << "No Content-Length or Transfer-Encoding header present" << std::endl;
+		_request.statusCode = eHttpStatusCode::LengthRequired;
+		return;
+	}
 }

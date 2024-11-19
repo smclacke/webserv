@@ -52,3 +52,10 @@ directory -> url ends with "/$" . index / auto-index check-> return file or not 
 4. write cgi response
 5. write default response
 6. test with uploading pictures. getting pictures
+
+
+
+
+
+----
+accepted content types
