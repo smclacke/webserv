@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/11/19 17:21:09 by jde-baai      ########   odam.nl          #
+#    Updated: 2024/11/19 17:24:36 by jde-baai      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,8 +26,8 @@ SRC_FILES := main.cpp					\
 			http/cgiRequest.cpp			\
 			http/generate.cpp			\
 			http/httpHandler.cpp		\
+			http/parse.cpp				\
 			http/stdRequest.cpp			\
-			http/utils.cpp				\
 			confParser/error.cpp		\
 			confParser/parsLocation.cpp	\
 			confParser/parsUtils.cpp	\
