@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:14:07 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/19 14:23:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,8 +100,7 @@ Server::~Server()
 std::string Server::handleRequest(const std::string &request)
 {
 	httpHandler parser(*this);
-	std::string response = parser.parseResponse(request);
-	return (response);
+	return (parser.parseResponse(request));
 }
 
 /**

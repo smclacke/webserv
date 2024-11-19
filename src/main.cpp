@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 16:01:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 14:28:43 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,12 +47,14 @@ int main(int argc, char **argv)
 				std::shared_ptr<Server> serv = wserv.getServer(i);
 				serv->printServer();
 			}
-			std::cout << "\n=============================\n"
+			std::cout << "\n============================="
 					  << std::endl;
 			std::shared_ptr<Server> serv = wserv.getServer(0);
 			std::string response = serv->handleRequest(std);
 			std::cout << "\nResponse:\n"
 					  << response << std::endl;
+			std::cout << "=============================\n"
+					  << std::endl;
 		}
 		catch (eConf &e)
 		{

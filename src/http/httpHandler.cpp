@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 16:01:45 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/19 14:27:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,65 +38,6 @@ Headers -> can appear in any order
 Body -> after headers and appears after a blank line inbetween
 
 */
-
-const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
-	{eHttpStatusCode::NotSet, "Bad Request"},
-	{eHttpStatusCode::Continue, "Continue"},
-	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
-	{eHttpStatusCode::OK, "OK"},
-	{eHttpStatusCode::Created, "Created"},
-	{eHttpStatusCode::Accepted, "Accepted"},
-	{eHttpStatusCode::NonAuthoritativeInformation, "Non-Authoritative Information"},
-	{eHttpStatusCode::NoContent, "No Content"},
-	{eHttpStatusCode::ResetContent, "Reset Content"},
-	{eHttpStatusCode::PartialContent, "Partial Content"},
-	{eHttpStatusCode::MultipleChoices, "Multiple Choices"},
-	{eHttpStatusCode::MovedPermanently, "Moved Permanently"},
-	{eHttpStatusCode::Found, "Found"},
-	{eHttpStatusCode::SeeOther, "See Other"},
-	{eHttpStatusCode::NotModified, "Not Modified"},
-	{eHttpStatusCode::UseProxy, "Use Proxy"},
-	{eHttpStatusCode::TemporaryRedirect, "Temporary Redirect"},
-	{eHttpStatusCode::PermanentRedirect, "Permanent Redirect"},
-	{eHttpStatusCode::BadRequest, "Bad Request"},
-	{eHttpStatusCode::Unauthorized, "Unauthorized"},
-	{eHttpStatusCode::PaymentRequired, "Payment Required"},
-	{eHttpStatusCode::Forbidden, "Forbidden"},
-	{eHttpStatusCode::NotFound, "Not Found"},
-	{eHttpStatusCode::MethodNotAllowed, "Method Not Allowed"},
-	{eHttpStatusCode::NotAcceptable, "Not Acceptable"},
-	{eHttpStatusCode::ProxyAuthenticationRequired, "Proxy Authentication Required"},
-	{eHttpStatusCode::RequestTimeout, "Request Timeout"},
-	{eHttpStatusCode::Conflict, "Conflict"},
-	{eHttpStatusCode::Gone, "Gone"},
-	{eHttpStatusCode::LengthRequired, "Length Required"},
-	{eHttpStatusCode::PreconditionFailed, "Precondition Failed"},
-	{eHttpStatusCode::PayloadTooLarge, "Payload Too Large"},
-	{eHttpStatusCode::URITooLong, "URI Too Long"},
-	{eHttpStatusCode::UnsupportedMediaType, "Unsupported Media Type"},
-	{eHttpStatusCode::RangeNotSatisfiable, "Range Not Satisfiable"},
-	{eHttpStatusCode::ExpectationFailed, "Expectation Failed"},
-	{eHttpStatusCode::IAmATeapot, "I'm a teapot"},
-	{eHttpStatusCode::MisdirectedRequest, "Misdirected Request"},
-	{eHttpStatusCode::UnprocessableEntity, "Unprocessable Entity"},
-	{eHttpStatusCode::Locked, "Locked"},
-	{eHttpStatusCode::FailedDependency, "Failed Dependency"},
-	{eHttpStatusCode::UpgradeRequired, "Upgrade Required"},
-	{eHttpStatusCode::PreconditionRequired, "Precondition Required"},
-	{eHttpStatusCode::TooManyRequests, "Too Many Requests"},
-	{eHttpStatusCode::RequestHeaderFieldsTooLarge, "Request Header Fields Too Large"},
-	{eHttpStatusCode::UnavailableForLegalReasons, "Unavailable For Legal Reasons"},
-	{eHttpStatusCode::InternalServerError, "Internal Server Error"},
-	{eHttpStatusCode::NotImplemented, "Not Implemented"},
-	{eHttpStatusCode::BadGateway, "Bad Gateway"},
-	{eHttpStatusCode::ServiceUnavailable, "Service Unavailable"},
-	{eHttpStatusCode::GatewayTimeout, "Gateway Timeout"},
-	{eHttpStatusCode::HTTPVersionNotSupported, "HTTP Version Not Supported"},
-	{eHttpStatusCode::VariantAlsoNegotiates, "Variant Also Negotiates"},
-	{eHttpStatusCode::InsufficientStorage, "Insufficient Storage"},
-	{eHttpStatusCode::LoopDetected, "Loop Detected"},
-	{eHttpStatusCode::NotExtended, "Not Extended"},
-	{eHttpStatusCode::NetworkAuthenticationRequired, "Network Authentication Required"}};
 
 /* member functions */
 
@@ -141,11 +82,9 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 	// Get the request line
 	if (!parseRequestLine(ss))
 		return (generateHttpResponse(_request.statusCode));
-	std::cout << "Good request line" << std::endl; // to be removed
 
 	if (!parseHeaders(ss))
 		return (generateHttpResponse(_request.statusCode));
-	std::cout << "Good header lines" << std::endl;
 	// parse body
 	std::optional<std::string> length = findHeaderValue(_request, eRequestHeader::ContentLength);
 	if (length.has_value() && (std::stoi(length.value()) != 0))
@@ -156,13 +95,16 @@ std::string httpHandler::parseResponse(const std::string &httpRequest)
 		{
 			_request.body.append(body + "\n");
 		}
+		_request.body.pop_back(); // remove the last added \n
+		if (_request.body.back() == '\r')
+			_request.body.pop_back();
 	}
 	std::string response;
 	if (_request.cgi == true)
 		cgiRequest();
 	else
 		stdRequest();
-	return (response);
+	return (generateHttpResponse(_request.statusCode));
 }
 
 /* private functions */
@@ -176,30 +118,6 @@ eRequestHeader httpHandler::toEHeader(const std::string &header)
 		{"Content-Length", ContentLength}};
 	auto it = headerMap.find(header);
 	return it != headerMap.end() ? it->second : Invalid;
-}
-
-std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
-{
-	if (statusCode == eHttpStatusCode::NotSet)
-		statusCode = eHttpStatusCode::BadRequest;
-	std::string message;
-	auto it = statusMessages.find(statusCode);
-	if (it != statusMessages.end())
-		message = it->second;
-	else
-	{
-		message = "Bad request";
-		statusCode = eHttpStatusCode::BadRequest;
-	}
-	std::ostringstream response;
-	response << "HTTP/1.1 " << static_cast<int>(statusCode) << " " << message << "\r\n"
-			 << "Content-Type: text/plain\r\n"
-			 << "Content-Length: " << message.size() << "\r\n"
-			 << "Connection: close\r\n"
-			 << "\r\n"
-			 << message;
-
-	return response.str();
 }
 
 bool httpHandler::parseRequestLine(std::istringstream &ss)
@@ -281,7 +199,6 @@ bool httpHandler::parseHeaders(std::istringstream &ss)
 	{
 		if (header.back() == '\r')
 			header.pop_back();
-		std::cout << "Header: " << header << std::endl;
 		std::istringstream split(header);
 		getline(split, key, ':');
 		getline(split >> std::ws, value);
