@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:21:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/20 14:54:12 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,6 +54,9 @@ std::string httpHandler::parseRequest(const std::string &httpRequest)
 
 /* private functions */
 
+/**
+ * @brief Parses the request line of the HTTP request
+ */
 void httpHandler::parseRequestLine(std::istringstream &ss)
 {
 	std::string requestLine;
@@ -123,9 +126,11 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 	}
 }
 
+/**
+ * @brief Parses the headers of the HTTP request
+ */
 void httpHandler::parseHeaders(std::istringstream &ss)
 {
-	// Read headers
 	std::string header;
 	std::string key, value;
 	while (std::getline(ss, header) && !header.empty() && header != "\r")
@@ -138,14 +143,21 @@ void httpHandler::parseHeaders(std::istringstream &ss)
 		eRequestHeader headerType = toEHeader(key);
 		if (headerType == Invalid)
 		{
-			// add an enum with all possible headers and NotImplemented if it doesnt exist for us but does exist there
 			_request.statusCode = eHttpStatusCode::BadRequest;
 			return;
 		}
-		_request.headers[headerType] = value; // Store in unordered_map
+		else if (headerType > 5)
+		{
+			_request.statusCode = eHttpStatusCode::NotImplemented;
+			return;
+		}
+		_request.headers[headerType] = value;
 	}
 }
 
+/**
+ * @brief Parses the body of the HTTP request
+ */
 void httpHandler::parseBody(std::istringstream &ss)
 {
 	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
@@ -185,6 +197,9 @@ void httpHandler::parseBody(std::istringstream &ss)
 	}
 }
 
+/**
+ * @brief Reads a chunked body from the HTTP request
+ */
 void httpHandler::parseChunkedBody(std::istringstream &ss)
 {
 	// Implement chunked body parsing logic here

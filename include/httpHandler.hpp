@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:07:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/20 14:59:57 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,6 +83,20 @@ enum eRequestHeader
 	ContentLength,
 	TransferEncoding,
 	ContentEncoding,
+	Accept, // from here on not implemented
+	Authorization,
+	CacheControl,
+	Connection,
+	Cookie,
+	Date,
+	Expect,
+	Origin,
+	Referer,
+	ContentDisposition,
+	IfModifiedSince,
+	IfNoneMatch,
+	IfMatch,
+	IfUnmodifiedSince,
 	Invalid
 };
 
@@ -105,7 +119,7 @@ struct s_request
 	std::string uri;
 	s_location loc;
 	std::string path;
-	std::unordered_map<eRequestHeader, std::string> headers; // Changed to unordered_map
+	std::unordered_map<eRequestHeader, std::string> headers;
 	std::stringstream body;
 	bool cgi = false;
 };
