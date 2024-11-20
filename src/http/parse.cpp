@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/20 14:54:12 by julius        ########   odam.nl         */
+/*   Updated: 2024/11/20 15:49:05 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,17 +76,24 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 		_request.statusCode = eHttpStatusCode::BadRequest;
 		return;
 	}
-	// check version
-	if (version != "HTTP/1.1")
-	{
-		_request.statusCode = eHttpStatusCode::HTTPVersionNotSupported;
-		return;
-	}
 	// check METHOD
 	_request.method = _server.allowedHttpMethod(methodstring);
 	if (_request.method == eHttpMethod::INVALID) // method check
 	{
 		_request.statusCode = eHttpStatusCode::MethodNotAllowed;
+		return;
+	}
+	// Check if URI is too long
+    const size_t MAX_URI_LENGTH = 2048; // Example limit, adjust as needed
+    if (_request.uri.length() > MAX_URI_LENGTH)
+    {
+        _request.statusCode = eHttpStatusCode::URITooLong;
+        return;
+    }
+	// check version
+	if (version != "HTTP/1.1")
+	{
+		_request.statusCode = eHttpStatusCode::HTTPVersionNotSupported;
 		return;
 	}
 
@@ -205,23 +212,28 @@ void httpHandler::parseChunkedBody(std::istringstream &ss)
 	// Implement chunked body parsing logic here
 	// Handle chunked transfer encoding
 	std::string chunkSizeLine;
+	size_t chunkSize;
+	size_t cumulitiveChunkSize = 0;
 	while (std::getline(ss, chunkSizeLine))
 	{
 		if (!chunkSizeLine.empty() && chunkSizeLine.back() == '\r')
 			chunkSizeLine.pop_back();
 
 		std::istringstream chunkSizeStream(chunkSizeLine);
-		size_t chunkSize;
 		chunkSizeStream >> std::hex >> chunkSize;
 
 		if (chunkSize == 0)
 			break;
+		cumulitiveChunkSize += chunkSize;
+		if (cumulitiveChunkSize > _request.loc.client_body_buffer_size)
+		{
+			_request.statusCode = eHttpStatusCode::InsufficientStorage;
+			return;
+		}
 
 		std::string chunkData(chunkSize, '\0');
 		ss.read(&chunkData[0], chunkSize);
 		_request.body << chunkData;
-
-		// Read the trailing \r\n after the chunk data
 		std::getline(ss, chunkSizeLine);
 	}
 }
@@ -232,6 +244,11 @@ void httpHandler::parseChunkedBody(std::istringstream &ss)
 void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 {
 	(void) length;
+	if (length > _request.loc.client_body_buffer_size)
+	{	
+		_request.statusCode = eHttpStatusCode::InsufficientStorage;
+		return;
+	}
 	// Implement fixed-length body parsing logic here
 	std::string bodyLine;
 	while (std::getline(ss, bodyLine) && bodyLine != "0\r")
