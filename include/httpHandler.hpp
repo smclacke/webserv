@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 12:09:45 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 12:33:08 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
 #include "server.hpp"
 
 const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
-	{eHttpStatusCode::NotSet, "No StatusCode"},
 	{eHttpStatusCode::Continue, "Continue"},
 	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
 	{eHttpStatusCode::OK, "OK"},
@@ -83,6 +82,7 @@ enum eRequestHeader
 	ContentLength,
 	TransferEncoding,
 	ContentEncoding, // implemented
+	Accept,			 // from here headers not used / implemented
 	Accept,			 // from here headers not used / implemented
 	Authorization,
 	CacheControl,
