@@ -5,8 +5,8 @@
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 12:33:08 by jde-baai      ########   odam.nl         */
+/*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
+/*   Updated: 2024/11/21 12:33:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,6 @@ enum eRequestHeader
 	ContentLength,
 	TransferEncoding,
 	ContentEncoding, // implemented
-	Accept,			 // from here headers not used / implemented
 	Accept,			 // from here headers not used / implemented
 	Authorization,
 	CacheControl,
