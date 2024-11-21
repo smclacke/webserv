@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/20 15:49:05 by julius        ########   odam.nl         */
+/*   Updated: 2024/11/21 10:34:22 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,12 +84,12 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 		return;
 	}
 	// Check if URI is too long
-    const size_t MAX_URI_LENGTH = 2048; // Example limit, adjust as needed
-    if (_request.uri.length() > MAX_URI_LENGTH)
-    {
-        _request.statusCode = eHttpStatusCode::URITooLong;
-        return;
-    }
+	const size_t MAX_URI_LENGTH = 2048; // Example limit, adjust as needed
+	if (_request.uri.length() > MAX_URI_LENGTH)
+	{
+		_request.statusCode = eHttpStatusCode::URITooLong;
+		return;
+	}
 	// check version
 	if (version != "HTTP/1.1")
 	{
@@ -151,11 +151,6 @@ void httpHandler::parseHeaders(std::istringstream &ss)
 		if (headerType == Invalid)
 		{
 			_request.statusCode = eHttpStatusCode::BadRequest;
-			return;
-		}
-		else if (headerType > 5)
-		{
-			_request.statusCode = eHttpStatusCode::NotImplemented;
 			return;
 		}
 		_request.headers[headerType] = value;
@@ -243,9 +238,9 @@ void httpHandler::parseChunkedBody(std::istringstream &ss)
  */
 void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 {
-	(void) length;
+	(void)length;
 	if (length > _request.loc.client_body_buffer_size)
-	{	
+	{
 		_request.statusCode = eHttpStatusCode::InsufficientStorage;
 		return;
 	}
@@ -267,7 +262,7 @@ void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 
 void httpHandler::decodeContentEncoding(std::stringstream &body, const std::string &encoding)
 {
-	(void) body;
+	(void)body;
 	if (encoding == "identity")
 	{
 		return;
