@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 10:34:22 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 10:34:49 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -153,6 +153,11 @@ void httpHandler::parseHeaders(std::istringstream &ss)
 			_request.statusCode = eHttpStatusCode::BadRequest;
 			return;
 		}
+		// else if (headerType > 5)
+		// {
+		// 	_request.statusCode = eHttpStatusCode::NotImplemented;
+		// 	return;
+		// }
 		_request.headers[headerType] = value;
 	}
 }
