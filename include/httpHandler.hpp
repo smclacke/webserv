@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 13:51:31 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 15:43:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -212,12 +212,18 @@ private:
 	void parseHeaders(std::istringstream &ss);
 	void parseBody(std::istringstream &ss);
 	// parse body
-	void parseChunkedBody(std::istringstream &ss);
+	void parseChunkedBody(std::istringstream &ss, const std::optional<std::string> &contentType);
 	void parseFixedLengthBody(std::istringstream &ss, size_t length);
 	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
+	void parseMultipartBody(std::istream &ss, const std::string &contentType);
+	std::string extractBoundary(const std::string &contentType);
+	std::string extractHeaderValue(const std::string &headers, const std::string &key);
+	std::string extractFilename(const std::string &contentDisposition);
+	void saveFile(const std::string &filename, const std::string &fileData);
 
 	// response
-	std::string writeResponse(void);
+	std::string
+	writeResponse(void);
 	std::string cgiRequest(void);
 	std::string stdRequest(void);
 
