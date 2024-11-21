@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 14:51:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 12:23:33 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 13:55:09 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@ std::string httpHandler::cgiRequest(void)
 	std::cout << "Location: " << _request.loc.path << std::endl;
 	std::cout << "Path: " << _request.path << std::endl;
 	for (const auto &header : _request.headers)
-		std::cout << "Header: " << header.first << " - " << header.second << std::endl;
+		std::cout << "Header: " << EheaderToString(header.first) << " - " << header.second << std::endl;
 	std::cout << "Body: " << _request.body.str() << std::endl;
 	std::cout << "CGI: " << _request.cgi << std::endl;
 	return (writeResponse());

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 12:09:33 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 13:55:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,41 +60,28 @@ std::optional<std::string> httpHandler::findHeaderValue(const s_request &request
 
 eRequestHeader httpHandler::toEHeader(const std::string &header)
 {
-	static const std::unordered_map<std::string, eRequestHeader> headerMap = {
-		{"Host", Host},
-		{"User-Agent", UserAgent},
-		{"Content-Type", ContentType},
-		{"Content-Length", ContentLength},
-		{"Transfer-Encoding", TransferEncoding},
-		{"Content-Encoding", ContentEncoding},
-		{"Accept", Accept},
-		{"Authorization", Authorization},
-		{"Cache-Control", CacheControl},
-		{"Connection", Connection},
-		{"Cookie", Cookie},
-		{"Date", Date},
-		{"Expect", Expect},
-		{"Origin", Origin},
-		{"Referer", Referer},
-		{"Content-Disposition", ContentDisposition},
-		{"If-Modified-Since", IfModifiedSince},
-		{"If-None-Match", IfNoneMatch},
-		{"If-Match", IfMatch},
-		{"If-Unmodified-Since", IfUnmodifiedSince},
-		{"Accept-Charset", AcceptCharset},
-		{"Accept-Encoding", AcceptEncoding},
-		{"Accept-Language", AcceptLanguage},
-		{"Access-Control-Request-Method", AccessControlRequestMethod},
-		{"Access-Control-Request-Headers", AccessControlRequestHeaders},
-		{"Forwarded", Forwarded},
-		{"From", From},
-		{"Max-Forwards", MaxForwards},
-		{"Proxy-Authorization", ProxyAuthorization},
-		{"Range", Range},
-		{"TE", TE},
-		{"Upgrade-Insecure-Requests", UpgradeInsecureRequests},
-		{"Via", Via},
-		{"Warning", Warning}};
+
 	auto it = headerMap.find(header);
-	return it != headerMap.end() ? it->second : Invalid;
+	return it != headerMap.end() ? it->second : eRequestHeader::Invalid;
+}
+
+/**
+ * @brief Transforms the enum to a string for printing
+ * @warning slower look up table, use for testing only, not for live Server
+ * @note add map for Enum - String if this function requires constant use
+ */
+std::string httpHandler::EheaderToString(const eRequestHeader &header)
+{
+	// Reverse the existing headerMap to create a lookup for eRequestHeader to string
+	static std::unordered_map<eRequestHeader, std::string> requestHeaderToString;
+	if (requestHeaderToString.empty())
+	{
+		for (const auto &pair : headerMap)
+		{
+			requestHeaderToString[pair.second] = pair.first;
+		}
+	}
+
+	auto it = requestHeaderToString.find(header);
+	return it != requestHeaderToString.end() ? it->second : "Unknown Header";
 }

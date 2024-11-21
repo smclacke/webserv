@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 12:26:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 13:44:26 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -137,7 +137,7 @@ void httpHandler::parseHeaders(std::istringstream &ss)
 		getline(split, key, ':');
 		getline(split >> std::ws, value);
 		eRequestHeader headerType = toEHeader(key);
-		if (headerType == Invalid)
+		if (headerType == eRequestHeader::Invalid)
 		{
 			std::cerr << "Invalid header key: " << key << std::endl;
 			_request.statusCode = eHttpStatusCode::BadRequest;
