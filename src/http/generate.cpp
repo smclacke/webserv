@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 14:20:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 12:08:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,26 +21,42 @@ const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascrip
 const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
 const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
 
-std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
+std::string httpHandler::generateResponse()
+{
+	if (_request.statusCode != eHttpStatusCode::OK)
+		return (writeResponse());
+
+	std::string response;
+	if (_request.cgi == true)
+		response = cgiRequest();
+	else
+		response = stdRequest();
+	return response;
+}
+
+/**
+ * @brief writes a simple response in case the Parser returned a statusCode;
+ */
+std::string httpHandler::writeResponse(void)
 {
 	std::string message;
-	auto it = statusMessages.find(statusCode);
+
+	auto it = statusMessages.find(_request.statusCode);
 	if (it != statusMessages.end())
 		message = it->second;
 	else
 	{
 		message = "Bad request";
-		statusCode = eHttpStatusCode::BadRequest;
+		_request.statusCode = eHttpStatusCode::BadRequest;
 	}
 	std::ostringstream response;
-	response << "HTTP/1.1 " << static_cast<int>(statusCode) << " " << message << "\r\n"
+	response << "HTTP/1.1 " << static_cast<int>(_request.statusCode) << " " << message << "\r\n"
 			 << "Content-Type: text/plain\r\n"
 			 << "Content-Length: " << message.size() << "\r\n"
 			 << "Connection: close\r\n"
 			 << "\r\n"
 			 << message;
-
-	return response.str();
+	return (response.str());
 }
 
 // linebreak in http = CRLF = \r\n

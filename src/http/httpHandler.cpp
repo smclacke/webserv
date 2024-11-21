@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 10:33:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 12:09:33 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,8 @@
 
 httpHandler::httpHandler(Server &server) : _server(server)
 {
+	_request.statusCode = eHttpStatusCode::OK;
+	_request.cgi = false;
 }
 
 httpHandler::~httpHandler(void)
@@ -56,7 +58,7 @@ std::optional<std::string> httpHandler::findHeaderValue(const s_request &request
 	return std::nullopt;
 }
 
-eRequestHeader toEHeader(const std::string &header)
+eRequestHeader httpHandler::toEHeader(const std::string &header)
 {
 	static const std::unordered_map<std::string, eRequestHeader> headerMap = {
 		{"Host", Host},

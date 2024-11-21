@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 10:33:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 12:09:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 #include "server.hpp"
 
 const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
-	{eHttpStatusCode::NotSet, "Bad Request"},
+	{eHttpStatusCode::NotSet, "No StatusCode"},
 	{eHttpStatusCode::Continue, "Continue"},
 	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
 	{eHttpStatusCode::OK, "OK"},
@@ -83,7 +83,7 @@ enum eRequestHeader
 	ContentLength,
 	TransferEncoding,
 	ContentEncoding, // implemented
-	Accept, // from here on not implemented
+	Accept,			 // from here headers not used / implemented
 	Authorization,
 	CacheControl,
 	Connection,
@@ -128,14 +128,14 @@ struct s_location;
  */
 struct s_request
 {
-	eHttpStatusCode statusCode = eHttpStatusCode::NotSet;
+	eHttpStatusCode statusCode;
 	eHttpMethod method;
 	std::string uri;
 	s_location loc;
 	std::string path;
 	std::unordered_map<eRequestHeader, std::string> headers;
 	std::stringstream body;
-	bool cgi = false;
+	bool cgi;
 };
 class httpHandler
 {
@@ -157,7 +157,7 @@ private:
 	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
 
 	// response
-	std::string generateHttpResponse(eHttpStatusCode statusCode);
+	std::string writeResponse(void);
 	std::string cgiRequest(void);
 	std::string stdRequest(void);
 
@@ -167,7 +167,8 @@ public:
 	~httpHandler(void);
 
 	/* member functions */
-	std::string parseRequest(const std::string &response);
+	void parseRequest(const std::string &response);
+	std::string generateResponse();
 };
 
 #endif /* HTTP_HANDLER_HPP */

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:22:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/21 12:10:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 	s_location loc;
 	loc.allowed_methods.push_back(eHttpMethod::GET);
 	loc.allowed_methods.push_back(eHttpMethod::POST);
-	loc.allowed_methods.push_back(eHttpMethod::DELETE);	
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);
 	loc.index_files.push_back("index.html");
 	loc.index_files.push_back("index.htm");
 	loc.index = "index.html";
@@ -83,7 +83,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -123,7 +123,8 @@ Server::~Server()
 std::string Server::handleRequest(const std::string &request)
 {
 	httpHandler parser(*this);
-	return (parser.parseRequest(request));
+	parser.parseRequest(request);
+	return (parser.generateResponse());
 }
 
 /**
