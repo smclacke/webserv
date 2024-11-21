@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 17:25:11 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/21 10:33:41 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,15 +56,43 @@ std::optional<std::string> httpHandler::findHeaderValue(const s_request &request
 	return std::nullopt;
 }
 
-eRequestHeader httpHandler::toEHeader(const std::string &header)
+eRequestHeader toEHeader(const std::string &header)
 {
 	static const std::unordered_map<std::string, eRequestHeader> headerMap = {
 		{"Host", Host},
 		{"User-Agent", UserAgent},
 		{"Content-Type", ContentType},
 		{"Content-Length", ContentLength},
+		{"Transfer-Encoding", TransferEncoding},
 		{"Content-Encoding", ContentEncoding},
-		{"Transfer-Encoding", TransferEncoding}};
+		{"Accept", Accept},
+		{"Authorization", Authorization},
+		{"Cache-Control", CacheControl},
+		{"Connection", Connection},
+		{"Cookie", Cookie},
+		{"Date", Date},
+		{"Expect", Expect},
+		{"Origin", Origin},
+		{"Referer", Referer},
+		{"Content-Disposition", ContentDisposition},
+		{"If-Modified-Since", IfModifiedSince},
+		{"If-None-Match", IfNoneMatch},
+		{"If-Match", IfMatch},
+		{"If-Unmodified-Since", IfUnmodifiedSince},
+		{"Accept-Charset", AcceptCharset},
+		{"Accept-Encoding", AcceptEncoding},
+		{"Accept-Language", AcceptLanguage},
+		{"Access-Control-Request-Method", AccessControlRequestMethod},
+		{"Access-Control-Request-Headers", AccessControlRequestHeaders},
+		{"Forwarded", Forwarded},
+		{"From", From},
+		{"Max-Forwards", MaxForwards},
+		{"Proxy-Authorization", ProxyAuthorization},
+		{"Range", Range},
+		{"TE", TE},
+		{"Upgrade-Insecure-Requests", UpgradeInsecureRequests},
+		{"Via", Via},
+		{"Warning", Warning}};
 	auto it = headerMap.find(header);
 	return it != headerMap.end() ? it->second : Invalid;
 }

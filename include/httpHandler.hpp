@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/20 14:59:57 by julius        ########   odam.nl         */
+/*   Updated: 2024/11/21 10:33:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ enum eRequestHeader
 	ContentType,
 	ContentLength,
 	TransferEncoding,
-	ContentEncoding,
+	ContentEncoding, // implemented
 	Accept, // from here on not implemented
 	Authorization,
 	CacheControl,
@@ -97,6 +97,20 @@ enum eRequestHeader
 	IfNoneMatch,
 	IfMatch,
 	IfUnmodifiedSince,
+	AcceptCharset,
+	AcceptEncoding,
+	AcceptLanguage,
+	AccessControlRequestMethod,
+	AccessControlRequestHeaders,
+	Forwarded,
+	From,
+	MaxForwards,
+	ProxyAuthorization,
+	Range,
+	TE,
+	UpgradeInsecureRequests,
+	Via,
+	Warning,
 	Invalid
 };
 
