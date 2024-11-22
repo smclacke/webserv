@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 17:15:59 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 18:12:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,7 +69,7 @@ class Epoll
 		std::vector<t_serverData>		_serverData;
 		int								_numEvents;
 		struct epoll_event				_event;
-		std::vector<epoll_event>		_events;									_events[MAX_EVENTS];
+		std::vector<epoll_event>		_events;		
 
 	public:
 		Epoll();
@@ -92,12 +92,14 @@ class Epoll
 		t_serverData					getServer(size_t i) const;
 		int								getNumEvents() const;
 		std::vector<epoll_event>&		getAllEvents();
+		struct epoll_event				getEvent();
 
 		/* setters */
 		void							setEpfd(int fd);
 		void							setServer(t_serverData server);
 		void							setNumEvents(int numEvents);
 		void							setEventMax();
+		void							setEvent(struct epoll_event event);
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);

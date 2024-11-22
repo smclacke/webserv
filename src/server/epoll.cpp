@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 17:19:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 18:36:58 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,6 @@
 /**
  * @todo destruction + clean up
  * @todo clientStatus delete
- * @todo make new connection function
  */
 
 /* constructors */
@@ -106,6 +105,8 @@ void		Epoll::connectClient(t_serverData server)
 
 void		Epoll::handleRead(t_serverData server, int j)
 {
+
+	(void) server;
 	char			buffer[READ_BUFFER_SIZE];
 	std::string		request; // http request
 
@@ -140,6 +141,7 @@ void		Epoll::handleRead(t_serverData server, int j)
 
 void		Epoll::handleWrite(t_serverData server, int j)
 {
+	(void) server;
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 	std::string	response1 = generateHttpResponse("this message from write");
 	size_t		write_offset = 0; // keeping track of where we are in buffer
@@ -172,8 +174,7 @@ void		Epoll::handleWrite(t_serverData server, int j)
 
 void	Epoll::makeNewConnection(int fd, t_serverData server)
 {
-	//int						newSock;
-	struct sockaddr_in		clientAddr;	// check the addresses cause it doesnt make sense to me
+	struct sockaddr_in		clientAddr;	// check the addresses cause it doesnt make sense to me where they come from
 	socklen_t				addrLen = sizeof(clientAddr);
 
 	fd = accept(server._serverSock, (struct sockaddr *)&clientAddr, &addrLen);
@@ -248,6 +249,10 @@ std::vector<epoll_event>	&Epoll::getAllEvents()
 	return _events;
 }
 
+struct epoll_event	Epoll::getEvent()
+{
+	return this->_event;
+}
 
 /* setters */
 void				Epoll::setEpfd(int fd)
@@ -268,4 +273,9 @@ void				Epoll::setNumEvents(int numEvents)
 void				Epoll::setEventMax()
 {
 	_events.resize(MAX_EVENTS);
+}
+
+void				Epoll::setEvent(struct epoll_event event)
+{
+	this->_event = event;
 }

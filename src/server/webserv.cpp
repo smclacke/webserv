@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/22 17:21:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 18:39:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,8 +82,8 @@ void		Webserv::addServersToEpoll()
 		thisServer._clientSock = getServer(i)->getClientSocket()->getSockfd();
 		thisServer._serverAddlen = getServer(i)->getServerSocket()->getAddrlen();
 		thisServer._serverAddr = getServer(i)->getServerSocket()->getSockaddr();
-		_epoll._event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
-
+		struct epoll_event event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
+		_epoll.setEvent(event); 
 		_epoll.setServer(thisServer);
 		_epoll.connectClient(thisServer);
 		std::cout << "Added server [" << i << "] sockets to epoll monitoring\n";
@@ -93,17 +93,18 @@ void		Webserv::addServersToEpoll()
 
 void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
 {
-	int		fileFd = open(file.c_str(), O_RDONLY);
+	(void) clientSock;
+	(void) file;
+	//int		fileFd = open(file.c_str(), O_RDONLY);
 	
-	if (fileFd == -1)
-		throw std::runtime_error("Failed to open file\n");
-	_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
+	//if (fileFd == -1)
+	//	throw std::runtime_error("Failed to open file\n");
+	//_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
 }
-
-// getAllEvents
 
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
+	(void) servers;
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
@@ -117,7 +118,7 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			throw std::runtime_error("epoll_wait() failed\n");
 		else if (numEvents == 0)
 			continue ;
-		
+
 		// process events returned by epoll_wait
 		for (int i = 0; i < numEvents; ++i)
 		{
@@ -132,26 +133,24 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 				{
 					_epoll.makeNewConnection(fd, thisServer);
 					handled = true;
-					break ; // leave this server loop since it's been handled
+					//break ; // leave this server loop since it's been handled
 				}
 			}
 			if (!handled) // event is not for server socket, must be client socket, handle read/write
 			{
 				for (size_t j = 0; j < getServerCount(); ++j)
 				{
+					//std::cout << "where break?\n";
 					t_serverData thisServer = _epoll.getServer(j);
 
 					_epoll.clientTime(thisServer);
-					if (fd == thisServer._clientSock)
-					{
-						if (_epoll.getAllEvents()[i].events & EPOLLIN)
-							_epoll.handleRead(thisServer, i);
-						else if (_epoll.getAllEvents()[i].events & EPOLLOUT)
-							_epoll.handleWrite(thisServer, i);
-						else if (_epoll.getAllEvents()[i].events & EPOLLHUP)
-							std::cout << "EPOLLHUP\n";
-							//_epoll.handleClose(thisServer, i)
-					}
+					if (_epoll.getAllEvents()[i].events & EPOLLIN)
+						_epoll.handleRead(thisServer, i);
+					else if (_epoll.getAllEvents()[i].events & EPOLLOUT)
+						_epoll.handleWrite(thisServer, i);
+					else if (_epoll.getAllEvents()[i].events & EPOLLHUP)
+						std::cout << "EPOLLHUP\n";
+						//_epoll.handleClose(thisServer, i)
 				}
 			}
 		}
