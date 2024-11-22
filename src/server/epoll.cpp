@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 23:57:06 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 00:35:28 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void Epoll::connectClient(t_serverData server)
 		if (errno != EINPROGRESS)
 		{
 			protectedClose(server._clientSock);
-			protectedClose(server._serverSock);
+			protectedClose(server._serverSock); // change to server._server->serversocket->getfd();
 			protectedClose(_epfd);
 			throw std::runtime_error("Failed to connect client socket to server\n");
 		}
@@ -106,7 +106,6 @@ void Epoll::handleRead(t_serverData server, int j)
 
 	(void)server;
 	char buffer[READ_BUFFER_SIZE];
-	std::string request; // http request
 
 	ssize_t bytesRead = recv(_events[j].data.fd, buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
@@ -131,25 +130,25 @@ void Epoll::handleRead(t_serverData server, int j)
 		// read protocol
 		// process_incoming_data() - process a request, store it, or send a response.
 		buffer[bytesRead] = '\0';
-		request += buffer;
-		std::cout << "Server received " << request << "\n";
+		_request << buffer; // Append to the _request stringstream
+		std::cout << "Server received: " << _request.str() << "\n";
 		switchOUTMode(_events[j].data.fd, _epfd, _event);
 	}
 }
 
 void Epoll::handleWrite(t_serverData server, int j)
 {
-	(void)server;
-	const char response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-	std::string response1 = generateHttpResponse("this message from write");
+	_response = server._server->handleRequest(_request);
+	_request.str(""); // clear epoll _request
+	_request.clear(); // clear epoll _request errors
+	// const char response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+	// std::string _response = generateHttpResponse("this message from write");
 	size_t write_offset = 0; // keeping track of where we are in buffer
-
-	ssize_t bytesWritten = send(_events[j].data.fd, response + write_offset, strlen(response) - write_offset, 0);
-
+	ssize_t bytesWritten = send(_events[j].data.fd, _response.c_str() + write_offset, _response.size() - write_offset, 0);
 	if (bytesWritten == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return; // no space in scoket's send buffer, wait for more space
+			return; // no space in socket's send buffer, wait for more space
 		std::cerr << "Write to client failed\n";
 		// handle connection close
 		return;
@@ -159,12 +158,13 @@ void Epoll::handleWrite(t_serverData server, int j)
 		// write protocol
 		write_offset += bytesWritten;
 
-		// if all data sent, stop watching for write events (oui?)
-		if (write_offset == strlen(response))
+		// if all data sent, stop watching for write events
+		if (write_offset == _response.size())
 		{
 			// reset buffer or process next message
+			_response = ""; // Move this line here
 			write_offset = 0;
-			std::cout << "Client sent message to server: " << response << "\n\n\n";
+			std::cout << "Client sent message to server: " << _response << "\n\n\n";
 			switchINMode(_events[j].data.fd, _epfd, _event);
 		}
 	}

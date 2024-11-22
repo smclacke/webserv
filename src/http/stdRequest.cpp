@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 13:56:13 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/23 00:25:11 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,13 +15,5 @@
 std::string httpHandler::stdRequest(void)
 {
 	std::cout << "It is a standard request with these inputs:" << std::endl;
-	std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
-	std::cout << "URI: " << _request.uri << std::endl;
-	std::cout << "Location: " << _request.loc.path << std::endl;
-	std::cout << "Path: " << _request.path << std::endl;
-	for (const auto &header : _request.headers)
-		std::cout << "Header: " << EheaderToString(header.first) << " - " << header.second << std::endl;
-	std::cout << "Body: " << _request.body.str() << std::endl;
-	std::cout << "CGI: " << _request.cgi << std::endl;
 	return (writeResponse());
 }

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 00:00:59 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 00:05:56 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,6 +78,7 @@ void Webserv::addServersToEpoll()
 	{
 		t_serverData thisServer;
 
+		thisServer._server = getServer(i);
 		thisServer._serverSock = getServer(i)->getServerSocket()->getSockfd();	  // these can be replaced by one pointer to Server
 		thisServer._clientSock = getServer(i)->getClientSocket()->getSockfd();	  // these can be replaced by one pointer to Server
 		thisServer._serverAddlen = getServer(i)->getServerSocket()->getAddrlen(); // these can be replaced by one pointer to Server

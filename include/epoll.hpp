@@ -6,16 +6,17 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 23:58:03 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 00:28:14 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef EPOLL_HPP
 #define EPOLL_HPP
 
-#include "socket.hpp"
+#include "server.hpp"
 
 class Webserv;
+class Server;
 class Socket;
 
 enum class eSocket;
@@ -48,13 +49,14 @@ typedef struct s_clients
 
 typedef struct s_serverData
 {
-	int _serverSock;
-	int _clientSock;
+	int _serverSock; // replace
+	int _clientSock; // replace
 	std::unordered_map<int, timePoint> _clientTime;
 	enum clientState _clientState;
 	std::vector<t_clients> _clients; // connections for server socket to accept
-	socklen_t _serverAddlen;
-	struct sockaddr_in _serverAddr;
+	socklen_t _serverAddlen;		 // replace
+	struct sockaddr_in _serverAddr;	 // replace
+	std::shared_ptr<Server> _server;
 
 	/* methods */
 	void addClient(int sock, struct sockaddr_in addr, int len);
@@ -70,6 +72,8 @@ private:
 	int _numEvents;
 	struct epoll_event _event;
 	std::vector<epoll_event> _events;
+	std::stringstream _request; // dont actually intend to add this, only convenient right now, can probably think of something better
+	std::string _response;
 
 public:
 	Epoll();
