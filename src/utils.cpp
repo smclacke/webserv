@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/18 14:06:02 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:06:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 23:57:34 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,3 +20,4 @@ void		protectedClose(int fd)
 			throw std::runtime_error("Close() failed\n");
 	}
 }
+

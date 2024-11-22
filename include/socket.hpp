@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 16:34:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 17:08:07 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 23:57:46 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,35 +18,34 @@
 
 class Socket
 {
-	private:
-		int						_sockfd;
-		size_t					_maxConnections;
-		struct sockaddr_in		_sockaddr;
-		socklen_t				_addrlen;
-		int						_reuseaddr;
-		int						_flags;
+private:
+	int _sockfd;
+	size_t _maxConnections;
+	struct sockaddr_in _sockaddr;
+	socklen_t _addrlen;
+	int _reuseaddr;
+	int _flags;
 
-	public:
-		Socket();
-		Socket(const Server &servInstance, eSocket type);
-		Socket(const Socket &copy);
-		Socket &operator=(const Socket &Socket);
-		~Socket();
+public:
+	Socket();
+	Socket(const Server &servInstance, eSocket type);
+	Socket(const Socket &copy);
+	Socket &operator=(const Socket &Socket);
+	~Socket();
 
-		/* methods */
-		void					openServerSocket(const Server &serInstance);
-		void 					openClientSocket();
+	/* methods */
+	void openServerSocket(const Server &serInstance);
+	void openClientSocket();
 
-		/* getters */
-		int						getSockfd() const;
-		struct sockaddr_in		getSockaddr() const;
-		socklen_t				getAddrlen() const;
+	/* getters */
+	int getSockfd() const;
+	struct sockaddr_in getSockaddr() const;
+	socklen_t getAddrlen() const;
 
-		/* setters */
-		void					setSockfd(int fd);
-		void					setSockaddr(struct sockaddr_in &sockaddr);
-		void					setAddrlen(socklen_t &addrlen);
-
+	/* setters */
+	void setSockfd(int fd);
+	void setSockaddr(struct sockaddr_in &sockaddr);
+	void setAddrlen(socklen_t &addrlen);
 };
 
 #endif /* SOCKET_HPP */

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 17:44:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 23:56:45 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,14 +25,12 @@ Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), 
 	{
 		openServerSocket(servInstance);
 		std::cout << "Server socket setup successful\n";
-
 	}
 	else if (type == eSocket::Client)
 	{
 		openClientSocket();
 		std::cout << "Client socket setup successful\n";
 		std::cout << "---------------------------------\n\n";
-
 	}
 	else
 		throw std::runtime_error("Error invalid socket type argument passed\n");
@@ -65,11 +63,11 @@ Socket::~Socket()
 {
 	std::cout << "Socket deconstr" << std::endl;
 	// freeaddrinfo
-	//protectedClose(_sockfd);
+	// protectedClose(_sockfd);
 }
 
 /* methods */
-void		Socket::openServerSocket(const Server &servInstance)
+void Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("Error socketing sock\n");
@@ -101,10 +99,10 @@ void		Socket::openServerSocket(const Server &servInstance)
 		protectedClose(_sockfd);
 		throw std::runtime_error("Error listening for connections\n");
 	}
-	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
+	std::cout << "Listening on port - " << servInstance.getPort() << " \n\n";
 }
 
-void 		Socket::openClientSocket()
+void Socket::openClientSocket()
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("Error socketing sock\n");
@@ -118,33 +116,33 @@ void 		Socket::openClientSocket()
 }
 
 /* getters */
-int					Socket::getSockfd() const
+int Socket::getSockfd() const
 {
 	return this->_sockfd;
 }
 
-struct sockaddr_in	Socket::getSockaddr() const
+struct sockaddr_in Socket::getSockaddr() const
 {
 	return this->_sockaddr;
 }
 
-socklen_t			Socket::getAddrlen() const
+socklen_t Socket::getAddrlen() const
 {
 	return this->_addrlen;
 }
 
 /* setters */
-void				Socket::setSockfd(int fd)
+void Socket::setSockfd(int fd)
 {
 	this->_sockfd = fd;
 }
 
-void				Socket::setSockaddr(struct sockaddr_in &sockaddr)
+void Socket::setSockaddr(struct sockaddr_in &sockaddr)
 {
 	this->_sockaddr = sockaddr;
 }
 
-void				Socket::setAddrlen(socklen_t &addrlen)
+void Socket::setAddrlen(socklen_t &addrlen)
 {
 	this->_addrlen = addrlen;
 }
