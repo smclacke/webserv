@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 17:44:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 15:10:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,7 @@ void		Socket::openServerSocket(const Server &servInstance)
 		protectedClose(_sockfd);
 		throw std::runtime_error("Error listening for connections\n");
 	}
-	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
+	std::cout << "Listening on port - " << servInstance.getPort() << " \n\n";
 }
 
 void 		Socket::openClientSocket()

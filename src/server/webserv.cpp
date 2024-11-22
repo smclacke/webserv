@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 19:09:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 15:28:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,6 +100,8 @@ void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
 	_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
 }
 
+// STOP USING i WHEN I MEAN TO USE j
+// am i even using the client socket?
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
@@ -126,11 +128,19 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 				if (thisServer._events[j].data.fd == thisServer._serverSock)
 					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
 				else if (thisServer._events[j].events & EPOLLIN)
-					_epoll.handleRead(thisServer, i);
+				{
+					std::cout << "read\n";
+					_epoll.handleRead(thisServer, j);
+
+				}
 				else if (thisServer._events[j].events & EPOLLOUT)
-					_epoll.handleWrite(thisServer, i);
+				{
+					std::cout << "write\n";
+					_epoll.handleWrite(thisServer, j);
+				}
 				else if (EPOLLHUP)
 				{
+					std::cout << "hup\n";
 					// hang up happened on fd
 					// handle close connection
 					std::cout << "EPOLLHUP -> breaking\n";

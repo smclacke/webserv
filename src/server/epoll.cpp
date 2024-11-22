@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 19:11:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 15:27:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ void		Epoll::handleRead(t_serverData server, int i)
 	char			buffer[READ_BUFFER_SIZE];
 	std::string		request; // http request
 
-	ssize_t bytesRead = recv(server._clientSock, buffer, sizeof(buffer), 0);
+	ssize_t bytesRead = recv(server._events[i].data.fd, buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
