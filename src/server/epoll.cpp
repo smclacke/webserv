@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/23 00:35:28 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 00:43:23 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,12 +88,15 @@ void Epoll::clientTime(t_serverData server)
 
 void Epoll::connectClient(t_serverData server)
 {
-	if ((connect(server._clientSock, (struct sockaddr *)&server._serverAddr, server._serverAddlen)))
+	sockaddr_in serverSockAddr = server._server->getServerSocket()->getSockaddr();
+	if ((connect(server._server->getClientSocket()->getSockfd(),
+				 (struct sockaddr *)&serverSockAddr,
+				 server._server->getServerSocket()->getAddrlen())))
 	{
 		if (errno != EINPROGRESS)
 		{
-			protectedClose(server._clientSock);
-			protectedClose(server._serverSock); // change to server._server->serversocket->getfd();
+			protectedClose(server._server->getClientSocket()->getSockfd());
+			protectedClose(server._server->getServerSocket()->getSockfd()); // change to server._server->serversocket->getfd();
 			protectedClose(_epfd);
 			throw std::runtime_error("Failed to connect client socket to server\n");
 		}
@@ -175,7 +178,7 @@ void Epoll::makeNewConnection(int fd, t_serverData server)
 	struct sockaddr_in clientAddr; // check the addresses cause it doesnt make sense to me where they come from
 	socklen_t addrLen = sizeof(clientAddr);
 
-	fd = accept(server._serverSock, (struct sockaddr *)&clientAddr, &addrLen);
+	fd = accept(server._server->getServerSocket()->getSockfd(), (struct sockaddr *)&clientAddr, &addrLen);
 	if (fd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
