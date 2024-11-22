@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 15:27:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 17:19:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,10 @@
  */
 
 /* constructors */
-Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS) {}
+Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
+{
+	setEventMax();
+}
 
 
 Epoll::Epoll(const Epoll &copy)
@@ -101,12 +104,12 @@ void		Epoll::connectClient(t_serverData server)
 	std::cout << "Connected client socket to server\n";
 }
 
-void		Epoll::handleRead(t_serverData server, int i)
+void		Epoll::handleRead(t_serverData server, int j)
 {
 	char			buffer[READ_BUFFER_SIZE];
 	std::string		request; // http request
 
-	ssize_t bytesRead = recv(server._events[i].data.fd, buffer, sizeof(buffer), 0);
+	ssize_t bytesRead = recv(_events[j].data.fd, buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -114,14 +117,15 @@ void		Epoll::handleRead(t_serverData server, int i)
 		
 		// recv failed
 		// epoll_ctl(EPOLL_CTL_DEL)
-		protectedClose(server._events[i].data.fd);
-		throw std::runtime_error("Reading from client socket failed\n");
+		protectedClose(_events[j].data.fd);
+		throw std::runtime_error("Reading from client connection failed\n");
 	}
 	else if (bytesRead == 0)
 	{
 		// epoll_ctl(EPOLL_CTL_DEL)
-		protectedClose(server._events[i].data.fd);
-		std::cout << "Client disconnected\n";
+		//protectedClose(server._events[j].data.fd);
+		//std::cout << "Client disconnected\n";
+		return ;		// should client connection be disconnected everytime??
 	}
 	else
 	{
@@ -130,17 +134,17 @@ void		Epoll::handleRead(t_serverData server, int i)
 		buffer[bytesRead] = '\0';
 		request += buffer;
 		std::cout << "Server received " << request << "\n";
-		switchOUTMode(server._events[i].data.fd, _epfd, server._event);
+		switchOUTMode(_events[j].data.fd, _epfd, _event);
 	}
 }
 
-void		Epoll::handleWrite(t_serverData server, int i)
+void		Epoll::handleWrite(t_serverData server, int j)
 {
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 	std::string	response1 = generateHttpResponse("this message from write");
 	size_t		write_offset = 0; // keeping track of where we are in buffer
 	
-	ssize_t bytesWritten = send(server._events[i].data.fd, response + write_offset, strlen(response) - write_offset, 0);
+	ssize_t bytesWritten = send(_events[j].data.fd, response + write_offset, strlen(response) - write_offset, 0);
 
 	if (bytesWritten == -1)
 	{
@@ -161,20 +165,19 @@ void		Epoll::handleWrite(t_serverData server, int i)
 			// reset buffer or process next message
 			write_offset = 0;
 			std::cout << "Client sent message to server: " << response << "\n\n\n";
-			switchINMode(server._events[i].data.fd, _epfd, server._event);
+			switchINMode(_events[j].data.fd, _epfd, _event);
 		}
 	}
 }
 
-void	Epoll::makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server)
+void	Epoll::makeNewConnection(int fd, t_serverData server)
 {
-	(void) serverSock;
-	int						newSock;
-	struct sockaddr_in		clientAddr;
+	//int						newSock;
+	struct sockaddr_in		clientAddr;	// check the addresses cause it doesnt make sense to me
 	socklen_t				addrLen = sizeof(clientAddr);
 
-	newSock = accept(server._serverSock, (struct sockaddr *)&clientAddr, &addrLen);
-	if (newSock < 0)
+	fd = accept(server._serverSock, (struct sockaddr *)&clientAddr, &addrLen);
+	if (fd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
 		return ;
@@ -182,10 +185,10 @@ void	Epoll::makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData 
 	else 
 	{
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
-		setNonBlocking(newSock);
-		addToEpoll(newSock, _epfd, server._event);
-		server.addClient(newSock, clientAddr, addrLen);
-		server._clientTime[newSock] = std::chrono::steady_clock::now();
+		setNonBlocking(fd);
+		addToEpoll(fd, _epfd, _event);
+		server.addClient(fd, clientAddr, addrLen);
+		server._clientTime[fd] = std::chrono::steady_clock::now();
 		server.setClientState(clientState::PARSING);
 	}
 }
@@ -218,8 +221,9 @@ enum clientState		s_serverData::getClientState()
 	return this->_clientState;
 }
 
+
 /* getters */
-int					Epoll::getEpfd() const
+int							Epoll::getEpfd() const
 {
 	return this->_epfd;
 }
@@ -229,15 +233,21 @@ std::vector<t_serverData>	Epoll::getAllServers() const
 	return this->_serverData;
 }
 
-t_serverData		Epoll::getServer(size_t i) const
+t_serverData				Epoll::getServer(size_t i) const
 {
 	return this->_serverData[i];
 }
 
-int					Epoll::getNumEvents() const
+int							Epoll::getNumEvents() const
 {
 	return this->_numEvents;
 }
+
+std::vector<epoll_event>	&Epoll::getAllEvents()
+{
+	return _events;
+}
+
 
 /* setters */
 void				Epoll::setEpfd(int fd)
@@ -253,4 +263,9 @@ void				Epoll::setServer(t_serverData server)
 void				Epoll::setNumEvents(int numEvents)
 {
 	this->_numEvents = numEvents;
+}
+
+void				Epoll::setEventMax()
+{
+	_events.resize(MAX_EVENTS);
 }

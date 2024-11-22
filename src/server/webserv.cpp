@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/22 15:28:14 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 17:21:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void		Webserv::addServersToEpoll()
 		thisServer._clientSock = getServer(i)->getClientSocket()->getSockfd();
 		thisServer._serverAddlen = getServer(i)->getServerSocket()->getAddrlen();
 		thisServer._serverAddr = getServer(i)->getServerSocket()->getSockaddr();
-		thisServer._event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
+		_epoll._event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
 
 		_epoll.setServer(thisServer);
 		_epoll.connectClient(thisServer);
@@ -100,8 +100,8 @@ void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
 	_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
 }
 
-// STOP USING i WHEN I MEAN TO USE j
-// am i even using the client socket?
+// getAllEvents
+
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
@@ -110,41 +110,48 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 
 	while (true)
 	{
-		for (size_t i = 0; i < getServerCount(); ++i)
+		
+		// all servers already added to epoll, can just call wait on all of them
+		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), 10, TIMEOUT);
+		if (numEvents == -1)
+			throw std::runtime_error("epoll_wait() failed\n");
+		else if (numEvents == 0)
+			continue ;
+		
+		// process events returned by epoll_wait
+		for (int i = 0; i < numEvents; ++i)
 		{
-			if (_epoll.getServer(i)._serverSock < 0)
-				throw std::runtime_error("Server fd is < 0\n");
-			t_serverData	thisServer = _epoll.getServer(i);
-			_epoll.clientTime(thisServer);
+			int fd = _epoll.getAllEvents()[i].data.fd;
+			bool handled = false;
 
-			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
-			if (numEvents == -1)
-				throw std::runtime_error("epoll_wait() failed\n");
-			else if (numEvents == 0)
-				continue ;
-
-			for (int j = 0; j < numEvents; ++j)
+			// check if event is for server socket (new connection)
+			for (size_t j = 0; j < getServerCount(); ++j)
 			{
-				if (thisServer._events[j].data.fd == thisServer._serverSock)
-					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
-				else if (thisServer._events[j].events & EPOLLIN)
+				t_serverData thisServer = _epoll.getServer(j);
+				if (fd == thisServer._serverSock) // event is for server socket (new connection)
 				{
-					std::cout << "read\n";
-					_epoll.handleRead(thisServer, j);
+					_epoll.makeNewConnection(fd, thisServer);
+					handled = true;
+					break ; // leave this server loop since it's been handled
+				}
+			}
+			if (!handled) // event is not for server socket, must be client socket, handle read/write
+			{
+				for (size_t j = 0; j < getServerCount(); ++j)
+				{
+					t_serverData thisServer = _epoll.getServer(j);
 
-				}
-				else if (thisServer._events[j].events & EPOLLOUT)
-				{
-					std::cout << "write\n";
-					_epoll.handleWrite(thisServer, j);
-				}
-				else if (EPOLLHUP)
-				{
-					std::cout << "hup\n";
-					// hang up happened on fd
-					// handle close connection
-					std::cout << "EPOLLHUP -> breaking\n";
-					break ;
+					_epoll.clientTime(thisServer);
+					if (fd == thisServer._clientSock)
+					{
+						if (_epoll.getAllEvents()[i].events & EPOLLIN)
+							_epoll.handleRead(thisServer, i);
+						else if (_epoll.getAllEvents()[i].events & EPOLLOUT)
+							_epoll.handleWrite(thisServer, i);
+						else if (_epoll.getAllEvents()[i].events & EPOLLHUP)
+							std::cout << "EPOLLHUP\n";
+							//_epoll.handleClose(thisServer, i)
+					}
 				}
 			}
 		}

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 15:25:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 17:15:59 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,8 +55,6 @@ typedef struct s_serverData
 	std::vector<t_clients> 										_clients;		// connections for server socket to accept
 	socklen_t													_serverAddlen;
 	struct sockaddr_in											_serverAddr;
-	struct epoll_event											_event;
-	struct epoll_event											_events[MAX_EVENTS];
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in addr, int len);
@@ -70,6 +68,8 @@ class Epoll
 		int								_epfd;
 		std::vector<t_serverData>		_serverData;
 		int								_numEvents;
+		struct epoll_event				_event;
+		std::vector<epoll_event>		_events;									_events[MAX_EVENTS];
 
 	public:
 		Epoll();
@@ -81,9 +81,9 @@ class Epoll
 		void							initEpoll();
 		void							clientTime(t_serverData server);
 		void							connectClient(t_serverData server);
-		void							makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server);
-		void							handleRead(t_serverData server, int i);
-		void							handleWrite(t_serverData server, int i);
+		void							makeNewConnection(int fd, t_serverData server);
+		void							handleRead(t_serverData server, int j);
+		void							handleWrite(t_serverData server, int j);
 		void							handleFile();
 
 		/* getters */
@@ -91,11 +91,13 @@ class Epoll
 		std::vector<t_serverData>		getAllServers() const;
 		t_serverData					getServer(size_t i) const;
 		int								getNumEvents() const;
+		std::vector<epoll_event>&		getAllEvents();
 
 		/* setters */
 		void							setEpfd(int fd);
 		void							setServer(t_serverData server);
 		void							setNumEvents(int numEvents);
+		void							setEventMax();
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
