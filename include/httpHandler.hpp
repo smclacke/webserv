@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 15:43:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/22 17:20:40 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -208,12 +208,12 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	s_location findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
 	// parse
-	void parseRequestLine(std::istringstream &ss);
-	void parseHeaders(std::istringstream &ss);
-	void parseBody(std::istringstream &ss);
+	void parseRequestLine(std::stringstream &ss);
+	void parseHeaders(std::stringstream &ss);
+	void parseBody(std::stringstream &ss);
 	// parse body
-	void parseChunkedBody(std::istringstream &ss, const std::optional<std::string> &contentType);
-	void parseFixedLengthBody(std::istringstream &ss, size_t length);
+	void parseChunkedBody(std::stringstream &ss, const std::optional<std::string> &contentType);
+	void parseFixedLengthBody(std::stringstream &ss, size_t length);
 	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
 	void parseMultipartBody(std::istream &ss, const std::string &contentType);
 	std::string extractBoundary(const std::string &contentType);
@@ -233,7 +233,7 @@ public:
 	~httpHandler(void);
 
 	/* member functions */
-	void parseRequest(const std::string &response);
+	void parseRequest(std::stringstream &response);
 	std::string generateResponse();
 };
 

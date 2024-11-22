@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 15:42:00 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/22 17:20:29 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,15 @@
 /**
  * @brief Parses the https request and stores it in the httpHandler::_request
  */
-void httpHandler::parseRequest(const std::string &httpRequest)
+void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
-	std::istringstream ss(httpRequest);
-
-	// Get the request line
-	parseRequestLine(ss);
+	parseRequestLine(httpRequest);
 	if (_request.statusCode != eHttpStatusCode::OK)
 		return;
-	parseHeaders(ss);
+	parseHeaders(httpRequest);
 	if (_request.statusCode != eHttpStatusCode::OK)
 		return;
-	parseBody(ss);
+	parseBody(httpRequest);
 	return;
 }
 
@@ -40,7 +37,7 @@ void httpHandler::parseRequest(const std::string &httpRequest)
 /**
  * @brief Parses the request line of the HTTP request
  */
-void httpHandler::parseRequestLine(std::istringstream &ss)
+void httpHandler::parseRequestLine(std::stringstream &ss)
 {
 	std::string requestLine;
 
@@ -125,7 +122,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 /**
  * @brief Parses the headers of the HTTP request
  */
-void httpHandler::parseHeaders(std::istringstream &ss)
+void httpHandler::parseHeaders(std::stringstream &ss)
 {
 	std::string header;
 	std::string key, value;
