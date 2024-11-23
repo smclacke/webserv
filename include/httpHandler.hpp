@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 10:31:16 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 10:58:21 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,14 +187,14 @@ struct s_location;
  */
 struct s_request
 {
-	eHttpStatusCode statusCode = eHttpStatusCode::OK;
-	eHttpMethod method = eHttpMethod::INVALID;
-	std::string uri = "";
+	eHttpStatusCode statusCode;
+	eHttpMethod method;
+	std::string uri;
 	s_location loc;
-	std::string path = "";
+	std::string path;
 	std::unordered_map<eRequestHeader, std::string> headers;
 	std::stringstream body;
-	bool cgi = false;
+	bool cgi;
 };
 class httpHandler
 {

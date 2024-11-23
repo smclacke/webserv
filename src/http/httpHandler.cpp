@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 10:31:47 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 11:02:40 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,12 @@
 
 httpHandler::httpHandler(Server &server) : _server(server)
 {
+	_request.statusCode = eHttpStatusCode::OK;
+	_request.method = eHttpMethod::INVALID;
+	_request.uri = "";
+	_request.path = "";
+	_request.body.str() = "";
+	_request.cgi = false;
 }
 
 httpHandler::~httpHandler(void)

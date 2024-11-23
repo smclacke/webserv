@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 00:25:05 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 11:02:22 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,8 @@ std::string httpHandler::generateResponse()
 	std::cout << "By generateResponse(), incoming request is as follows:\n";
 	std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
 	std::cout << "URI: " << _request.uri << std::endl;
-	std::cout << "Location: " << _request.loc.path << std::endl;
+	if (!_request.path.empty())
+		std::cout << "Location: " << _request.loc.path << std::endl;
 	std::cout << "Path: " << _request.path << std::endl;
 	for (const auto &header : _request.headers)
 		std::cout << "Header: " << EheaderToString(header.first) << " - " << header.second << std::endl;
