@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 11:02:22 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 11:08:09 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,7 @@ const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-s
 std::string httpHandler::generateResponse()
 {
 	std::cout << "By generateResponse(), incoming request is as follows:\n";
+	std::cout << "Status code: " << static_cast<int>(_request.statusCode) << std::endl;
 	std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
 	std::cout << "URI: " << _request.uri << std::endl;
 	if (!_request.path.empty())
