@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/23 00:28:14 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 10:27:03 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,7 @@ private:
 	std::vector<epoll_event> _events;
 	std::stringstream _request; // dont actually intend to add this, only convenient right now, can probably think of something better
 	std::string _response;
+	size_t write_offset;
 
 public:
 	Epoll();

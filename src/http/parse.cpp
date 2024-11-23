@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/22 17:20:29 by julius        ########   odam.nl         */
+/*   Updated: 2024/11/23 10:55:12 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,18 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 	parseHeaders(httpRequest);
 	if (_request.statusCode != eHttpStatusCode::OK)
 		return;
-	parseBody(httpRequest);
+
+	std::string remainingData;
+	std::getline(httpRequest, remainingData, '\0');
+	// Check if the remaining data is not just the end of headers
+	if (!remainingData.empty() && remainingData != "\r\n\r\n")
+	{
+		// Place the remaining data back into the stream
+		httpRequest.clear();			// Clear any error flags
+		httpRequest.str(remainingData); // Reset the stream with the remaining data
+		httpRequest.seekg(0);			// Reset the position to the beginning of the stream
+		parseBody(httpRequest);
+	}
 	return;
 }
 

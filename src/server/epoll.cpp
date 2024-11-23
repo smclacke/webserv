@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/23 00:43:23 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/23 10:27:30 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
  */
 
 /* constructors */
-Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
+Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS), write_offset(0)
 {
 	setEventMax();
 }
@@ -146,7 +146,7 @@ void Epoll::handleWrite(t_serverData server, int j)
 	_request.clear(); // clear epoll _request errors
 	// const char response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 	// std::string _response = generateHttpResponse("this message from write");
-	size_t write_offset = 0; // keeping track of where we are in buffer
+	// size_t write_offset = 0; // keeping track of where we are in buffer
 	ssize_t bytesWritten = send(_events[j].data.fd, _response.c_str() + write_offset, _response.size() - write_offset, 0);
 	if (bytesWritten == -1)
 	{
