@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/22 17:18:55 by julius        ########   odam.nl         */
+/*   Updated: 2024/11/24 11:19:37 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ void httpHandler::parseBody(std::stringstream &ss)
 		else
 		{
 			std::cerr << "Unsupported Transfer-Encoding: " << transferEncoding.value() << std::endl;
-			_request.statusCode = eHttpStatusCode::NotImplemented;
+			_statusCode = eHttpStatusCode::NotImplemented;
 			return;
 		}
 	}
@@ -52,7 +52,7 @@ void httpHandler::parseBody(std::stringstream &ss)
 	else
 	{
 		std::cerr << "No Content-Length or Transfer-Encoding header present" << std::endl;
-		_request.statusCode = eHttpStatusCode::LengthRequired;
+		_statusCode = eHttpStatusCode::LengthRequired;
 		return;
 	}
 	// decoding if it needs to be implemented
@@ -106,7 +106,7 @@ void httpHandler::parseFixedLengthBody(std::stringstream &ss, size_t length)
 	if (length > _request.loc.client_body_buffer_size)
 	{
 		std::cerr << "Fixed length body size exceeds client body buffer size" << std::endl;
-		_request.statusCode = eHttpStatusCode::InsufficientStorage;
+		_statusCode = eHttpStatusCode::InsufficientStorage;
 		return;
 	}
 	std::string bodyLine;
@@ -130,7 +130,7 @@ void httpHandler::parseMultipartBody(std::istream &ss, const std::string &conten
 	if (boundary.empty())
 	{
 		std::cerr << "Boundary not found in Content-Type" << std::endl;
-		_request.statusCode = eHttpStatusCode::BadRequest;
+		_statusCode = eHttpStatusCode::BadRequest;
 		return;
 	}
 
@@ -214,7 +214,7 @@ void httpHandler::saveFile(const std::string &filename, const std::string &fileD
 	else
 	{
 		std::cerr << "Failed to save file: " << filename << std::endl;
-		_request.statusCode = eHttpStatusCode::InternalServerError;
+		_statusCode = eHttpStatusCode::InternalServerError;
 	}
 }
 
@@ -245,6 +245,6 @@ void httpHandler::decodeContentEncoding(std::stringstream &body, const std::stri
 	else
 	{
 		std::cerr << "Unsupported Content-Encoding: " << encoding << std::endl;
-		_request.statusCode = eHttpStatusCode::NotImplemented;
+		_statusCode = eHttpStatusCode::NotImplemented;
 	}
 }

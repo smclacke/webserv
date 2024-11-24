@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 11:08:09 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/24 11:19:37 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-s
 std::string httpHandler::generateResponse()
 {
 	std::cout << "By generateResponse(), incoming request is as follows:\n";
-	std::cout << "Status code: " << static_cast<int>(_request.statusCode) << std::endl;
+	std::cout << "Status code: " << static_cast<int>(_statusCode) << std::endl;
 	std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
 	std::cout << "URI: " << _request.uri << std::endl;
 	if (!_request.path.empty())
@@ -35,7 +35,7 @@ std::string httpHandler::generateResponse()
 	std::cout << "Body: " << _request.body.str() << std::endl;
 	std::cout << "CGI: " << _request.cgi << std::endl;
 
-	if (_request.statusCode != eHttpStatusCode::OK)
+	if (_statusCode != eHttpStatusCode::OK)
 		return (writeResponse());
 
 	std::string response;
@@ -53,16 +53,16 @@ std::string httpHandler::writeResponse(void)
 {
 	std::string message;
 
-	auto it = statusMessages.find(_request.statusCode);
+	auto it = statusMessages.find(_statusCode);
 	if (it != statusMessages.end())
 		message = it->second;
 	else
 	{
 		message = "Bad request";
-		_request.statusCode = eHttpStatusCode::BadRequest;
+		_statusCode = eHttpStatusCode::BadRequest;
 	}
 	std::ostringstream response;
-	response << "HTTP/1.1 " << static_cast<int>(_request.statusCode) << " " << message << "\r\n"
+	response << "HTTP/1.1 " << static_cast<int>(_statusCode) << " " << message << "\r\n"
 			 << "Content-Type: text/plain\r\n"
 			 << "Content-Length: " << message.size() << "\r\n"
 			 << "Connection: close\r\n"
@@ -70,3 +70,27 @@ std::string httpHandler::writeResponse(void)
 			 << message;
 	return (response.str());
 }
+
+// std::string httpHandler::writeResponse(void)
+// {
+
+//     std::stringstream responseStream;
+
+//     // Start with the status line
+//     responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " "
+//                    << statusMessages.at(_statusCode) << "\r\n";
+
+//     // Add headers
+//     for (const auto &header : _responseHeaders)
+//     {
+//         responseStream << EheaderToString(header.first) << ": " << header.second << "\r\n";
+//     }
+
+//     // End headers section
+//     responseStream << "\r\n";
+
+//     // Add body
+//     responseStream << _responseBody.str();
+
+//     return responseStream.str();
+// }
