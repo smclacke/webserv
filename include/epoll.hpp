@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 18:12:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 12:29:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,13 +48,14 @@ typedef struct s_clients
 
 typedef struct s_serverData
 {
-	int															_serverSock;
-	int															_clientSock;
-	std::unordered_map<int, timePoint>							_clientTime;
-	enum clientState											_clientState;
-	std::vector<t_clients> 										_clients;		// connections for server socket to accept
-	socklen_t													_serverAddlen;
-	struct sockaddr_in											_serverAddr;
+	std::shared_ptr<Server>							_server;
+	//int												_serverSock;
+	//int												_clientSock;
+	std::unordered_map<int, timePoint>				_clientTime;
+	enum clientState								_clientState;
+	std::vector<t_clients> 							_clients;		// connections for server socket to accept
+	//socklen_t										_serverAddlen;
+	//struct sockaddr_in								_serverAddr;
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in addr, int len);

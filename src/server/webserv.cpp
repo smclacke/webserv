@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/22 18:39:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 13:11:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,23 +70,36 @@ Webserv::~Webserv(void)
 	std::cout << "Webserv shutting down" << std::endl;
 }
 
+// webserv-> servers-> sockets
+// webserv-> epoll-^ servers-> sockets
+
 /* member functions */
 void		Webserv::addServersToEpoll()
 {
 	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		t_serverData	thisServer;
+		std::shared_ptr<Server>		currentServer = getServer(i);
+		t_serverData				thisServer;
+		
+		thisServer._server = currentServer;
 
-		thisServer._serverSock = getServer(i)->getServerSocket()->getSockfd();
-		thisServer._clientSock = getServer(i)->getClientSocket()->getSockfd();
-		thisServer._serverAddlen = getServer(i)->getServerSocket()->getAddrlen();
-		thisServer._serverAddr = getServer(i)->getServerSocket()->getSockaddr();
-		struct epoll_event event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
-		_epoll.setEvent(event); 
+		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
+		struct epoll_event 	event;
+		event.data.fd = serverSockfd;
+		_epoll.addSocketEpoll(serverSockfd, _epoll.getEpfd(), eSocket::Server);
+		_epoll.setEvent(event);
+		std::cout << "Added server socket to epoll\n";
+
+		int					clientSockfd = currentServer->getClientSocket()->getSockfd();
+		event.data.fd = clientSockfd;
+		_epoll.addSocketEpoll(clientSockfd, _epoll.getEpfd(), eSocket::Client);
+		_epoll.setEvent(event);
+
 		_epoll.setServer(thisServer);
+		//_epoll.connectClient(thisServer);
 		_epoll.connectClient(thisServer);
-		std::cout << "Added server [" << i << "] sockets to epoll monitoring\n";
+		std::cout << "Added client socket to epoll\n";
 	}
 	std::cout << "--------------------------\n";
 }
@@ -129,12 +142,12 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 			for (size_t j = 0; j < getServerCount(); ++j)
 			{
 				t_serverData thisServer = _epoll.getServer(j);
-				if (fd == thisServer._serverSock) // event is for server socket (new connection)
-				{
-					_epoll.makeNewConnection(fd, thisServer);
-					handled = true;
-					//break ; // leave this server loop since it's been handled
-				}
+				//if (fd == thisServer._server.getServerSocket()) // event is for server socket (new connection)
+				//{
+				//	_epoll.makeNewConnection(fd, thisServer);
+				//	handled = true;
+				//	//break ; // leave this server loop since it's been handled
+				//}
 			}
 			if (!handled) // event is not for server socket, must be client socket, handle read/write
 			{

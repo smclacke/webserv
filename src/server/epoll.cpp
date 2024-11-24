@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 18:36:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 13:12:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,14 +88,17 @@ void		Epoll::clientTime(t_serverData server)
 	}
 }
 
-void		Epoll::connectClient(t_serverData server)
+void Epoll::connectClient(t_serverData server)
 {
-	if ((connect(server._clientSock, (struct sockaddr*)&server._serverAddr, server._serverAddlen)))
+	sockaddr_in serverSockAddr = server._server->getServerSocket()->getSockaddr();
+	if ((connect(server._server->getClientSocket()->getSockfd(),
+				 (struct sockaddr *)&serverSockAddr,
+				 server._server->getServerSocket()->getAddrlen())))
 	{
 		if (errno != EINPROGRESS)
 		{
-			protectedClose(server._clientSock);
-			protectedClose(server._serverSock);
+			protectedClose(server._server->getClientSocket()->getSockfd());
+			protectedClose(server._server->getServerSocket()->getSockfd());
 			protectedClose(_epfd);
 			throw std::runtime_error("Failed to connect client socket to server\n");
 		}
@@ -172,18 +175,18 @@ void		Epoll::handleWrite(t_serverData server, int j)
 	}
 }
 
-void	Epoll::makeNewConnection(int fd, t_serverData server)
+void Epoll::makeNewConnection(int fd, t_serverData server)
 {
-	struct sockaddr_in		clientAddr;	// check the addresses cause it doesnt make sense to me where they come from
-	socklen_t				addrLen = sizeof(clientAddr);
+	sockaddr_in clientAddr = server._server->getClientSocket()->getSockaddr();
+	socklen_t addrLen = sizeof(clientAddr);
 
-	fd = accept(server._serverSock, (struct sockaddr *)&clientAddr, &addrLen);
+	fd = accept(server._server->getServerSocket()->getSockfd(), (struct sockaddr *)&clientAddr, &addrLen);
 	if (fd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
-		return ;
+		return;
 	}
-	else 
+	else
 	{
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
 		setNonBlocking(fd);
