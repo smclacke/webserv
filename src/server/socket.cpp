@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/22 15:10:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 14:22:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,9 +86,10 @@ void		Socket::openServerSocket(const Server &servInstance)
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY); // i need the location from config in uint32_t
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	_addrlen = sizeof(_sockaddr);
+
 
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
@@ -102,6 +103,8 @@ void		Socket::openServerSocket(const Server &servInstance)
 		throw std::runtime_error("Error listening for connections\n");
 	}
 	std::cout << "Listening on port - " << servInstance.getPort() << " \n\n";
+	setSockaddr(_sockaddr);
+	setAddrlen(_addrlen);
 }
 
 void 		Socket::openClientSocket()
@@ -115,6 +118,9 @@ void 		Socket::openClientSocket()
 		protectedClose(_sockfd);
 		throw std::runtime_error("Error setting client socket to nonblocking\n");
 	}
+	setSockaddr(_sockaddr);
+	_addrlen = sizeof(_sockaddr);
+	setAddrlen(_addrlen);
 }
 
 /* getters */

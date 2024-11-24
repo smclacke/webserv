@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 15:04:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 15:12:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,18 +37,11 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 {
 	struct epoll_event	event;
 	event.data.fd = sockfd;
-	std::string		sortSocket;
 
 	if (type == eSocket::Server)
-	{
 		event.events = EPOLLIN;
-		sortSocket = "Server";
-	}
 	else if (type == eSocket::Client)
-	{
 		event.events = EPOLLIN | EPOLLOUT;
-		sortSocket = "Client";
-	}
 	else
 		throw std::runtime_error("invalid socket type passed as argument\n");
 	if (epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
@@ -71,29 +64,19 @@ void		Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
 	std::cout << "New fd added to epoll\n";
 }
 
-
-void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
+void		Epoll::modifyEvent(int fd, int epfd, uint32_t events)
 {
-	event.events = EPOLLOUT | EPOLLHUP;
+	struct epoll_event event;
+
+	event.events = events;
 	event.data.fd = fd;
 	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Failed to modify socket to EPOLLOUT\n");
+		throw std::runtime_error("Failed to modify socket event type\n");
 	}
-	std::cout << "Modified socket to EPOLLOUT mode\n";
-}
-
-void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
-{
-	event.events = EPOLLIN | EPOLLHUP;
-	event.data.fd = fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
-	{
-		protectedClose(fd);
-		throw std::runtime_error("Failed to modify socket to EPOLLIN\n");
-	}
-	std::cout << "Modified socket to EPOLLIN mode\n";
+	std::cout << "Modified socket event type\n";
+	
 }
 
 void		Epoll::setNonBlocking(int connection)

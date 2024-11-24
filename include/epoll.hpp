@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 12:29:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 15:11:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ enum class clientState
 };
 
 #define MAX_EVENTS 10
-#define TIMEOUT 30000 // milliseconds
+#define TIMEOUT 3000 // milliseconds | 3 seconds
 #define READ_BUFFER_SIZE 4096
 #define WRITE_BUFFER_SIZE 4096
 
@@ -49,13 +49,9 @@ typedef struct s_clients
 typedef struct s_serverData
 {
 	std::shared_ptr<Server>							_server;
-	//int												_serverSock;
-	//int												_clientSock;
 	std::unordered_map<int, timePoint>				_clientTime;
 	enum clientState								_clientState;
 	std::vector<t_clients> 							_clients;		// connections for server socket to accept
-	//socklen_t										_serverAddlen;
-	//struct sockaddr_in								_serverAddr;
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in addr, int len);
@@ -70,7 +66,7 @@ class Epoll
 		std::vector<t_serverData>		_serverData;
 		int								_numEvents;
 		struct epoll_event				_event;
-		std::vector<epoll_event>		_events;		
+		std::vector<epoll_event>		_events;
 
 	public:
 		Epoll();
@@ -83,8 +79,8 @@ class Epoll
 		void							clientTime(t_serverData server);
 		void							connectClient(t_serverData server);
 		void							makeNewConnection(int fd, t_serverData server);
-		void							handleRead(t_serverData server, int j);
-		void							handleWrite(t_serverData server, int j);
+		bool							handleRead(t_serverData server, int j);
+		bool							handleWrite(t_serverData server, int j);
 		void							handleFile();
 
 		/* getters */
@@ -106,8 +102,7 @@ class Epoll
 		std::string						generateHttpResponse(const std::string &message);
 		struct epoll_event				addSocketEpoll(int sockfd, int epfd, eSocket type);
 		void							addToEpoll(int fd, int epfd, struct epoll_event event);
-		void							switchOUTMode(int fd, int epfd, struct epoll_event event);
-		void							switchINMode(int fd, int epfd, struct epoll_event event);
+		void							modifyEvent(int fd, int epfd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							closeDelete(int fd, int epfd);
 };

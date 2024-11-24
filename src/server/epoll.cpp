@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 13:12:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 14:51:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ void Epoll::connectClient(t_serverData server)
 	std::cout << "Connected client socket to server\n";
 }
 
-void		Epoll::handleRead(t_serverData server, int j)
+bool		Epoll::handleRead(t_serverData server, int j)
 {
 
 	(void) server;
@@ -117,7 +117,7 @@ void		Epoll::handleRead(t_serverData server, int j)
 	if (bytesRead == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ; // no data available right now
+			return false; // no data available right now
 		
 		// recv failed
 		// epoll_ctl(EPOLL_CTL_DEL)
@@ -129,7 +129,7 @@ void		Epoll::handleRead(t_serverData server, int j)
 		// epoll_ctl(EPOLL_CTL_DEL)
 		//protectedClose(server._events[j].data.fd);
 		//std::cout << "Client disconnected\n";
-		return ;		// should client connection be disconnected everytime??
+		return false;		// should client connection be disconnected everytime??
 	}
 	else
 	{
@@ -138,11 +138,12 @@ void		Epoll::handleRead(t_serverData server, int j)
 		buffer[bytesRead] = '\0';
 		request += buffer;
 		std::cout << "Server received " << request << "\n";
-		switchOUTMode(_events[j].data.fd, _epfd, _event);
+		return true;
 	}
+	return false;
 }
 
-void		Epoll::handleWrite(t_serverData server, int j)
+bool		Epoll::handleWrite(t_serverData server, int j)
 {
 	(void) server;
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
@@ -154,10 +155,10 @@ void		Epoll::handleWrite(t_serverData server, int j)
 	if (bytesWritten == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ; // no space in scoket's send buffer, wait for more space
+			return false; // no space in scoket's send buffer, wait for more space
 		std::cerr << "Write to client failed\n";
 		// handle connection close
-		return ;
+		return false;
 	}
 	else if (bytesWritten > 0)
 	{
@@ -170,14 +171,16 @@ void		Epoll::handleWrite(t_serverData server, int j)
 			// reset buffer or process next message
 			write_offset = 0;
 			std::cout << "Client sent message to server: " << response << "\n\n\n";
-			switchINMode(_events[j].data.fd, _epfd, _event);
+			return true;
 		}
 	}
+	return false;
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData server)
 {
-	sockaddr_in clientAddr = server._server->getClientSocket()->getSockaddr();
+	//sockaddr_in clientAddr = server._server->getClientSocket()->getSockaddr();
+	sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
 
 	fd = accept(server._server->getServerSocket()->getSockfd(), (struct sockaddr *)&clientAddr, &addrLen);
