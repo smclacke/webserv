@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 14:51:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 16:49:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,6 +68,11 @@ void		Epoll::initEpoll()
 	std::cout << "Successfully created Epoll instance\n";
 }
 
+void		Epoll::resizeEventBuffer(int size)
+{
+	_events.resize(size);
+}
+
 void		Epoll::clientTime(t_serverData server)
 {
 	auto now = std::chrono::steady_clock::now();
@@ -106,85 +111,95 @@ void Epoll::connectClient(t_serverData server)
 	std::cout << "Connected client socket to server\n";
 }
 
-bool		Epoll::handleRead(t_serverData server, int j)
+void		Epoll::handleClose(t_serverData &server, t_clients &client)
 {
+	std::cout << "closing connection for client " << client._fd << " \n";
+	auto it = std::find_if(server._clients.begin(), server._clients.end(), [&client](const t_clients &c) {return c._fd == client._fd; });
 
-	(void) server;
+	if (it != server._clients.end())
+		server._clients.erase(it);
+	modifyEvent(client._fd, getEpfd(), EPOLL_CTL_DEL);
+	protectedClose(client._fd);
+}
+
+void	Epoll::handleFile()
+{
+	// add file to epoll (error page)
+	
+}
+
+void		Epoll::handleRead(t_serverData &server, t_clients &client)
+{
 	char			buffer[READ_BUFFER_SIZE];
+	memset(buffer, 0, sizeof(buffer));
+	ssize_t 		bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
 	std::string		request; // http request
 
-	ssize_t bytesRead = recv(_events[j].data.fd, buffer, sizeof(buffer), 0);
 	if (bytesRead == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return false; // no data available right now
-		
+		{
+			std::cout << "no data available right now\n";	
+			return ;
+		}
 		// recv failed
-		// epoll_ctl(EPOLL_CTL_DEL)
-		protectedClose(_events[j].data.fd);
+		handleClose(server, client);
 		throw std::runtime_error("Reading from client connection failed\n");
 	}
 	else if (bytesRead == 0)
 	{
-		// epoll_ctl(EPOLL_CTL_DEL)
-		//protectedClose(server._events[j].data.fd);
-		//std::cout << "Client disconnected\n";
-		return false;		// should client connection be disconnected everytime??
+		std::cout << "Client disconnected\n";
+		handleClose(server, client);
+		return ;
 	}
-	else
-	{
-		// read protocol
-		// process_incoming_data() - process a request, store it, or send a response.
-		buffer[bytesRead] = '\0';
-		request += buffer;
-		std::cout << "Server received " << request << "\n";
-		return true;
-	}
-	return false;
+	
+	// read protocol
+
+	buffer[bytesRead] = '\0';
+	request += buffer;
+	std::cout << "Server received " << request << " from client " << client._fd << " \n";
+	// http request handling here
+	modifyEvent(client._fd, getEpfd(), EPOLLOUT);
 }
 
-bool		Epoll::handleWrite(t_serverData server, int j)
+void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
-	(void) server;
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 	std::string	response1 = generateHttpResponse("this message from write");
 	size_t		write_offset = 0; // keeping track of where we are in buffer
 	
-	ssize_t bytesWritten = send(_events[j].data.fd, response + write_offset, strlen(response) - write_offset, 0);
+	ssize_t bytesWritten = send(client._fd, response1.c_str() + write_offset, strlen(response1.c_str()) - write_offset, 0);
 
 	if (bytesWritten == -1)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return false; // no space in scoket's send buffer, wait for more space
+			return ; // no space in socket's send buffer, wait for more space
 		std::cerr << "Write to client failed\n";
-		// handle connection close
-		return false;
+		handleClose(server, client);
+		return ;
 	}
-	else if (bytesWritten > 0)
+	
+	// write protocol
+	
+	write_offset += bytesWritten;
+	// if all data sent, stop watching for write events (oui?)
+	if (write_offset == strlen(response))
 	{
-		// write protocol
-		write_offset += bytesWritten;
-
-		// if all data sent, stop watching for write events (oui?)
-		if (write_offset == strlen(response))
-		{
-			// reset buffer or process next message
-			write_offset = 0;
-			std::cout << "Client sent message to server: " << response << "\n\n\n";
-			return true;
-		}
+		// reset buffer or process next message
+		write_offset = 0;
+		std::cout << "Client " << client._fd << " sent message to server: " << response1 << "\n\n\n";
 	}
-	return false;
+	modifyEvent(client._fd, getEpfd(), EPOLLIN);
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData server)
 {
-	//sockaddr_in clientAddr = server._server->getClientSocket()->getSockaddr();
-	sockaddr_in clientAddr;
+	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
+	int clientfd;
 
-	fd = accept(server._server->getServerSocket()->getSockfd(), (struct sockaddr *)&clientAddr, &addrLen);
-	if (fd < 0)
+	clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
+	if (clientfd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
 		return;
@@ -192,18 +207,52 @@ void Epoll::makeNewConnection(int fd, t_serverData server)
 	else
 	{
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
-		setNonBlocking(fd);
-		addToEpoll(fd, _epfd, _event);
-		server.addClient(fd, clientAddr, addrLen);
+		setNonBlocking(clientfd);
+		server.addClient(clientfd, clientAddr, addrLen);
+		addToEpoll(clientfd, _epfd, _event);
 		server._clientTime[fd] = std::chrono::steady_clock::now();
-		server.setClientState(clientState::PARSING);
+		//server.setClientState(clientState::PARSING);
 	}
 }
 
-void	Epoll::handleFile()
+void	Epoll::processEvent(int fd, epoll_event &event)
 {
-	// add file to epoll (error page)
+	//bool handled = false;
+
+	////std::cout << "fd = " << fd << " \n";
 	
+	//for (auto &serverData : _serverData)
+	//{
+	//}
+	////exit(EXIT_SUCCESS);
+	//if (!handled)
+	//{
+		for (auto &serverData : _serverData)
+		{
+			if (fd == serverData._server->getServerSocket()->getSockfd())
+			{
+				std::cout << "handling new connection for server socket\n";
+				makeNewConnection(fd, serverData);
+				//handled = true;
+				//break ;
+			}
+			for (auto &client : serverData._clients)
+			{
+				if (fd == client._fd)
+				{
+					std::cout << "handling client socket with fd " << fd << " \n";
+					if (event.events & EPOLLIN)
+						handleRead(serverData, client);
+					else if (event.events & EPOLLOUT)
+						handleWrite(serverData, client);
+					else if (event.events & EPOLLHUP)
+						std::cout << "hup\n"; // will handle close here
+				}
+				//handled = true;
+			}
+	//		if (handled) break ;
+		}
+	//}
 }
 
 /* serverData methods */

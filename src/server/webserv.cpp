@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/24 15:19:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 16:42:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,13 +70,6 @@ Webserv::~Webserv(void)
 	std::cout << "Webserv shutting down" << std::endl;
 }
 
-static void		printSocketAddress(struct sockaddr_in *addr)
-{
-	char	ipStr[INET_ADDRSTRLEN];
-	inet_ntop(AF_INET, &(addr->sin_addr), ipStr, INET_ADDRSTRLEN);
-	std::cout << "Socket Address = " << ipStr << " : " << ntohs(addr->sin_port) << " \n\n";
-}
-
 /* member functions */
 void		Webserv::addServersToEpoll()
 {
@@ -103,8 +96,6 @@ void		Webserv::addServersToEpoll()
 		_epoll.setServer(thisServer);
 		_epoll.connectClient(thisServer);
 		std::cout << "Added client socket to epoll\n";
-		struct sockaddr_in addr = currentServer->getServerSocket()->getSockaddr();
-		printSocketAddress(&addr);
 	}
 	std::cout << "--------------------------\n";
 }
@@ -120,28 +111,6 @@ void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
 	//_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
 }
 
-// the socket addresses are the same for server 8080 and server 9999.. this isnt good
-// also, after creating sockets, their addresses shouldnt be 0.0.0.0 but 127.0.0.1 but need this is correct format
-void		Webserv::printAllServerSocketEpoll()
-{
-	for (size_t i = 0; i < getServerCount(); ++i)
-	{
-		std::cout << "epoll epfd = " << _epoll.getEpfd() << " \n\n";
-		t_serverData	server = _epoll.getServer(i);
-		std::cout << "server socket fd = " << server._server->getServerSocket()->getSockfd() << " \n";
-		std::cout << "client socket fd = " << server._server->getClientSocket()->getSockfd() << " \n\n";
-		
-		sockaddr_in serverSockAddr = server._server->getServerSocket()->getSockaddr();
-		socklen_t	servAddrlen = sizeof(serverSockAddr);
-		std::cout << "server socket addr = " << &serverSockAddr << " | len = " << servAddrlen << " \n";
-		sockaddr_in clientSockAddr = server._server->getClientSocket()->getSockaddr();
-		socklen_t	cliAddrlen = sizeof(clientSockAddr);
-		std::cout << "client socket addr = " << &clientSockAddr << " | len = " << cliAddrlen << " \n\n";
-	}
-
-	//exit(EXIT_SUCCESS);
-}
-
 void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 {
 	(void) servers;
@@ -152,63 +121,22 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 	while (true)
 	{
 		// all servers already added to epoll, can just call wait on all of them
-		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), 10, TIMEOUT);
+		_epoll.resizeEventBuffer(10);
+		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1)
 			throw std::runtime_error("epoll_wait() failed\n");
 		else if (numEvents == 0)
+		{
+			std::cout << "no events returned\n";
 			continue ;
-
-		std::cout << "num events = " << numEvents << " \n";
+		}
+		//std::cout << "numEvents = " << numEvents << " \n";
 
 		// process events returned by epoll_wait
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
-			std::cout << "events fd = " << fd << " \n";
-			//bool handled = false;
-
-			// check if event is for server socket (new connection)
-			for (size_t j = 0; j < getServerCount(); ++j)
-			{
-				t_serverData thisServer = _epoll.getServer(j);
-				std::cout << "server = " << thisServer._server->getServerSocket()->getSockfd() << " \n";
-				if (fd == thisServer._server->getServerSocket()->getSockfd())
-				{
-					std::cout << "make new connection\n";
-					_epoll.makeNewConnection(fd, thisServer);
-					_epoll.modifyEvent(fd, _epoll.getEpfd(), EPOLLIN);
-					break ;
-					//handled = true;
-				}
-			}
-			//exit(EXIT_SUCCESS);
-			////if (!handled) // event is not for server socket, must be client socket, handle read/write
-			////{
-			//	for (size_t j = 0; j < getServerCount(); ++j)
-			//	{
-			//		t_serverData thisServer = _epoll.getServer(j);
-
-			//		_epoll.clientTime(thisServer);
-			//		if (_epoll.getAllEvents()[i].events & EPOLLIN)
-			//		{
-			//			std::cout << "EPOLLIN\n";
-			//			if (_epoll.handleRead(thisServer, i))
-			//				_epoll.modifyEvent(fd, _epoll.getEpfd(), EPOLLOUT);
-			//		}
-			//		else if (_epoll.getAllEvents()[i].events & EPOLLOUT)
-			//		{
-			//			std::cout << "EPOLLOUT\n";
-			//			if (_epoll.handleWrite(thisServer, i))
-			//				_epoll.modifyEvent(fd, _epoll.getEpfd(), EPOLLIN);
-			//		}
-			//		else if (_epoll.getAllEvents()[i].events & EPOLLHUP)
-			//		{
-			//			std::cout << "EPOLLHUP\n";
-			//			return ;
-			//		}
-			//			//_epoll.handleClose(thisServer, i)
-			//	}
-			//}
+			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
 	}
 }

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 15:11:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 16:31:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,13 +76,16 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
+		void							resizeEventBuffer(int size);
 		void							clientTime(t_serverData server);
 		void							connectClient(t_serverData server);
-		void							makeNewConnection(int fd, t_serverData server);
-		bool							handleRead(t_serverData server, int j);
-		bool							handleWrite(t_serverData server, int j);
+		void							handleClose(t_serverData &server, t_clients &client);
 		void							handleFile();
-
+		void							handleRead(t_serverData &server, t_clients &client);
+		void							handleWrite(t_serverData &server, t_clients &client);
+		void							makeNewConnection(int fd, t_serverData server);
+		void							processEvent(int fd, epoll_event &event);
+		
 		/* getters */
 		int								getEpfd() const;
 		std::vector<t_serverData>		getAllServers() const;
