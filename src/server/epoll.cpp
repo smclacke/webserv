@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 16:49:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 19:27:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,42 +217,32 @@ void Epoll::makeNewConnection(int fd, t_serverData server)
 
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
-	//bool handled = false;
-
-	////std::cout << "fd = " << fd << " \n";
-	
-	//for (auto &serverData : _serverData)
-	//{
-	//}
-	////exit(EXIT_SUCCESS);
-	//if (!handled)
-	//{
-		for (auto &serverData : _serverData)
+	for (auto &serverData : _serverData)
+	{
+			// not accessing the right varibales here!
+		//std::cout << "looping servers " << &_serverData << " \n";
+		//std::cout << "looping servers-clients " << &serverData._clients << " \n";
+		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
-			if (fd == serverData._server->getServerSocket()->getSockfd())
-			{
-				std::cout << "handling new connection for server socket\n";
-				makeNewConnection(fd, serverData);
-				//handled = true;
-				//break ;
-			}
-			for (auto &client : serverData._clients)
-			{
-				if (fd == client._fd)
-				{
-					std::cout << "handling client socket with fd " << fd << " \n";
-					if (event.events & EPOLLIN)
-						handleRead(serverData, client);
-					else if (event.events & EPOLLOUT)
-						handleWrite(serverData, client);
-					else if (event.events & EPOLLHUP)
-						std::cout << "hup\n"; // will handle close here
-				}
-				//handled = true;
-			}
-	//		if (handled) break ;
+			std::cout << "handling new connection for server socket\n";
+			makeNewConnection(fd, serverData);
+			break ;
 		}
-	//}
+		for (auto &client : serverData._clients)
+		{
+			std::cout << "client fds = " << client._fd << " \n";
+			if (fd == client._fd)
+			{
+				std::cout << "handling client socket with fd " << fd << " \n";
+				if (event.events & EPOLLIN)
+					handleRead(serverData, client);
+				else if (event.events & EPOLLOUT)
+					handleWrite(serverData, client);
+				else if (event.events & EPOLLHUP)
+					std::cout << "hup\n"; // will handle close here
+			}
+		}
+	}
 }
 
 /* serverData methods */
@@ -284,14 +274,14 @@ int							Epoll::getEpfd() const
 	return this->_epfd;
 }
 
-std::vector<t_serverData>	Epoll::getAllServers() const
+std::vector<t_serverData>	&Epoll::getAllServers()
 {
 	return this->_serverData;
 }
 
-t_serverData				Epoll::getServer(size_t i) const
+std::shared_ptr<Server>		Epoll::getServer(size_t i)
 {
-	return this->_serverData[i];
+	return this->_serverData[i]._server;
 }
 
 int							Epoll::getNumEvents() const
@@ -304,7 +294,7 @@ std::vector<epoll_event>	&Epoll::getAllEvents()
 	return _events;
 }
 
-struct epoll_event	Epoll::getEvent()
+struct epoll_event	&Epoll::getEvent()
 {
 	return this->_event;
 }
@@ -315,9 +305,12 @@ void				Epoll::setEpfd(int fd)
 	this->_epfd = fd;
 }
 
-void				Epoll::setServer(t_serverData server)
+void				Epoll::setServer(std::shared_ptr<Server> server)
 {
-	this->_serverData.push_back(server);
+	t_serverData	newServerData;
+	newServerData._server = server;
+	
+	this->_serverData.push_back(newServerData);
 }
 
 void				Epoll::setNumEvents(int numEvents)
@@ -330,7 +323,7 @@ void				Epoll::setEventMax()
 	_events.resize(MAX_EVENTS);
 }
 
-void				Epoll::setEvent(struct epoll_event event)
+void				Epoll::setEvent(struct epoll_event &event)
 {
 	this->_event = event;
 }

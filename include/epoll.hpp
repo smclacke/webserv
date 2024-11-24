@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 16:31:56 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/24 19:15:54 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,18 +88,19 @@ class Epoll
 		
 		/* getters */
 		int								getEpfd() const;
-		std::vector<t_serverData>		getAllServers() const;
-		t_serverData					getServer(size_t i) const;
+		std::vector<t_serverData>		&getAllServers();
+		std::shared_ptr<Server>			getServer(size_t i);
 		int								getNumEvents() const;
 		std::vector<epoll_event>&		getAllEvents();
-		struct epoll_event				getEvent();
+		struct epoll_event				&getEvent();
 
 		/* setters */
 		void							setEpfd(int fd);
-		void							setServer(t_serverData server);
+		//void							setServer(t_serverData &server);
+		void							setServer(std::shared_ptr<Server>);
 		void							setNumEvents(int numEvents);
 		void							setEventMax();
-		void							setEvent(struct epoll_event event);
+		void							setEvent(struct epoll_event &event);
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
