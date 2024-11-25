@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 11:04:53 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 16:18:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,6 +86,13 @@ private:
 	std::shared_ptr<Socket> _serverSocket;
 	std::shared_ptr<Socket> _clientSocket;
 
+	/* directives parsing */
+	void parseServerName(std::stringstream &ss, int line_n);
+	void parseListen(std::stringstream &ss, int line_n);
+	void parseErrorPage(std::stringstream &ss, int line_n);
+	void parseClientMaxBody(std::stringstream &ss, int line_n);
+	void parseRoot(std::stringstream &ss, int line_n);
+
 public:
 	Server(void);
 	Server &operator=(const Server &rhs);
@@ -94,20 +101,13 @@ public:
 	~Server(void);
 
 	/* Member functions */
-	std::string handleRequest(std::stringstream &request);
+	s_httpSend handleRequest(std::stringstream &request);
 	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 
 	/* add */
 	void addLocation(s_location route);
 	void addErrorPage(s_ePage errorPage);
-
-	/* directives */
-	void parseServerName(std::stringstream &ss, int line_n);
-	void parseListen(std::stringstream &ss, int line_n);
-	void parseErrorPage(std::stringstream &ss, int line_n);
-	void parseClientMaxBody(std::stringstream &ss, int line_n);
-	void parseRoot(std::stringstream &ss, int line_n);
 
 	/* setters */
 	void setServerName(std::string serverName);

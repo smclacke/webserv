@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:11:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:11:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ httpHandler::~httpHandler(void)
  */
 std::optional<s_location> httpHandler::findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
 {
-	std::optional<s_location> longestMatch;
+	std::optional<s_location> longestMatch = std::nullopt;
 
 	for (const auto &location : locationBlocks)
 	{

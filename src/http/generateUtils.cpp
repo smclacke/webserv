@@ -6,14 +6,36 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/25 12:23:07 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:16:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 
-std::string httpHandler::readFile(std::string &filename)
+/**
+ * @brief Attempts to read the specified file and returns its content as a string.
+ *
+ * This function checks if the file exists and if it has the necessary read permissions.
+ * If the file is accessible, it reads the entire content into a string and returns it.
+ * In case of any errors, such as the file not existing, lacking permissions, or failing to open,
+ * it sets the appropriate HTTP status code and returns an empty optional.
+ *.
+ * @return An optional string containing the file content if successful, or std::nullopt on failure.
+ */
+std::optional<std::string> httpHandler::readFile(std::string &filename)
 {
+
+	if (!std::filesystem::exists(_request.path))
+	{
+		_statusCode = eHttpStatusCode::NotFound;
+		return std::nullopt;
+	}
+	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
+	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	{
+		_statusCode = eHttpStatusCode::Forbidden;
+		return std::nullopt;
+	}
 	std::ifstream file(filename);
 	std::ostringstream os;
 
@@ -25,6 +47,7 @@ std::string httpHandler::readFile(std::string &filename)
 	else
 	{
 		_statusCode = eHttpStatusCode::InternalServerError;
+		return std::nullopt;
 	}
 
 	return os.str(); // Return the contents as a string

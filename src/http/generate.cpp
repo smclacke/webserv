@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:04:29 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:06:09 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,7 @@ const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
 const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
 
 /**
+ * @brief generates the httpResponse based on the information inside _request
  * @note remove printing later
  */
 s_httpSend httpHandler::generateResponse(void)
@@ -58,7 +59,7 @@ s_httpSend httpHandler::generateResponse(void)
 }
 
 /**
- * @brief writes a simple response in case the Parser returned a statusCode;
+ * @brief Builds the response based on the information in s_response;
  */
 s_httpSend httpHandler::writeResponse(bool keepalive)
 {

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:09:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:17:52 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,7 @@ Server::~Server()
 /**
  * @note might make epoll inheret http so might not need this :D
  */
-std::string Server::handleRequest(std::stringstream &request)
+s_httpSend Server::handleRequest(std::stringstream &request)
 {
 	httpHandler parser(*this);
 	parser.parseRequest(request);

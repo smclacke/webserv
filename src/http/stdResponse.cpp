@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:24:15 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:16:11 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,26 +54,15 @@ void httpHandler::stdGet(void)
 			}
 		}
 	}
-	// Check if the file exists
-	if (!std::filesystem::exists(_request.path))
-	{
-		_statusCode = eHttpStatusCode::NotFound;
-		return;
-	}
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
-	{
-		_statusCode = eHttpStatusCode::Forbidden;
-		return;
-	}
-
 	// Read the file content
-	std::string fileContent = readFile(_request.path);
+	std::optional<std::string> fileContent = readFile(_request.path);
 	if (_statusCode != eHttpStatusCode::OK)
 		return;
-
 	// Set the response body
-	_response.body.str(fileContent);
+	if (fileContent.has_value())
+		_response.body.str(fileContent.value());
+	else
+		return;
 	_response.headers[eResponseHeader::ContentType] = contentType(_request.path);
 	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 

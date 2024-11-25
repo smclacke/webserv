@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:04:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:08:20 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	std::string readFile(std::string &filename);
+	std::optional<std::string> readFile(std::string &filename);
 	std::string contentType(const std::string &filePath);
 	// parse
 	void parseRequestLine(std::stringstream &ss);
