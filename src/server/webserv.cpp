@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:22:07 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 13:43:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,10 +133,12 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 		else if (numEvents == 0)
 			continue ;
 
+		//std::cout << "numevents = " << numEvents << " \n";
 		// process events returned by epoll_wait
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
+			//std::cout << "New fd returned by epollwait: " << fd << std::endl;
 			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
 	}

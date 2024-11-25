@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:18:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 13:54:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,7 @@ typedef struct s_serverData
 	std::vector<t_clients> 							_clients;		// connections for server socket to accept
 
 	/* methods */
-	void								addClient(int sock, struct sockaddr_in addr, int len);
+	void								addClient(int sock, struct sockaddr_in &addr, int len);
 	void								setClientState(enum clientState state);
 	enum clientState					getClientState();
 }				t_serverData;
@@ -83,7 +83,7 @@ class Epoll
 		void							handleFile();
 		void							handleRead(t_serverData &server, t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
-		void							makeNewConnection(int fd, t_serverData server);
+		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);
 		
 		/* getters */
@@ -104,7 +104,7 @@ class Epoll
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
 		struct epoll_event				addSocketEpoll(int sockfd, int epfd, eSocket type);
-		void							addToEpoll(int fd, int epfd, struct epoll_event event);
+		void							addToEpoll(int fd);
 		void							modifyEvent(int fd, int epfd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							closeDelete(int fd, int epfd);

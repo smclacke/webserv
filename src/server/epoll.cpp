@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:25:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 13:56:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -165,10 +165,10 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-	std::string	response1 = generateHttpResponse("this message from write");
+	//std::string	response1 = generateHttpResponse("this message from write");
 	size_t		write_offset = 0; // keeping track of where we are in buffer
 	
-	ssize_t bytesWritten = send(client._fd, response1.c_str() + write_offset, strlen(response1.c_str()) - write_offset, 0);
+	ssize_t bytesWritten = send(client._fd, response + write_offset, strlen(response) - write_offset, 0);
 
 	if (bytesWritten == -1)
 	{
@@ -187,12 +187,12 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 	{
 		// reset buffer or process next message
 		write_offset = 0;
-		std::cout << "Client " << client._fd << " sent message to server: " << response1 << "\n\n\n";
+		std::cout << "Client " << client._fd << " sent message to server: " << response << "\n\n\n";
 	}
 	modifyEvent(client._fd, getEpfd(), EPOLLIN);
 }
 
-void Epoll::makeNewConnection(int fd, t_serverData server)
+void Epoll::makeNewConnection(int fd, t_serverData &server)
 {
 	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
@@ -209,7 +209,7 @@ void Epoll::makeNewConnection(int fd, t_serverData server)
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
 		setNonBlocking(clientfd);
 		server.addClient(clientfd, clientAddr, addrLen);
-		addToEpoll(clientfd, _epfd, _event);
+		addToEpoll(clientfd);
 		server._clientTime[fd] = std::chrono::steady_clock::now();
 		//server.setClientState(clientState::PARSING);
 	}
@@ -222,15 +222,17 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 		// not accessing the right varibales here!
 		// std::cout << "looping servers " << &_serverData << " \n";
 		// std::cout << "looping servers-clients " << &serverData._clients << " \n";
+		//serverData._server->printServer();
 		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
 			std::cout << "handling new connection for server socket\n";
 			makeNewConnection(fd, serverData);
+			std::cout << "Amount of clients: " << serverData._clients.size() << std::endl;
 			break ;
 		}
 		for (auto &client : serverData._clients)
 		{
-			std::cout << "client fds = " << client._fd << " \n";
+			//std::cout << "client fds = " << client._fd << " \n";
 			if (fd == client._fd)
 			{
 				std::cout << "handling client socket with fd " << fd << " \n";
@@ -246,7 +248,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 }
 
 /* serverData methods */
-void	s_serverData::addClient(int sock, struct sockaddr_in addr, int len)
+void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 {
 	t_clients	newClient;
 
