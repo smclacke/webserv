@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:11:56 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:04:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,6 +45,8 @@ struct s_response
 	std::stringstream body;
 };
 
+struct s_httpSend;
+
 class httpHandler
 {
 private:
@@ -76,8 +78,7 @@ private:
 	std::string extractFilename(const std::string &contentDisposition);
 	void saveFile(const std::string &filename, const std::string &fileData);
 	// response
-	std::string
-	writeResponse(void);
+	s_httpSend writeResponse(bool keepalive);
 	void generateDirectoryListing(void);
 	// std Response
 	void stdResponse(void);
@@ -94,7 +95,7 @@ public:
 
 	/* member functions */
 	void parseRequest(std::stringstream &response);
-	std::string generateResponse();
+	s_httpSend generateResponse(void);
 };
 
 #endif /* HTTP_HANDLER_HPP */

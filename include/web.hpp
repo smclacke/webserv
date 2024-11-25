@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 11:50:10 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 16:01:59 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,6 +69,11 @@ enum class eSocket
 };
 
 /* http */
+struct s_httpSend
+{
+	std::string msg;
+	bool keepAlive;
+};
 
 /* parser */
 void lineStrip(std::string &line);

@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:43:35 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/25 10:22:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 15:29:53 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,11 +143,11 @@ enum class eRequestHeader
 	ContentLength,	  // Size of the request body in bytes.
 	TransferEncoding, // Encoding used for the payload.
 	ContentEncoding,  // Compression encoding for the body.
+	Accept,			  // Acceptable media types for response.
+	Connection,		  // Network connection persistence.
 	// from here headers not used / implemented
-	Accept,						 // Acceptable media types for response.
 	Authorization,				 // Credentials for user authentication.
 	CacheControl,				 // Caching directives.
-	Connection,					 // Network connection persistence.
 	Cookie,						 // Stored HTTP cookies.
 	Date,						 // Message origination date and time.
 	Expect,						 // Required server behaviors.
@@ -212,13 +212,14 @@ const std::unordered_map<std::string, eRequestHeader> headerMap = {
 	{"Warning", eRequestHeader::Warning}};
 
 /**
- *
+ *@note add connection Responseheader, check when its supposed to be set;
  */
 enum class eResponseHeader
 {
-	ContentType,			  // the media type of the resource.
-	ContentLength,			  // The size of the response body in bytes.
-	ContentEncoding,		  // Compression encoding for the body.
+	ContentType,	 // the media type of the resource.
+	ContentLength,	 // The size of the response body in bytes.
+	ContentEncoding, // Compression encoding for the body.
+	// implemented till here
 	SetCookie,				  // Used to send cookies from the server to the client.
 	CacheControl,			  // for caching mechanisms in both requests and responses.
 	Expires,				  // Provides a date/time after which the response is considered stale.

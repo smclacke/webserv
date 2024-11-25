@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/23 10:27:30 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 15:48:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -139,8 +139,12 @@ void Epoll::handleRead(t_serverData server, int j)
 	}
 }
 
+/**
+ * @note make sure only send 1000 characters at the time.
+ */
 void Epoll::handleWrite(t_serverData server, int j)
 {
+
 	_response = server._server->handleRequest(_request);
 	_request.str(""); // clear epoll _request
 	_request.clear(); // clear epoll _request errors
@@ -165,7 +169,7 @@ void Epoll::handleWrite(t_serverData server, int j)
 		if (write_offset == _response.size())
 		{
 			// reset buffer or process next message
-			_response = ""; // Move this line here
+			_response = "";
 			write_offset = 0;
 			std::cout << "Client sent message to server: " << _response << "\n\n\n";
 			switchINMode(_events[j].data.fd, _epfd, _event);

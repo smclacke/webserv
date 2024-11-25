@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 11:53:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:04:29 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,8 +21,12 @@ const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascrip
 const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
 const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
 
-std::string httpHandler::generateResponse()
+/**
+ * @note remove printing later
+ */
+s_httpSend httpHandler::generateResponse(void)
 {
+	/* printing to be removed later */
 	std::cout << "By generateResponse(), incoming request is as follows:\n";
 	std::cout << "Status code: " << static_cast<int>(_statusCode) << std::endl;
 	std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
@@ -35,20 +39,28 @@ std::string httpHandler::generateResponse()
 	std::cout << "Body: " << _request.body.str() << std::endl;
 	std::cout << "CGI: " << _request.cgi << std::endl;
 
+	bool keepalive = true;
+	auto it = _request.headers.find(eRequestHeader::Connection);
+	if (it != _request.headers.end())
+	{
+		if (it->second == "close")
+			keepalive = false;
+	}
+
 	if (_statusCode != eHttpStatusCode::OK)
-		return (writeResponse());
+		return (writeResponse(keepalive));
 
 	if (_request.cgi == true)
 		cgiResponse();
 	else
 		stdResponse();
-	return writeResponse();
+	return writeResponse(keepalive);
 }
 
 /**
  * @brief writes a simple response in case the Parser returned a statusCode;
  */
-std::string httpHandler::writeResponse(void)
+s_httpSend httpHandler::writeResponse(bool keepalive)
 {
 	auto it = statusMessages.find(_statusCode);
 	if (it != statusMessages.end())
@@ -71,19 +83,21 @@ std::string httpHandler::writeResponse(void)
 		responseStream << "\r\n";
 		// body
 		responseStream << _response.body.str();
-		return responseStream.str();
+		s_httpSend response = {responseStream.str(), keepalive};
+		return (response);
 	}
 	else
 	{
 		_statusCode = eHttpStatusCode::BadRequest;
 		std::string message = "Bad request";
-		std::ostringstream response;
-		response << "HTTP/1.1 " << static_cast<int>(_statusCode) << " " << message << "\r\n"
-				 << "Content-Type: text/plain\r\n"
-				 << "Content-Length: " << message.size() << "\r\n"
-				 << "Connection: close\r\n"
-				 << "\r\n"
-				 << message;
-		return (response.str());
+		std::ostringstream responseStream;
+		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " " << message << "\r\n"
+					   << "Content-Type: text/plain\r\n"
+					   << "Content-Length: " << message.size() << "\r\n"
+					   << "Connection: close\r\n"
+					   << "\r\n"
+					   << message;
+		s_httpSend response = {responseStream.str(), keepalive};
+		return (response);
 	}
 }
