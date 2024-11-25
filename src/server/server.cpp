@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:17:52 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:27:43 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -357,7 +357,12 @@ void Server::setServerName(std::string serverName)
 
 void Server::setHost(std::string host)
 {
-	_host = host;
+	in_addr_t addr;
+	if (inet_pton(AF_INET, host.c_str(), &addr) <= 0)
+	{
+		throw std::runtime_error("Invalid IP address format");
+	}
+	_host = addr;
 }
 
 void Server::setPort(int port)
@@ -401,7 +406,7 @@ const std::string &Server::getServerName(void) const
 	return _serverName;
 }
 
-const std::string &Server::getHost(void) const
+const in_addr_t &Server::getHost(void) const
 {
 	return _host;
 }

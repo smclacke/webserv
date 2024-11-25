@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:18:16 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:27:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ class Server
 {
 private:
 	std::string _serverName;
-	std::string _host;
+	in_addr_t _host;
 	int _port;
 	std::string _root;
 	std::vector<s_ePage> _errorPage;
@@ -122,7 +122,7 @@ public:
 
 	/* getters */
 	std::string const &getServerName(void) const;
-	const std::string &getHost(void) const;
+	const const in_addr_t &getHost(void) const;
 	const int &getPort(void) const;
 	const std::string &getRoot(void) const;
 	const std::vector<s_ePage> &getErrorPage(void) const;

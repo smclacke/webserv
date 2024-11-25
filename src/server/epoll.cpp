@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 15:48:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:26:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -145,7 +145,9 @@ void Epoll::handleRead(t_serverData server, int j)
 void Epoll::handleWrite(t_serverData server, int j)
 {
 
-	_response = server._server->handleRequest(_request);
+	s_httpSend httpsend = server._server->handleRequest(_request);
+	_response = httpsend.msg;
+	_keepAlive = httpsend.keepAlive;
 	_request.str(""); // clear epoll _request
 	_request.clear(); // clear epoll _request errors
 	// const char response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
