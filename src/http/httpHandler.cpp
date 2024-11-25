@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:26:43 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:11:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,16 +33,16 @@ httpHandler::~httpHandler(void)
 /**
  * @brief finds the longestPrefix match for matching the URI against the location.path in the vector of locations
  */
-s_location httpHandler::findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
+std::optional<s_location> httpHandler::findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
 {
-	s_location longestMatch;
+	std::optional<s_location> longestMatch;
 
 	for (const auto &location : locationBlocks)
 	{
 		// Check if the location is a prefix of the request URI
 		if (requestUri.find(location.path) == 0)
 		{ // Check if the requestUri starts with location
-			if (location.path.length() > longestMatch.path.length())
+			if (!longestMatch || location.path.length() > longestMatch->path.length())
 			{
 				longestMatch = location;
 			}

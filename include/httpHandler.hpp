@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 11:04:46 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:11:56 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,9 +59,8 @@ private:
 	std::string responseHeaderToString(const eResponseHeader &header);
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
-	s_location findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
+	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
 	std::string readFile(std::string &filename);
-	std::string generateDirectoryListing(std::string &path);
 	std::string contentType(const std::string &filePath);
 	// parse
 	void parseRequestLine(std::stringstream &ss);
@@ -79,6 +78,7 @@ private:
 	// response
 	std::string
 	writeResponse(void);
+	void generateDirectoryListing(void);
 	// std Response
 	void stdResponse(void);
 	void stdGet(void);

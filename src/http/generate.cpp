@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 11:03:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 11:53:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,9 +39,9 @@ std::string httpHandler::generateResponse()
 		return (writeResponse());
 
 	if (_request.cgi == true)
-		cgiRequest();
+		cgiResponse();
 	else
-		stdRequest();
+		stdResponse();
 	return writeResponse();
 }
 
@@ -57,6 +57,11 @@ std::string httpHandler::writeResponse(void)
 		// status line
 		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " "
 					   << statusMessages.at(_statusCode) << "\r\n";
+		if (!_response.body.str().empty())
+		{
+			if (_response.headers.find(eResponseHeader::ContentLength) == _response.headers.end())
+				_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
+		}
 		// headers
 		for (const auto &header : _response.headers)
 		{

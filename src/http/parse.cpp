@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/24 11:19:37 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 12:16:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,14 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 	}
 
 	// URI match against location
-	_request.loc = findLongestPrefixMatch(_request.uri, _server.getLocation());
+	std::optional<s_location> optLoc = findLongestPrefixMatch(_request.uri, _server.getLocation());
+	if (!optLoc.has_value())
+	{
+		std::cerr << "No Matching location for URI: " << _request.uri << std::endl;
+		_statusCode = eHttpStatusCode::NotFound;
+		return;
+	}
+	_request.loc = optLoc.value();
 	size_t pos = _request.uri.find_last_of(".");
 	if (pos != std::string::npos)
 	{

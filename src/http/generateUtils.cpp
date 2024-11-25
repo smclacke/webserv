@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/24 11:58:14 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 12:23:07 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,56 @@ std::string httpHandler::readFile(std::string &filename)
 	return os.str(); // Return the contents as a string
 }
 
-std::string httpHandler::generateDirectoryListing(std::string &path)
+void httpHandler::generateDirectoryListing(void)
 {
-	return (path);
+	std::cout << "Generating directory listing" << std::endl;
+	std::optional<std::string> acceptHeader = findHeaderValue(_request, eRequestHeader::Accept);
+	bool html = false;
+	if (acceptHeader.has_value())
+	{
+		if (acceptHeader.value().find("text/html") != std::string::npos)
+		{
+			html = true;
+			_response.headers[eResponseHeader::ContentType] = "text/html";
+		}
+		else
+			_response.headers[eResponseHeader::ContentType] = "text/plain";
+	}
+	else
+		_response.headers[eResponseHeader::ContentType] = "text/plain";
+	try
+	{
+		if (html)
+		{
+			_response.body << "<html><head><title>Directory Listing</title></head><body>";
+			_response.body << "<h1>Directory Listing for " << _request.path << "</h1><ul>";
+		}
+		for (const auto &entry : std::filesystem::directory_iterator(_request.path))
+		{
+			_response.body << entry.path().filename().string() << "\n"; // List each file/directory name
+		}
+		if (html)
+		{
+			_response.body << "</ul></body></html>";
+		}
+	}
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		_statusCode = eHttpStatusCode::InternalServerError;
+		std::cerr << "Error returning Directory Listing" << std::endl;
+		_response.body.str(""); // Clear the body
+		if (html)
+		{
+			_response.body << "<html><body><h1>Error generating directory listing.</h1></body></html>";
+		}
+		else
+		{
+			_response.body << "Error generating listing";
+		}
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
+		return;
+	}
+	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 }
 
 std::string httpHandler::contentType(const std::string &filePath)

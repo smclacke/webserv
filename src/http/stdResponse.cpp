@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   stdRequest.cpp                                     :+:    :+:            */
+/*   stdResponse.cpp                                    :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 11:05:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:24:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,11 +35,9 @@ void httpHandler::stdGet(void)
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
 	{
-		std::cout << "Is directory" << std::endl;
 		if (_request.loc.autoindex)
 		{
-			// Generate and return a directory listing
-			generateDirectoryListing(_request.path);
+			generateDirectoryListing();
 			return;
 		}
 		else
@@ -56,7 +54,6 @@ void httpHandler::stdGet(void)
 			}
 		}
 	}
-
 	// Check if the file exists
 	if (!std::filesystem::exists(_request.path))
 	{

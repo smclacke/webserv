@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:44:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:17:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 		// Test cases
 		std::vector<std::string> testCases = {
 			// Basic GET Request
-			"GET /serv1dir/loc2dir HTTP/1.1\r\n"
+			"GET /loc2dir HTTP/1.1\r\n"
 			"Host: example.com\r\n"
 			"\r\n",
 
@@ -91,6 +91,7 @@ int main(int argc, char **argv)
 		for (auto &request : testCases)
 		{
 			std::shared_ptr<Server> serv = wserv.getServer(0);
+			serv->printServer();
 			std::stringstream requestStream(request);
 			std::string response = serv->handleRequest(requestStream); // Pass requestStream directly
 			std::cout << "\nRequest:\n"
