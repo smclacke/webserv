@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 15:42:00 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/24 11:19:37 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,26 @@
 /**
  * @brief Parses the https request and stores it in the httpHandler::_request
  */
-void httpHandler::parseRequest(const std::string &httpRequest)
+void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
-	std::istringstream ss(httpRequest);
+	parseRequestLine(httpRequest);
+	if (_statusCode != eHttpStatusCode::OK)
+		return;
+	parseHeaders(httpRequest);
+	if (_statusCode != eHttpStatusCode::OK)
+		return;
 
-	// Get the request line
-	parseRequestLine(ss);
-	if (_request.statusCode != eHttpStatusCode::OK)
-		return;
-	parseHeaders(ss);
-	if (_request.statusCode != eHttpStatusCode::OK)
-		return;
-	parseBody(ss);
+	std::string remainingData;
+	std::getline(httpRequest, remainingData, '\0');
+	// Check if the remaining data is not just the end of headers
+	if (!remainingData.empty() && remainingData != "\r\n\r\n")
+	{
+		// Place the remaining data back into the stream
+		httpRequest.clear();			// Clear any error flags
+		httpRequest.str(remainingData); // Reset the stream with the remaining data
+		httpRequest.seekg(0);			// Reset the position to the beginning of the stream
+		parseBody(httpRequest);
+	}
 	return;
 }
 
@@ -40,7 +48,7 @@ void httpHandler::parseRequest(const std::string &httpRequest)
 /**
  * @brief Parses the request line of the HTTP request
  */
-void httpHandler::parseRequestLine(std::istringstream &ss)
+void httpHandler::parseRequestLine(std::stringstream &ss)
 {
 	std::string requestLine;
 
@@ -48,7 +56,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 	if (!std::getline(ss, requestLine))
 	{
 		std::cerr << "Failed to read request line" << std::endl;
-		_request.statusCode = eHttpStatusCode::BadRequest;
+		_statusCode = eHttpStatusCode::BadRequest;
 		return;
 	}
 	/* parse request line */
@@ -57,7 +65,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 	if (!(requestss >> methodstring >> _request.uri >> version))
 	{
 		std::cerr << "Invalid request line format" << std::endl;
-		_request.statusCode = eHttpStatusCode::BadRequest;
+		_statusCode = eHttpStatusCode::BadRequest;
 		return;
 	}
 	// check METHOD
@@ -65,7 +73,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 	if (_request.method == eHttpMethod::INVALID) // method check
 	{
 		std::cerr << "HTTP method not allowed: " << methodstring << std::endl;
-		_request.statusCode = eHttpStatusCode::MethodNotAllowed;
+		_statusCode = eHttpStatusCode::MethodNotAllowed;
 		return;
 	}
 	// Check if URI is too long
@@ -73,14 +81,14 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 	if (_request.uri.length() > MAX_URI_LENGTH)
 	{
 		std::cerr << "URI too long: " << _request.uri << std::endl;
-		_request.statusCode = eHttpStatusCode::URITooLong;
+		_statusCode = eHttpStatusCode::URITooLong;
 		return;
 	}
 	// check version
 	if (version != "HTTP/1.1")
 	{
 		std::cerr << "HTTP version not supported: " << version << std::endl;
-		_request.statusCode = eHttpStatusCode::HTTPVersionNotSupported;
+		_statusCode = eHttpStatusCode::HTTPVersionNotSupported;
 		return;
 	}
 
@@ -103,7 +111,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 		if (!std::filesystem::exists(_request.path))
 		{
 			std::cerr << "CGI script not found at path: " << _request.path << std::endl;
-			_request.statusCode = eHttpStatusCode::NotFound;
+			_statusCode = eHttpStatusCode::NotFound;
 			return;
 		}
 	}
@@ -116,7 +124,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 		if (!std::filesystem::exists(_request.path))
 		{
 			std::cerr << "Resource not found at path: " << _request.path << std::endl;
-			_request.statusCode = eHttpStatusCode::NotFound;
+			_statusCode = eHttpStatusCode::NotFound;
 			return;
 		}
 	}
@@ -125,7 +133,7 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 /**
  * @brief Parses the headers of the HTTP request
  */
-void httpHandler::parseHeaders(std::istringstream &ss)
+void httpHandler::parseHeaders(std::stringstream &ss)
 {
 	std::string header;
 	std::string key, value;
@@ -140,7 +148,7 @@ void httpHandler::parseHeaders(std::istringstream &ss)
 		if (headerType == eRequestHeader::Invalid)
 		{
 			std::cerr << "Invalid header key: " << key << std::endl;
-			_request.statusCode = eHttpStatusCode::BadRequest;
+			_statusCode = eHttpStatusCode::BadRequest;
 			return;
 		}
 		_request.headers[headerType] = value;

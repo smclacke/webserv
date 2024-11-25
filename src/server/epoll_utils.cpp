@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 15:04:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/22 23:57:15 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,23 +21,23 @@
 /* Epoll utils */
 std::string Epoll::generateHttpResponse(const std::string &message)
 {
-	size_t	contentLength = message.size();
-	std::ostringstream	response;
-	response	<< "HTPP/1.1 200 OK\r\n"
-				<< "Content-Type: text/plain\r\n"
-				<< "Content-Length: " << contentLength << "\r\n"
-				<< "Connection : close\r\n"
-				<< "\r\n"
-				<< message;
-	
+	size_t contentLength = message.size();
+	std::ostringstream response;
+	response << "HTPP/1.1 200 OK\r\n"
+			 << "Content-Type: text/plain\r\n"
+			 << "Content-Length: " << contentLength << "\r\n"
+			 << "Connection : close\r\n"
+			 << "\r\n"
+			 << message;
+
 	return response.str();
 }
 
 struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 {
-	struct epoll_event	event;
+	struct epoll_event event;
 	event.data.fd = sockfd;
-	std::string		sortSocket;
+	std::string sortSocket;
 
 	if (type == eSocket::Server)
 	{
@@ -59,7 +59,7 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 	return event;
 }
 
-void		Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
+void Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
 {
 	event.events = EPOLLIN;
 	event.data.fd = fd;
@@ -71,8 +71,7 @@ void		Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
 	std::cout << "New fd added to epoll\n";
 }
 
-
-void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
+void Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
 {
 	event.events = EPOLLOUT | EPOLLHUP;
 	event.data.fd = fd;
@@ -84,7 +83,7 @@ void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
 	std::cout << "Modified socket to EPOLLOUT mode\n";
 }
 
-void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
+void Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
 {
 	event.events = EPOLLIN | EPOLLHUP;
 	event.data.fd = fd;
@@ -96,13 +95,13 @@ void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
 	std::cout << "Modified socket to EPOLLIN mode\n";
 }
 
-void		Epoll::setNonBlocking(int connection)
+void Epoll::setNonBlocking(int connection)
 {
-	int	flag = fcntl(connection, F_GETFL, 0);
+	int flag = fcntl(connection, F_GETFL, 0);
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-void		Epoll::closeDelete(int fd, int epfd)
+void Epoll::closeDelete(int fd, int epfd)
 {
 	protectedClose(fd);
 	epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);

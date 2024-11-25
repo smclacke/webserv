@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:12:35 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 10:14:53 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 /**
  * @brief Parses the body of the HTTP request
  */
-void httpHandler::parseBody(std::istringstream &ss)
+void httpHandler::parseBody(std::stringstream &ss)
 {
 	std::optional<std::string> contentType = findHeaderValue(_request, eRequestHeader::ContentType);
 	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
@@ -37,7 +37,7 @@ void httpHandler::parseBody(std::istringstream &ss)
 		else
 		{
 			std::cerr << "Unsupported Transfer-Encoding: " << transferEncoding.value() << std::endl;
-			_request.statusCode = eHttpStatusCode::NotImplemented;
+			_statusCode = eHttpStatusCode::NotImplemented;
 			return;
 		}
 	}
@@ -52,7 +52,7 @@ void httpHandler::parseBody(std::istringstream &ss)
 	else
 	{
 		std::cerr << "No Content-Length or Transfer-Encoding header present" << std::endl;
-		_request.statusCode = eHttpStatusCode::LengthRequired;
+		_statusCode = eHttpStatusCode::LengthRequired;
 		return;
 	}
 	// decoding if it needs to be implemented
@@ -65,7 +65,7 @@ void httpHandler::parseBody(std::istringstream &ss)
 /**
  * @brief Reads a chunked body and adds it to _request.body
  */
-void httpHandler::parseChunkedBody(std::istringstream &ss, const std::optional<std::string> &contentType)
+void httpHandler::parseChunkedBody(std::stringstream &ss, const std::optional<std::string> &contentType)
 {
 	std::string chunkSizeLine;
 	size_t chunkSize;
@@ -101,12 +101,12 @@ void httpHandler::parseChunkedBody(std::istringstream &ss, const std::optional<s
 /**
  * @brief reads the body and adds to _request.body
  */
-void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
+void httpHandler::parseFixedLengthBody(std::stringstream &ss, size_t length)
 {
 	if (length > _request.loc.client_body_buffer_size)
 	{
 		std::cerr << "Fixed length body size exceeds client body buffer size" << std::endl;
-		_request.statusCode = eHttpStatusCode::InsufficientStorage;
+		_statusCode = eHttpStatusCode::InsufficientStorage;
 		return;
 	}
 	std::string bodyLine;
@@ -130,7 +130,7 @@ void httpHandler::parseMultipartBody(std::istream &ss, const std::string &conten
 	if (boundary.empty())
 	{
 		std::cerr << "Boundary not found in Content-Type" << std::endl;
-		_request.statusCode = eHttpStatusCode::BadRequest;
+		_statusCode = eHttpStatusCode::BadRequest;
 		return;
 	}
 
@@ -214,7 +214,7 @@ void httpHandler::saveFile(const std::string &filename, const std::string &fileD
 	else
 	{
 		std::cerr << "Failed to save file: " << filename << std::endl;
-		_request.statusCode = eHttpStatusCode::InternalServerError;
+		_statusCode = eHttpStatusCode::InternalServerError;
 	}
 }
 
@@ -245,6 +245,6 @@ void httpHandler::decodeContentEncoding(std::stringstream &body, const std::stri
 	else
 	{
 		std::cerr << "Unsupported Content-Encoding: " << encoding << std::endl;
-		_request.statusCode = eHttpStatusCode::NotImplemented;
+		_statusCode = eHttpStatusCode::NotImplemented;
 	}
 }

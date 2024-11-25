@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 12:10:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/23 10:44:31 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,7 +120,10 @@ Server::~Server()
 
 /* member functions */
 
-std::string Server::handleRequest(const std::string &request)
+/**
+ * @note might make epoll inheret http so might not need this :D
+ */
+std::string Server::handleRequest(std::stringstream &request)
 {
 	httpHandler parser(*this);
 	parser.parseRequest(request);
@@ -324,14 +327,14 @@ void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 
 void Server::parseRoot(std::stringstream &ss, int line_n)
 {
-	std::string root;
+	std::string root, rootpath;
 	std::string unexpected;
 	if (!(ss >> root))
 		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
-	root = "." + root;
-	if (!std::filesystem::exists(root)) // ignore the redline - compilation is fine
+	rootpath = "." + root;
+	if (!std::filesystem::exists(rootpath)) // ignore the redline - compilation is fine
 		throw eConf("Root directory \'" + root + "\'does not exist", line_n);
 	_root = root;
 }

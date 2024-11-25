@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 15:48:16 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/23 11:04:53 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ const std::unordered_map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::HEAD, "HEAD"},
 	{eHttpMethod::OPTIONS, "OPTIONS"},
 	{eHttpMethod::PATCH, "PATCH"},
+	{eHttpMethod::INVALID, "INVALID"},
 };
 
 const std::unordered_map<std::string, eHttpMethod> StringToHttpMethod = {
@@ -93,7 +94,7 @@ public:
 	~Server(void);
 
 	/* Member functions */
-	std::string handleRequest(const std::string &request);
+	std::string handleRequest(std::stringstream &request);
 	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 
