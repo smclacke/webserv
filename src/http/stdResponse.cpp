@@ -6,39 +6,41 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:27:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 11:05:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 
-std::string httpHandler::stdRequest(void)
+void httpHandler::stdResponse(void)
 {
-	std::cout << "It is a standard request with these inputs:" << std::endl;
+	std::cout << "It is a standard request" << std::endl;
 
 	if (_request.method == eHttpMethod::GET)
-		return (stdGet());
+		stdGet();
 	else if (_request.method == eHttpMethod::POST)
-		return (stdPost());
+		stdPost();
 	else if (_request.method == eHttpMethod::DELETE)
-		return (stdDelete());
-	return (writeResponse());
+		stdDelete();
+	return;
 }
 
 /**
  * @note needs to be tested
  */
-std::string httpHandler::stdGet(void)
+void httpHandler::stdGet(void)
 {
 	std::cout << "Handling GET request" << std::endl;
 
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
 	{
+		std::cout << "Is directory" << std::endl;
 		if (_request.loc.autoindex)
 		{
 			// Generate and return a directory listing
-			return generateDirectoryListing(_request.path);
+			generateDirectoryListing(_request.path);
+			return;
 		}
 		else
 		{
@@ -59,38 +61,38 @@ std::string httpHandler::stdGet(void)
 	if (!std::filesystem::exists(_request.path))
 	{
 		_statusCode = eHttpStatusCode::NotFound;
-		return writeResponse();
+		return;
 	}
 	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
 	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
 	{
 		_statusCode = eHttpStatusCode::Forbidden;
-		return writeResponse();
+		return;
 	}
 
 	// Read the file content
 	std::string fileContent = readFile(_request.path);
 	if (_statusCode != eHttpStatusCode::OK)
-		return writeResponse();
+		return;
 
 	// Set the response body
 	_response.body.str(fileContent);
 	_response.headers[eResponseHeader::ContentType] = contentType(_request.path);
 	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 
-	return writeResponse();
+	return;
 }
 
-std::string httpHandler::stdPost(void)
+void httpHandler::stdPost(void)
 {
 	std::cout << "Handling POST request" << std::endl;
 	// Add logic to handle POST request
-	return (writeResponse());
+	return;
 }
 
-std::string httpHandler::stdDelete(void)
+void httpHandler::stdDelete(void)
 {
 	std::cout << "Handling DELETE request" << std::endl;
 	// Add logic to handle DELETE request
-	return (writeResponse());
+	return;
 }

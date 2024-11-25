@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:20:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 11:04:46 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,12 +79,13 @@ private:
 	// response
 	std::string
 	writeResponse(void);
-	// std request
-	std::string stdRequest(void);
-	std::string stdGet(void);
-	std::string stdPost(void);
-	std::string stdDelete(void);
-	std::string cgiRequest(void);
+	// std Response
+	void stdResponse(void);
+	void stdGet(void);
+	void stdPost(void);
+	void stdDelete(void);
+	// cgi Response
+	void cgiResponse(void);
 
 public:
 	/* constructor and deconstructor */

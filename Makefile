@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/11/24 11:50:52 by juliusdebaa   ########   odam.nl          #
+#    Updated: 2024/11/25 11:05:54 by jde-baai      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,13 +23,13 @@ HEADER_FILES := server.hpp error.hpp httpHandler.hpp httpConstants.hpp socket.hp
 
 
 SRC_FILES := main.cpp					\
-			http/cgiRequest.cpp			\
+			http/cgiResponse.cpp		\
 			http/generate.cpp			\
 			http/generateUtils.cpp		\
 			http/httpHandler.cpp		\
 			http/parse.cpp				\
 			http/parsebody.cpp			\
-			http/stdRequest.cpp			\
+			http/stdResponse.cpp		\
 			confParser/error.cpp		\
 			confParser/parsLocation.cpp	\
 			confParser/parsUtils.cpp	\

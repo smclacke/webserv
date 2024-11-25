@@ -6,17 +6,17 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 14:51:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/23 00:24:46 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 11:05:19 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 #include "../../include/web.hpp"
 
-std::string httpHandler::cgiRequest(void)
+void httpHandler::cgiResponse(void)
 {
-	std::cout << "It is a CGI request with these inputs:" << std::endl;
-	return (writeResponse());
+	std::cout << "It is a CGI request" << std::endl;
+	return;
 }
 
 // /**
