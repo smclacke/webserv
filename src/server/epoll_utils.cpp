@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 13:53:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 15:19:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,19 +33,22 @@ std::string Epoll::generateHttpResponse(const std::string &message)
 	return response.str();
 }
 
-struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
+struct epoll_event Epoll::addSocketEpoll(int sockfd, eSocket type)
 {
 	struct epoll_event	event;
 	event.data.fd = sockfd;
+
 	if (type == eSocket::Server)
 		event.events = EPOLLIN;
 	else if (type == eSocket::Client)
-		event.events = EPOLLIN | EPOLLOUT; // makes more sense for client
-		//event.events = EPOLLIN;
+		event.events = EPOLLIN | EPOLLOUT;
 	else
+	{
+		protectedClose(sockfd);
 		throw std::runtime_error("invalid socket type");
+	}
 
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
 	{
 		protectedClose(sockfd);
 		throw std::runtime_error("Error adding socket to epoll\n");
@@ -66,13 +69,13 @@ void		Epoll::addToEpoll(int fd)
 	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
 }
 
-void		Epoll::modifyEvent(int fd, int epfd, uint32_t events)
+void		Epoll::modifyEvent(int fd, uint32_t events)
 {
 	struct epoll_event event;
 
 	event.events = events;
 	event.data.fd = fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
+	if (epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		protectedClose(fd);
 		throw std::runtime_error("Failed to modify socket event type\n");
@@ -87,8 +90,8 @@ void		Epoll::setNonBlocking(int connection)
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-void		Epoll::closeDelete(int fd, int epfd)
+void		Epoll::closeDelete(int fd)
 {
 	protectedClose(fd);
-	epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
 }

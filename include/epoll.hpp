@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 13:54:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 15:20:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,7 +85,7 @@ class Epoll
 		void							handleWrite(t_serverData &server, t_clients &client);
 		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);
-		
+
 		/* getters */
 		int								getEpfd() const;
 		std::vector<t_serverData>		&getAllServers();
@@ -103,11 +103,11 @@ class Epoll
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
-		struct epoll_event				addSocketEpoll(int sockfd, int epfd, eSocket type);
+		struct epoll_event				addSocketEpoll(int sockfd, eSocket type);
 		void							addToEpoll(int fd);
-		void							modifyEvent(int fd, int epfd, uint32_t events);
+		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
-		void							closeDelete(int fd, int epfd);
+		void							closeDelete(int fd);
 };
 
 #endif /* EPOLL_HPP */

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:30:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 15:26:09 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,13 +110,13 @@ void		Socket::openServerSocket(const Server &servInstance)
 void 		Socket::openClientSocket()
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		throw std::runtime_error("Error socketing sock\n");
+		throw std::runtime_error("Error opening Client Socket\n");
 
 	_flags = fcntl(_sockfd, F_GETFL, 0);
 	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error setting client socket to nonblocking\n");
+		throw std::runtime_error("Error setting Client Socket to nonblocking\n");
 	}
 	setSockaddr(_sockaddr);
 	_addrlen = sizeof(_sockaddr);
