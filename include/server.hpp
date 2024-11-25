@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:27:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:36:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,12 +86,18 @@ private:
 	std::shared_ptr<Socket> _serverSocket;
 	std::shared_ptr<Socket> _clientSocket;
 
-	/* directives parsing */
+	/* Location Parsing */
+	void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
+	void findLocationDirective(std::string &line, int &line_n, s_location &loc);
+	s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
+	void parseRoot(std::stringstream &ss, int line_n);
+
+	/* Server parsing*/
+	void findServerDirective(Server &serv, std::string &line, int line_n);
 	void parseServerName(std::stringstream &ss, int line_n);
 	void parseListen(std::stringstream &ss, int line_n);
 	void parseErrorPage(std::stringstream &ss, int line_n);
 	void parseClientMaxBody(std::stringstream &ss, int line_n);
-	void parseRoot(std::stringstream &ss, int line_n);
 
 public:
 	Server(void);
@@ -109,6 +115,8 @@ public:
 	void addLocation(s_location route);
 	void addErrorPage(s_ePage errorPage);
 
+	/* directives parsing */
+
 	/* setters */
 	void setServerName(std::string serverName);
 	void setHost(std::string host);
@@ -122,7 +130,7 @@ public:
 
 	/* getters */
 	std::string const &getServerName(void) const;
-	const const in_addr_t &getHost(void) const;
+	const in_addr_t &getHost(void) const;
 	const int &getPort(void) const;
 	const std::string &getRoot(void) const;
 	const std::vector<s_ePage> &getErrorPage(void) const;

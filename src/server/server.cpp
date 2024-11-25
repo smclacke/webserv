@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:27:43 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:30:06 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ enum class SizeUnit
 Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
-	_host = "127.0.0.01";
+	setHost("127.0.0.01");
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -51,7 +51,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
 	_serverName = "default_server";
-	_host = "127.0.0.01";
+	setHost("127.0.0.01");
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 8192;
@@ -83,8 +83,9 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _port(9999), _root("./server_files"), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
 {
+	setHost("0.0.0.0");
 	std::string line;
 	while (std::getline(file, line))
 	{

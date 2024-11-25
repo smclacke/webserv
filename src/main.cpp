@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:17:24 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:31:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,8 @@ int main(int argc, char **argv)
 			std::shared_ptr<Server> serv = wserv.getServer(0);
 			serv->printServer();
 			std::stringstream requestStream(request);
-			std::string response = serv->handleRequest(requestStream); // Pass requestStream directly
+			s_httpSend http = serv->handleRequest(requestStream);
+			std::string response = http.msg; // Pass requestStream directly
 			std::cout << "\nRequest:\n"
 					  << request << "\nResponse:\n"
 					  << response << std::endl;

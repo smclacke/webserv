@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 11:16:21 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:35:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ void lineStrip(std::string &line)
 /**
  * @brief checks if the paths(path, root, cgi_path) exist, otherwise throws eConf
  */
-void checkLocationPaths(s_location &loc, std::string const root, int const line_n)
+void Server::checkLocationPaths(s_location &loc, std::string const root, int const line_n)
 {
 	// check root path
 	if (loc.root.empty() == false)
@@ -61,7 +61,7 @@ void checkLocationPaths(s_location &loc, std::string const root, int const line_
 	}
 }
 
-void findServerDirective(Server &serv, std::string &line, int line_n)
+void Server::findServerDirective(Server &serv, std::string &line, int line_n)
 {
 	std::stringstream ss(line);
 	std::string directive;

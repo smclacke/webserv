@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:11:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:39:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,15 +162,9 @@ static void parseCgiPath(std::stringstream &ss, int line_n, s_location &loc)
 	loc.cgi_path = path;
 }
 
-void findLocationDirective(std::string &line, int &line_n, s_location &loc)
+static std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>> createDirMap()
 {
-	std::stringstream ss(line);
-	std::string directive;
-	ss >> directive;
-	if (directive.empty())
-		throw eConf("No directive found in line", line_n);
-
-	auto dirMap = std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>>{
+	return {
 		{"root", parseRoot},
 		{"client_max_body_size", parseClientMaxBodySize},
 		{"allowed_methods", parseAcceptedMethods},
@@ -181,17 +175,28 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 		{"index", parseIndex},
 		{"cgi_ext", parseCgiExt},
 		{"cgi_path", parseCgiPath}};
+}
+
+void Server::findLocationDirective(std::string &line, int &line_n, s_location &loc)
+{
+	std::stringstream ss(line);
+	std::string directive;
+	ss >> directive;
+	if (directive.empty())
+		throw eConf("No directive found in line", line_n);
+
+	static const std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>> dirMap = createDirMap();
 
 	if (dirMap.find(directive) == dirMap.end())
 		throw eConf("Invalid directive found: " + directive, line_n);
-	dirMap[directive](ss, line_n, loc);
+	dirMap.at(directive)(ss, line_n, loc);
 }
 
 /**
  * @note check if the location path exists
  * after perhaps replace path and root with just path if the root overwrite it but need to figure out how that works :)
  */
-s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody)
+s_location Server::parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody)
 {
 	(void)file;
 	s_location loc;
