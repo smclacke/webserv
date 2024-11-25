@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:02:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 17:51:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ typedef struct s_clients
 	std::stringstream								_request;
 	std::string										_response;
 	size_t											_write_offset;
+	ssize_t											_bytesWritten;
 
 }				t_clients;
 
@@ -79,7 +80,6 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
-		void							resizeEventBuffer(int size);
 		void							clientTime(t_serverData server);
 		void							connectClient(t_serverData server);
 		void							handleClose(t_serverData &server, t_clients &client);

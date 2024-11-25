@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 15:55:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 17:51:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,7 +122,6 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 	while (true)
 	{
 		// all servers already added to epoll, can just call wait on all of them
-		_epoll.resizeEventBuffer(10);
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1)
 			throw std::runtime_error("epoll_wait() failed\n");

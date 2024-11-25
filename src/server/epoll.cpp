@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:11:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 17:50:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,16 +56,13 @@ void		Epoll::initEpoll()
 	std::cout << "Successfully created Epoll instance\n";
 }
 
-void		Epoll::resizeEventBuffer(int size)
-{
-	_events.resize(size);
-}
 
 /** @todo fix this */
 void		Epoll::clientTime(t_serverData server)
 {
 	auto now = std::chrono::steady_clock::now();
-	
+	(void) now;
+	(void) server;
 	//for (auto it = server._clientTime.begin(); it != server._clientTime.end();)
 	//{
 	//	auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
@@ -151,6 +148,7 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 	buffer[bytesRead] = '\0';
 	request += buffer;
 	std::cout << "Server received " << request << " from client " << client._fd << " \n";
+	client._clientState = clientState::READY;
 	// http request handling here
 	// bool _connectionClose
 
@@ -161,36 +159,48 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
  */
 void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
-	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
-	//std::string	response1 = generateHttpResponse("this message from write");
-	client._write_offset = 0; // keeping track of where we are in buffer
-	
-	ssize_t bytesWritten = send(client._fd, response + client._write_offset, strlen(response) - client._write_offset, 0);
-
-	if (bytesWritten == -1)
+	(void) server; // why am i not using server?
+	if (client._response.empty()) // || if client state begin/ready, then generate
 	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return ; // no space in socket's send buffer, wait for more space
-		std::cerr << "Write to client failed\n";
-		handleClose(server, client);
-		return ;
-	}
+		// if not started writing response, generate 
+		//const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+		//std::string	response1 = generateHttpResponse("this message from write");
 	
+		//client._response = generateHttpResponse("this message from handleWrite()");
+		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
+	}
+
 	// write protocol
-	
-	// use client state WRITING while still busy
-
-	client._write_offset += bytesWritten;
-	// if all data sent, stop watching for write events
-	if (client._write_offset == strlen(response))
+	while (client._bytesWritten < WRITE_BUFFER_SIZE)
 	{
-		// reset buffer or process next message
-		client._write_offset = 0;
-		std::cout << "Client " << client._fd << " sent message to server: " << response << "\n\n\n";
+		client._bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
+		if (client._bytesWritten == -1)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+			{
+				client._clientState = clientState::WRITING;
+				client._connectionClose = false;
+				return ; // no space in socket's send buffer, wait for more space
+			}
+			std::cerr << "Write to client failed\n";
+			//handleClose(server, client);
+			client._connectionClose = true;
+			client._clientState = clientState::ERROR;
+			return ;
+		}
+		
+		client._clientState = clientState::WRITING;
+		client._write_offset += client._bytesWritten;
+		if (client._write_offset == strlen(client._response.c_str()))
+		{
+			client._write_offset = 0;
+			std::cout << "Client " << client._fd << " sent message to server: " << client._response << "\n\n\n";
+			client._connectionClose = false; // true? we done
+			client._clientState = clientState::READY;
+			return ;
+		}
+		client._connectionClose = false;
 	}
-	
-	// bool _connectionClose
-
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData &server)
@@ -244,7 +254,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					if (client._clientState == clientState::READY)
 					{
 						std::cout << "client has finished reading\n";
-						// finish read
 						modifyEvent(client._fd, EPOLLOUT);
 					}
 				}
@@ -254,7 +263,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					if (client._clientState == clientState::READY)
 					{
 						std::cout << "client has finished writing\n";
-						// finish write
 						modifyEvent(client._fd, EPOLLIN);
 					}
 				}
@@ -276,6 +284,12 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	newClient._fd = sock;
 	newClient._addr = addr;
 	newClient._addLen = len;
+	newClient._clientState = clientState::PARSING;
+	// client time... init here?
+	newClient._connectionClose = false;
+	// request/response here needed?
+	newClient._write_offset = 0;
+	newClient._bytesWritten = 0;
 
 	_clients.push_back(newClient);
 }
