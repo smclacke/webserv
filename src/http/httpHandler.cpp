@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/24 11:19:37 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 10:26:43 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,6 +30,9 @@ httpHandler::~httpHandler(void)
 
 /* utils */
 
+/**
+ * @brief finds the longestPrefix match for matching the URI against the location.path in the vector of locations
+ */
 s_location httpHandler::findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks)
 {
 	s_location longestMatch;
@@ -62,9 +65,12 @@ std::optional<std::string> httpHandler::findHeaderValue(const s_request &request
 	return std::nullopt;
 }
 
+/**
+ * @brief returns a eRequestHeader based on the header string provided"
+ * @return header if found, if not found eRequestHeader::Invalid
+ */
 eRequestHeader httpHandler::toEHeader(const std::string &header)
 {
-
 	auto it = headerMap.find(header);
 	return it != headerMap.end() ? it->second : eRequestHeader::Invalid;
 }
@@ -88,4 +94,31 @@ std::string httpHandler::EheaderToString(const eRequestHeader &header)
 
 	auto it = requestHeaderToString.find(header);
 	return it != requestHeaderToString.end() ? it->second : "Unknown Header";
+}
+
+/**
+ * @brief returns a string corresponding to the header
+ * @return "header: " or if the eResponseHeader isnt mapped an empty std::string
+ */
+std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
+{
+	static const std::unordered_map<eResponseHeader, std::string> responseHeaderMap = {
+		{eResponseHeader::ContentType, "Content-Type: "},
+		{eResponseHeader::ContentLength, "Content-Length: "},
+		{eResponseHeader::ContentEncoding, "Content-Encoding: "},
+		{eResponseHeader::SetCookie, "Set-Cookie: "},
+		{eResponseHeader::CacheControl, "Cache-Control: "},
+		{eResponseHeader::Expires, "Expires: "},
+		{eResponseHeader::ETag, "ETag: "},
+		{eResponseHeader::LastModified, "Last-Modified: "},
+		{eResponseHeader::Location, "Location: "},
+		{eResponseHeader::WWWAuthenticate, "WWW-Authenticate: "},
+		{eResponseHeader::RetryAfter, "Retry-After: "},
+		{eResponseHeader::AccessControlAllowOrigin, "Access-Control-Allow-Origin: "},
+		{eResponseHeader::StrictTransportSecurity, "Strict-Transport-Security: "},
+		{eResponseHeader::Vary, "Vary: "},
+		{eResponseHeader::Server, "Server: "},
+		{eResponseHeader::ContentDisposition, "Content-Disposition: "}};
+	auto it = responseHeaderMap.find(header);
+	return it != responseHeaderMap.end() ? it->second : "";
 }

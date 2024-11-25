@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/24 11:55:23 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/11/25 10:27:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,9 @@ std::string httpHandler::stdRequest(void)
 	return (writeResponse());
 }
 
+/**
+ * @note needs to be tested
+ */
 std::string httpHandler::stdGet(void)
 {
 	std::cout << "Handling GET request" << std::endl;
