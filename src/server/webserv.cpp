@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 13:43:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 15:55:12 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,20 +84,16 @@ void		Webserv::addServersToEpoll()
 		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
 		struct epoll_event 	event;
 		event.data.fd = serverSockfd;
-		_epoll.addSocketEpoll(serverSockfd, _epoll.getEpfd(), eSocket::Server);
+		_epoll.addSocketEpoll(serverSockfd, eSocket::Server);
 		_epoll.setEvent(event);
 		std::cout << "Added server socket to epoll\n";
 
 		int					clientSockfd = currentServer->getClientSocket()->getSockfd();
 		event.data.fd = clientSockfd;
-		_epoll.addSocketEpoll(clientSockfd, _epoll.getEpfd(), eSocket::Client);
+		_epoll.addSocketEpoll(clientSockfd, eSocket::Client);
 		_epoll.setEvent(event);
 
 		_epoll.setServer(currentServer);
-		// are the same and should be
-		std::cout << "Added server with address: " << currentServer.get() << " to epoll\n"; 
-		std::cout << "Added epoll server: " << _epoll.getServer(i).get() << " to epoll\n"; 
-		
 		_epoll.connectClient(thisServer);
 		std::cout << "Added client socket to epoll\n";
 
@@ -133,12 +129,10 @@ void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
 		else if (numEvents == 0)
 			continue ;
 
-		//std::cout << "numevents = " << numEvents << " \n";
 		// process events returned by epoll_wait
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
-			//std::cout << "New fd returned by epollwait: " << fd << std::endl;
 			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
 	}

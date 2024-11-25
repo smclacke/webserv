@@ -28,4 +28,13 @@
 8) 
 	leave any todos in files as todos
 		see what i can already/have already handled
-		
+
+9) 
+	adding files to epoll
+
+10) 
+	client state stuff, reading writing till buffer, monitoring continues
+	everything handled correctly, no waiting unnecessarily
+	making use of the buffers etc
+
+	check this with buffer sizes of like 5 once implemented

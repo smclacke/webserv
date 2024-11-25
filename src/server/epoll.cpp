@@ -6,17 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 13:56:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:11:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
-
-/**
- * @todo destruction + clean up
- * @todo clientStatus delete
- */
 
 /* constructors */
 Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
@@ -40,16 +35,9 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 	return *this;
 }
 
+/** @todo check everything that needs to be cleaned here + freeaddress and event stuff */
 Epoll::~Epoll() 
 { 
-	// for vec fds...
-	//{
-
-		//if (_serverfd)
-		//	protectedClose(_serverfd);
-		//if (_clientfd)
-		//	protectedClose(_clientfd);
-	//}
 	std::cout << "epoll destructor called\n";
 	if (_epfd)
 		protectedClose(_epfd);
@@ -73,24 +61,25 @@ void		Epoll::resizeEventBuffer(int size)
 	_events.resize(size);
 }
 
+/** @todo fix this */
 void		Epoll::clientTime(t_serverData server)
 {
 	auto now = std::chrono::steady_clock::now();
 	
-	for (auto it = server._clientTime.begin(); it != server._clientTime.end();)
-	{
-		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
-		if (elapsed.count() >= (TIMEOUT / 1000))
-		{
-			std::cout << "Client timed out\n";
-			protectedClose(it->first);
-			// remove server from epoll
-			// delete client(it->first)
-			// it = _clientTime.erase(it);
-		}
-		else
-			it++;
-	}
+	//for (auto it = server._clientTime.begin(); it != server._clientTime.end();)
+	//{
+	//	auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
+	//	if (elapsed.count() >= (TIMEOUT / 1000))
+	//	{
+	//		std::cout << "Client timed out\n";
+	//		protectedClose(it->first);
+	//		// remove server from epoll
+	//		// delete client(it->first)
+	//		// it = _clientTime.erase(it);
+	//	}
+	//	else
+	//		it++;
+	//}
 }
 
 void Epoll::connectClient(t_serverData server)
@@ -118,16 +107,18 @@ void		Epoll::handleClose(t_serverData &server, t_clients &client)
 
 	if (it != server._clients.end())
 		server._clients.erase(it);
-	modifyEvent(client._fd, getEpfd(), EPOLL_CTL_DEL);
+	modifyEvent(client._fd, EPOLL_CTL_DEL);
 	protectedClose(client._fd);
 }
 
+/** @todo make this function */
 void	Epoll::handleFile()
 {
 	// add file to epoll (error page)
 	
 }
 
+/** @todo add bool for close or keep connection alive depneding on the header */
 void		Epoll::handleRead(t_serverData &server, t_clients &client)
 {
 	char			buffer[READ_BUFFER_SIZE];
@@ -154,21 +145,27 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 	}
 	
 	// read protocol
+	
+	// use client state READING while still busy
 
 	buffer[bytesRead] = '\0';
 	request += buffer;
 	std::cout << "Server received " << request << " from client " << client._fd << " \n";
 	// http request handling here
-	modifyEvent(client._fd, getEpfd(), EPOLLOUT);
+	// bool _connectionClose
+
 }
 
+/** @todo add bool for close or keep connection alive depneding on the header
+ * @todo ensure generaterequest is not being called everytime for the same client when just filling buffer
+ */
 void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
 	const char	response[WRITE_BUFFER_SIZE] = "HTTP/1.1 200 OK\r\nContent-Length: 13\r\n\r\nHello, World!";
 	//std::string	response1 = generateHttpResponse("this message from write");
-	size_t		write_offset = 0; // keeping track of where we are in buffer
+	client._write_offset = 0; // keeping track of where we are in buffer
 	
-	ssize_t bytesWritten = send(client._fd, response + write_offset, strlen(response) - write_offset, 0);
+	ssize_t bytesWritten = send(client._fd, response + client._write_offset, strlen(response) - client._write_offset, 0);
 
 	if (bytesWritten == -1)
 	{
@@ -181,15 +178,19 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 	
 	// write protocol
 	
-	write_offset += bytesWritten;
-	// if all data sent, stop watching for write events (oui?)
-	if (write_offset == strlen(response))
+	// use client state WRITING while still busy
+
+	client._write_offset += bytesWritten;
+	// if all data sent, stop watching for write events
+	if (client._write_offset == strlen(response))
 	{
 		// reset buffer or process next message
-		write_offset = 0;
+		client._write_offset = 0;
 		std::cout << "Client " << client._fd << " sent message to server: " << response << "\n\n\n";
 	}
-	modifyEvent(client._fd, getEpfd(), EPOLLIN);
+	
+	// bool _connectionClose
+
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData &server)
@@ -210,19 +211,21 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 		setNonBlocking(clientfd);
 		server.addClient(clientfd, clientAddr, addrLen);
 		addToEpoll(clientfd);
-		server._clientTime[fd] = std::chrono::steady_clock::now();
-		//server.setClientState(clientState::PARSING);
+		
+		/** @todo how do i handle client state + time correctly */
+		//server._clients->_clientTime[fd] = std::chrono::steady_clock::now();
+		//server.setClientState(clientState::BEGIN);
 	}
 }
 
+/** @todo make sure we are not waiting for clients to finish read/write, continue after buffer done
+ * 		once complete, then change EPOLL status to in/out and continue finishing that client
+ * @todo finish handling HUP
+ */
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
 	{
-		// not accessing the right varibales here!
-		// std::cout << "looping servers " << &_serverData << " \n";
-		// std::cout << "looping servers-clients " << &serverData._clients << " \n";
-		//serverData._server->printServer();
 		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
 			std::cout << "handling new connection for server socket\n";
@@ -232,20 +235,38 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 		}
 		for (auto &client : serverData._clients)
 		{
-			//std::cout << "client fds = " << client._fd << " \n";
 			if (fd == client._fd)
 			{
 				std::cout << "handling client socket with fd " << fd << " \n";
 				if (event.events & EPOLLIN)
+				{
 					handleRead(serverData, client);
+					if (client._clientState == clientState::READY)
+					{
+						std::cout << "client has finished reading\n";
+						// finish read
+						modifyEvent(client._fd, EPOLLOUT);
+					}
+				}
 				else if (event.events & EPOLLOUT)
+				{
 					handleWrite(serverData, client);
+					if (client._clientState == clientState::READY)
+					{
+						std::cout << "client has finished writing\n";
+						// finish write
+						modifyEvent(client._fd, EPOLLIN);
+					}
+				}
 				else if (event.events & EPOLLHUP)
 					std::cout << "hup\n"; // will handle close here
 			}
 		}
 	}
 }
+
+/* clients methods */
+
 
 /* serverData methods */
 void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
@@ -257,16 +278,6 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	newClient._addLen = len;
 
 	_clients.push_back(newClient);
-}
-
-void	s_serverData::setClientState(enum clientState state)
-{
-	this->_clientState = state;
-}
-
-enum clientState		s_serverData::getClientState()
-{
-	return this->_clientState;
 }
 
 

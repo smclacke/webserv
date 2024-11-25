@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 15:20:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 16:02:03 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,22 +41,25 @@ enum class clientState
 
 typedef struct s_clients
 {
-	int							_fd;
-	struct sockaddr_in			_addr;
-	socklen_t					_addLen;
+	int												_fd;
+	struct sockaddr_in								_addr;
+	socklen_t										_addLen;
+	enum clientState								_clientState;
+	std::unordered_map<int, timePoint>				_clientTime;
+	bool											_connectionClose;
+	std::stringstream								_request;
+	std::string										_response;
+	size_t											_write_offset;
+
 }				t_clients;
 
 typedef struct s_serverData
 {
 	std::shared_ptr<Server>							_server;
-	std::unordered_map<int, timePoint>				_clientTime;
-	enum clientState								_clientState;
-	std::vector<t_clients> 							_clients;		// connections for server socket to accept
+	std::vector<t_clients> 							_clients;
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in &addr, int len);
-	void								setClientState(enum clientState state);
-	enum clientState					getClientState();
 }				t_serverData;
 
 class Epoll
