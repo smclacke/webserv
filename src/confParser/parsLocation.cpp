@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:23:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 10:11:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,6 @@
 #include "../../include/server.hpp"
 #include <functional>
 
-/**
- * @note check if root dir actually exists
- */
 static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string root;
@@ -28,6 +25,7 @@ static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.root = root;
 }
+
 static void parseClientMaxBodySize(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string size;
@@ -113,9 +111,6 @@ static void parseAutoindex(std::stringstream &ss, int line_n, s_location &loc)
 		loc.autoindex = false;
 }
 
-/**
- * @note check if the dir actually exists? add the dir to the root dir?
- */
 static void parseUploadDir(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string dir;
@@ -250,37 +245,3 @@ s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, si
 	}
 	return (loc);
 }
-
-/*
-allowed_methods:
-GET / POST / DELETE
-eHttpMethod
-
-root
-path
-
-autoindex
-on / off
-
-index
-index.html index.htm
-if neither file is found server may return 403 Forbidden or 404 Not Found
-
-upload_dir
-path
-
-client_max_body_size
-same as other max_body_size parser
-
-return -- redirects request from old route to new-route wiht a 301 status
-301 /new-route
-
-cgi_ext
-.php / .pl / .py
-
--> only 1 per location possible
-
-cgi_path -> allow only 1
-path
-
-*/

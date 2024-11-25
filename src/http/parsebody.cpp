@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 15:49:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 10:12:35 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void httpHandler::parseChunkedBody(std::istringstream &ss, const std::optional<s
 }
 
 /**
- * @note reads the body and adds to _request.body
+ * @brief reads the body and adds to _request.body
  */
 void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
 {

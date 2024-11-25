@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/21 14:21:23 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/25 10:08:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ std::string httpHandler::generateResponse()
 
 /**
  * @brief writes a simple response in case the Parser returned a statusCode;
+ * @note update to write firstline + stored ResponseHeaders + body
  */
 std::string httpHandler::writeResponse(void)
 {
