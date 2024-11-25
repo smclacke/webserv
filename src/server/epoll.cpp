@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 19:27:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:25:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,9 +219,9 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
 	{
-			// not accessing the right varibales here!
-		//std::cout << "looping servers " << &_serverData << " \n";
-		//std::cout << "looping servers-clients " << &serverData._clients << " \n";
+		// not accessing the right varibales here!
+		// std::cout << "looping servers " << &_serverData << " \n";
+		// std::cout << "looping servers-clients " << &serverData._clients << " \n";
 		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
 			std::cout << "handling new connection for server socket\n";

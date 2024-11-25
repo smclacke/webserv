@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 19:15:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:18:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,6 @@ class Epoll
 
 		/* setters */
 		void							setEpfd(int fd);
-		//void							setServer(t_serverData &server);
 		void							setServer(std::shared_ptr<Server>);
 		void							setNumEvents(int numEvents);
 		void							setEventMax();

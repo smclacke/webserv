@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 16:32:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/25 12:19:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,8 +40,8 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 	if (type == eSocket::Server)
 		event.events = EPOLLIN;
 	else if (type == eSocket::Client)
-		event.events = EPOLLIN;
-		//event.events = EPOLLIN | EPOLLOUT;
+		event.events = EPOLLIN | EPOLLOUT; // makes more sense for client
+		//event.events = EPOLLIN;
 	else
 		throw std::runtime_error("invalid socket type");
 
