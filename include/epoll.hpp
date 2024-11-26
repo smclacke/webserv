@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:28:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 18:53:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -63,7 +63,7 @@ typedef struct s_clients
 typedef struct s_serverData
 {
 	std::shared_ptr<Server>							_server;
-	std::vector<t_clients> 							_clients;
+	std::vector<t_clients> 							_clients; // YOU NEED A SOCKET OR TO BE SOCKET
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in &addr, int len);
@@ -87,6 +87,7 @@ class Epoll
 		/* methods */
 		void							initEpoll();
 		void							clientTime(t_serverData server);
+		void 							createClientSocket(int fd, struct sockaddr_in addr, int addrlen);
 		void 							connectClient(int fd, struct sockaddr_in addr, int addrlen);
 		void							handleClose(t_serverData &server, t_clients &client);
 		void							handleFile();

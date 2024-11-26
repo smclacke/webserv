@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:40:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 18:52:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -205,8 +205,34 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 	}
 }
 
+// CHANGE ALL OF THESE TO JUST TAKE A CLIENT????
+// ADD CLIENT SOCKET TO CLIENT VECTOR????
+// TRYING TO CREATE A SOCKET IN EPOLL FMFMFMFMFMFM
+
+void 		Epoll::createClientSocket(int fd, struct sockaddr_in addr, int addrlen)
+{
+	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
+		throw std::runtime_error("Error socketing sock\n");
+
+	int flags = fcntl(fd, F_GETFL, 0);
+	if (flags == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
+	{
+		protectedClose(fd);
+		throw std::runtime_error("Error setting client socket to nonblocking\n");
+	}
+	std::cout << "created client socket\n";
+	//exit(EXIT_SUCCESS);
+	(void) addr;
+	(void) addrlen;
+	//setSockaddr(addr);
+	//addrlen = sizeof(addr);
+	//setAddrlen(addrlen);
+}
+
+
 void	Epoll::connectClient(int fd, struct sockaddr_in addr, int addrlen)
 {
+	createClientSocket(fd, addr, addrlen);
 	if (connect(fd, (struct sockaddr *)&addr, addrlen))
 	{
 		if (errno != EINPROGRESS)
@@ -220,6 +246,7 @@ void	Epoll::connectClient(int fd, struct sockaddr_in addr, int addrlen)
 	std::cout << "Connected client socket to server\n";
 }
 
+/** CREATE CLIENT SOCKET THEN ACCEPT ?? */
 void Epoll::makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &servaddr)
 {
 	struct sockaddr_in clientAddr;
@@ -236,9 +263,9 @@ void Epoll::makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &
 	else
 	{
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
+		connectClient(clientfd, servaddr, addrLen);
 		setNonBlocking(clientfd);
-		(void) servaddr;
-		//connectClient(clientfd, servaddr, addrLen);
+		//(void) servaddr;
 		server.addClient(clientfd, clientAddr, addrLen);
 		addToEpoll(clientfd);
 		
