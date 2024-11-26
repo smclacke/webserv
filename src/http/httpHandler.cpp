@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:11:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 12:35:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,4 +121,11 @@ std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
 		{eResponseHeader::ContentDisposition, "Content-Disposition: "}};
 	auto it = responseHeaderMap.find(header);
 	return it != responseHeaderMap.end() ? it->second : "";
+}
+
+void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
+{
+	_statusCode = code;
+	_response.body.str() = msg;
+	_response.headers[eResponseHeader::ContentLength] = std::to_string(msg.size());
 }

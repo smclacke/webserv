@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:08:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 13:41:59 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ struct s_request
 	std::string path;
 	std::unordered_map<eRequestHeader, std::string> headers;
 	std::stringstream body;
+	std::vector<std::string> files;
 	bool cgi;
 };
 
@@ -64,6 +65,7 @@ private:
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
 	std::optional<std::string> readFile(std::string &filename);
 	std::string contentType(const std::string &filePath);
+	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	// parse
 	void parseRequestLine(std::stringstream &ss);
 	void parseHeaders(std::stringstream &ss);
@@ -76,7 +78,7 @@ private:
 	std::string extractBoundary(const std::string &contentType);
 	std::string extractHeaderValue(const std::string &headers, const std::string &key);
 	std::string extractFilename(const std::string &contentDisposition);
-	void saveFile(const std::string &filename, const std::string &fileData);
+	std::string getTempFilePath(const std::string &filename);
 	// response
 	s_httpSend writeResponse(bool keepalive);
 	void generateDirectoryListing(void);

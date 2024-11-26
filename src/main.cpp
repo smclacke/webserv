@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:31:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 14:46:19 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,9 +25,22 @@ int main(int argc, char **argv)
 		// Test cases
 		std::vector<std::string> testCases = {
 			// Basic GET Request
-			"GET /loc2dir HTTP/1.1\r\n"
+			"GET /loc2dir/new_route/content.html HTTP/1.1\r\n"
 			"Host: example.com\r\n"
+			"Accept: text/html"
 			"\r\n",
+
+			"POST /loc2dir HTTP/1.1\r\n"
+			"Host: example.com\r\n"
+			"Content-Type: multipart/form-data; boundary=----WebKitFormBoundary\r\n"
+			"Content-Length: 138\r\n"
+			"\r\n"
+			"------WebKitFormBoundary\r\n"
+			"Content-Disposition: form-data; name=\"file\"; filename=\"test.txt\"\r\n"
+			"Content-Type: text/plain\r\n"
+			"\r\n"
+			"This is a test file.\r\n"
+			"------WebKitFormBoundary--\r\n"
 
 			// Basic POST Request
 			// "POST /submit-form HTTP/1.1\r\n"
@@ -88,10 +101,10 @@ int main(int argc, char **argv)
 			// "\r\n"
 		};
 		// Process each test case
+		std::shared_ptr<Server> serv = wserv.getServer(0);
+		serv->printServer();
 		for (auto &request : testCases)
 		{
-			std::shared_ptr<Server> serv = wserv.getServer(0);
-			serv->printServer();
 			std::stringstream requestStream(request);
 			s_httpSend http = serv->handleRequest(requestStream);
 			std::string response = http.msg; // Pass requestStream directly

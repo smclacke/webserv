@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 10:14:53 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 14:40:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,8 +37,7 @@ void httpHandler::parseBody(std::stringstream &ss)
 		else
 		{
 			std::cerr << "Unsupported Transfer-Encoding: " << transferEncoding.value() << std::endl;
-			_statusCode = eHttpStatusCode::NotImplemented;
-			return;
+			return setErrorResponse(eHttpStatusCode::NotImplemented, "Unsupported Transfer-Encoding: " + transferEncoding.value());
 		}
 	}
 	else if (contentType.has_value() && contentType.value().find("multipart/form-data") != std::string::npos)
@@ -52,8 +51,7 @@ void httpHandler::parseBody(std::stringstream &ss)
 	else
 	{
 		std::cerr << "No Content-Length or Transfer-Encoding header present" << std::endl;
-		_statusCode = eHttpStatusCode::LengthRequired;
-		return;
+		return setErrorResponse(eHttpStatusCode::LengthRequired, "No Content-Length or Transfer-Encoding header present");
 	}
 	// decoding if it needs to be implemented
 	if (contentEncoding.has_value())
@@ -70,6 +68,7 @@ void httpHandler::parseChunkedBody(std::stringstream &ss, const std::optional<st
 	std::string chunkSizeLine;
 	size_t chunkSize;
 	std::stringstream chunkedData;
+	size_t totalSize = 0;
 
 	while (std::getline(ss, chunkSizeLine))
 	{
@@ -81,6 +80,12 @@ void httpHandler::parseChunkedBody(std::stringstream &ss, const std::optional<st
 
 		if (chunkSize == 0)
 			break;
+		totalSize += chunkSize;
+		if (totalSize > _request.loc.client_body_buffer_size)
+		{
+			std::cerr << "Chunked body size exceeds client max body size" << std::endl;
+			return setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Chunked body size exceeds client max body size");
+		}
 
 		std::string chunkData(chunkSize, '\0');
 		ss.read(&chunkData[0], chunkSize);
@@ -106,8 +111,7 @@ void httpHandler::parseFixedLengthBody(std::stringstream &ss, size_t length)
 	if (length > _request.loc.client_body_buffer_size)
 	{
 		std::cerr << "Fixed length body size exceeds client body buffer size" << std::endl;
-		_statusCode = eHttpStatusCode::InsufficientStorage;
-		return;
+		return setErrorResponse(eHttpStatusCode::InsufficientStorage, "Fixed length body size exceeds client body buffer size");
 	}
 	std::string bodyLine;
 	while (std::getline(ss, bodyLine) && bodyLine != "0\r")
@@ -122,6 +126,8 @@ void httpHandler::parseFixedLengthBody(std::stringstream &ss, size_t length)
 		bodyStr.pop_back();
 		_request.body.str(bodyStr);
 	}
+	if (length != bodyStr.size())
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Content-Length mismatch");
 }
 
 void httpHandler::parseMultipartBody(std::istream &ss, const std::string &contentType)
@@ -130,8 +136,7 @@ void httpHandler::parseMultipartBody(std::istream &ss, const std::string &conten
 	if (boundary.empty())
 	{
 		std::cerr << "Boundary not found in Content-Type" << std::endl;
-		_statusCode = eHttpStatusCode::BadRequest;
-		return;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Boundary not found in Content-Type");
 	}
 
 	std::string line;
@@ -149,12 +154,24 @@ void httpHandler::parseMultipartBody(std::istream &ss, const std::string &conten
 			if (contentDisposition.find("filename=") != std::string::npos)
 			{
 				std::string filename = extractFilename(contentDisposition);
-				std::string fileData;
+				std::string filePath = getTempFilePath(filename);
+				std::ofstream outFile(filePath, std::ios::binary);
+				if (!outFile)
+				{
+					std::cerr << "Failed to open file for writing: " << filePath << std::endl;
+					setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to save file: " + filename);
+					return;
+				}
+
 				while (std::getline(ss, line) && line.find(boundary) == std::string::npos)
 				{
-					fileData += line + "\n";
+					outFile << line << "\n";
+					if (line.size() > _request.loc.client_body_buffer_size)
+						return setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Line from multipart body exceeds client max body size");
 				}
-				saveFile(filename, fileData);
+				outFile.close();
+				_request.files.push_back(filePath); // Store file path for later use
+				_statusCode = eHttpStatusCode::Created;
 			}
 		}
 	}
@@ -194,28 +211,12 @@ std::string httpHandler::extractFilename(const std::string &contentDisposition)
 	return "unknown";
 }
 
-void httpHandler::saveFile(const std::string &filename, const std::string &fileData)
+std::string httpHandler::getTempFilePath(const std::string &filename)
 {
-	std::string uploadPath = "." + _request.loc.root + _request.loc.path + _request.loc.upload_dir;
-
-	// Ensure the directory exists
-	if (!std::filesystem::exists(uploadPath))
-	{
-		std::filesystem::create_directories(uploadPath);
-	}
-
-	std::ofstream outFile(uploadPath + "/" + filename, std::ios::binary);
-	if (outFile)
-	{
-		outFile << fileData;
-		outFile.close();
-		std::cout << "File saved: " << filename << " to " << uploadPath << std::endl;
-	}
+	if (_request.loc.root.empty())
+		return ("." + _server.getRoot() + _request.loc.path + _request.loc.upload_dir + "/" + filename);
 	else
-	{
-		std::cerr << "Failed to save file: " << filename << std::endl;
-		_statusCode = eHttpStatusCode::InternalServerError;
-	}
+		return ("." + _request.loc.root + _request.loc.path + _request.loc.upload_dir + "/" + filename);
 }
 
 /**
@@ -245,6 +246,6 @@ void httpHandler::decodeContentEncoding(std::stringstream &body, const std::stri
 	else
 	{
 		std::cerr << "Unsupported Content-Encoding: " << encoding << std::endl;
-		_statusCode = eHttpStatusCode::NotImplemented;
+		return setErrorResponse(eHttpStatusCode::NotImplemented, "Unsupported Content-Encoding: " + encoding);
 	}
 }

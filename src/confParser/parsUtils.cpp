@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:35:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 14:37:23 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,6 +47,10 @@ void Server::checkLocationPaths(s_location &loc, std::string const root, int con
 		combined = "." + loc.root + loc.path + loc.cgi_path; // check cgi path
 		if (!std::filesystem::exists(combined))				 // ignore the redline - compilation is fine
 			throw eConf("cgi directory \'" + combined + "\' does not exist", line_n);
+
+		combined = "." + loc.root + loc.path + loc.upload_dir; // check upload directory
+		if (!std::filesystem::exists(combined))				   // ignore the redline - compilation is fine
+			throw eConf("Upload directory \'" + combined + "\' does not exist", line_n);
 	}
 	else
 	{
@@ -58,6 +62,10 @@ void Server::checkLocationPaths(s_location &loc, std::string const root, int con
 		combined = "." + root + loc.path + loc.cgi_path; // check cgi_path
 		if (!std::filesystem::exists(combined))			 // ignore the redline - compilation is fine
 			throw eConf("cgi directory \'" + combined + "\' does not exist", line_n);
+
+		combined = "." + root + loc.path + loc.upload_dir; // check upload directory
+		if (!std::filesystem::exists(combined))			   // ignore the redline - compilation is fine
+			throw eConf("Upload directory \'" + combined + "\' does not exist", line_n);
 	}
 }
 

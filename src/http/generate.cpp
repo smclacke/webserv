@@ -6,20 +6,11 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:06:09 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 14:43:10 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
-
-#define LINEBREAK "\r\n"
-const std::string CONTENT_TYPE_TEXT = "Content-Type: text/plain";
-const std::string CONTENT_TYPE_HTML = "Content-Type: text/html";
-const std::string CONTENT_TYPE_JSON = "Content-Type: application/json";
-const std::string CONTENT_TYPE_XML = "Content-Type: application/xml";
-const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascript";
-const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
-const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
 
 /**
  * @brief generates the httpResponse based on the information inside _request
@@ -48,13 +39,9 @@ s_httpSend httpHandler::generateResponse(void)
 			keepalive = false;
 	}
 
-	if (_statusCode != eHttpStatusCode::OK)
+	if (_statusCode > eHttpStatusCode::Accepted)
 		return (writeResponse(keepalive));
-
-	if (_request.cgi == true)
-		cgiResponse();
-	else
-		stdResponse();
+	stdResponse();
 	return writeResponse(keepalive);
 }
 

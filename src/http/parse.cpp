@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 15:54:11 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/26 14:10:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,10 +23,10 @@
 void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
 	parseRequestLine(httpRequest);
-	if (_statusCode != eHttpStatusCode::OK)
+	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
 	parseHeaders(httpRequest);
-	if (_statusCode != eHttpStatusCode::OK)
+	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
 
 	std::string remainingData;
@@ -56,8 +56,7 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 	if (!std::getline(ss, requestLine))
 	{
 		std::cerr << "Failed to read request line" << std::endl;
-		_statusCode = eHttpStatusCode::BadRequest;
-		return;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Failed to read request line");
 	}
 	/* parse request line */
 	std::istringstream requestss(requestLine);
@@ -65,31 +64,27 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 	if (!(requestss >> methodstring >> _request.uri >> version))
 	{
 		std::cerr << "Invalid request line format" << std::endl;
-		_statusCode = eHttpStatusCode::BadRequest;
-		return;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid request line format");
 	}
 	// check METHOD
 	_request.method = _server.allowedHttpMethod(methodstring);
 	if (_request.method == eHttpMethod::INVALID) // method check
 	{
 		std::cerr << "HTTP method not allowed: " << methodstring << std::endl;
-		_statusCode = eHttpStatusCode::MethodNotAllowed;
-		return;
+		return setErrorResponse(eHttpStatusCode::MethodNotAllowed, "HTTP method not allowed: " + methodstring);
 	}
 	// Check if URI is too long
 	const size_t MAX_URI_LENGTH = 2048; // Example limit, adjust as needed
 	if (_request.uri.length() > MAX_URI_LENGTH)
 	{
 		std::cerr << "URI too long: " << _request.uri << std::endl;
-		_statusCode = eHttpStatusCode::URITooLong;
-		return;
+		return setErrorResponse(eHttpStatusCode::URITooLong, "URI too long: " + _request.uri);
 	}
 	// check version
 	if (version != "HTTP/1.1")
 	{
 		std::cerr << "HTTP version not supported: " << version << std::endl;
-		_statusCode = eHttpStatusCode::HTTPVersionNotSupported;
-		return;
+		return setErrorResponse(eHttpStatusCode::HTTPVersionNotSupported, "HTTP version not supported: " + version);
 	}
 
 	// URI match against location
@@ -97,8 +92,7 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 	if (!optLoc.has_value())
 	{
 		std::cerr << "No Matching location for URI: " << _request.uri << std::endl;
-		_statusCode = eHttpStatusCode::NotFound;
-		return;
+		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
 	_request.loc = optLoc.value();
 	size_t pos = _request.uri.find_last_of(".");
@@ -118,8 +112,7 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		if (!std::filesystem::exists(_request.path))
 		{
 			std::cerr << "CGI script not found at path: " << _request.path << std::endl;
-			_statusCode = eHttpStatusCode::NotFound;
-			return;
+			return setErrorResponse(eHttpStatusCode::NotFound, "CGI script not found at path: " + _request.path);
 		}
 	}
 	else
@@ -131,8 +124,7 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		if (!std::filesystem::exists(_request.path))
 		{
 			std::cerr << "Resource not found at path: " << _request.path << std::endl;
-			_statusCode = eHttpStatusCode::NotFound;
-			return;
+			return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
 		}
 	}
 }
@@ -155,14 +147,12 @@ void httpHandler::parseHeaders(std::stringstream &ss)
 		if (headerType == eRequestHeader::Invalid)
 		{
 			std::cerr << "Invalid header key: " << key << std::endl;
-			_statusCode = eHttpStatusCode::BadRequest;
-			return;
+			return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid header key: " + key);
 		}
 		if (headerType == eRequestHeader::Connection)
 		{
 			if (key != "keep-alive" && key != "close")
-				_statusCode = eHttpStatusCode::NotImplemented;
-			return;
+				return setErrorResponse(eHttpStatusCode::NotImplemented, "Connection type not implemented: " + key);
 		}
 		_request.headers[headerType] = value;
 	}
