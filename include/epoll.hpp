@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 17:15:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 18:28:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,8 +52,6 @@ typedef struct s_clients
 	/** @todo want request to be stringstream for speed | ostringstream */
 	//std::unique_ptr<std::stringstream>				_request;
 	std::string										_request;
-	//char											_buffer[READ_BUFFER_SIZE];
-	size_t											_totalBytes;
 	
 	// write
 	std::string										_response;
@@ -89,12 +87,12 @@ class Epoll
 		/* methods */
 		void							initEpoll();
 		void							clientTime(t_serverData server);
-		void							connectClient(t_serverData server);
+		void 							connectClient(int fd, struct sockaddr_in addr, int addrlen);
 		void							handleClose(t_serverData &server, t_clients &client);
 		void							handleFile();
 		void							handleRead(t_serverData &server, t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
-		void							makeNewConnection(int fd, t_serverData &server);
+		void							makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &servaddr);
 		void							processEvent(int fd, epoll_event &event);
 
 		/* getters */

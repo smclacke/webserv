@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 17:51:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 18:06:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -88,14 +88,14 @@ void		Webserv::addServersToEpoll()
 		_epoll.setEvent(event);
 		std::cout << "Added server socket to epoll\n";
 
-		int					clientSockfd = currentServer->getClientSocket()->getSockfd();
-		event.data.fd = clientSockfd;
-		_epoll.addSocketEpoll(clientSockfd, eSocket::Client);
-		_epoll.setEvent(event);
+		//int					clientSockfd = currentServer->getClientSocket()->getSockfd();
+		//event.data.fd = clientSockfd;
+		//_epoll.addSocketEpoll(clientSockfd, eSocket::Client);
+		//_epoll.setEvent(event);
 
 		_epoll.setServer(currentServer);
-		_epoll.connectClient(thisServer);
-		std::cout << "Added client socket to epoll\n";
+		//_epoll.connectClient(thisServer);
+		//std::cout << "Added client socket to epoll\n";
 
 	}
 	std::cout << "--------------------------\n";

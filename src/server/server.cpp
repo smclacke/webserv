@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:22:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 18:42:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
@@ -48,7 +48,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this))
 {
 	_serverName = "default_server";
 	_host = "127.0.0.01";
@@ -78,12 +78,11 @@ Server &Server::operator=(const Server &rhs)
 		_clientMaxBodySize = rhs._clientMaxBodySize;
 		_location = rhs._location;
 		_serverSocket = rhs._serverSocket;
-		_clientSocket = rhs._clientSocket;
 	}
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this))
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -386,11 +385,6 @@ void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 	_serverSocket = serverSocket;
 }
 
-void Server::setClientSocket(std::shared_ptr<Socket> clientSocket)
-{
-	_clientSocket = clientSocket;
-}
-
 /* getters */
 const std::string &Server::getServerName(void) const
 {
@@ -430,9 +424,4 @@ const std::vector<s_location> &Server::getLocation(void) const
 std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
-}
-
-std::shared_ptr<Socket> &Server::getClientSocket(void)
-{
-	return _clientSocket;
 }

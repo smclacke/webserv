@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 17:45:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 18:40:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,23 +79,23 @@ void		Epoll::clientTime(t_serverData server)
 	//}
 }
 
-void Epoll::connectClient(t_serverData server)
-{
-	sockaddr_in serverSockAddr = server._server->getServerSocket()->getSockaddr();
-	if ((connect(server._server->getClientSocket()->getSockfd(),
-				 (struct sockaddr *)&serverSockAddr,
-				 server._server->getServerSocket()->getAddrlen())))
-	{
-		if (errno != EINPROGRESS)
-		{
-			protectedClose(server._server->getClientSocket()->getSockfd());
-			protectedClose(server._server->getServerSocket()->getSockfd());
-			protectedClose(_epfd);
-			throw std::runtime_error("Failed to connect client socket to server\n");
-		}
-	}
-	std::cout << "Connected client socket to server\n";
-}
+//void Epoll::connectClient(t_serverData server)
+//{
+//	sockaddr_in serverSockAddr = server._server->getServerSocket()->getSockaddr();
+//	if ((connect(server._server->getClientSocket()->getSockfd(),
+//				 (struct sockaddr *)&serverSockAddr,
+//				 server._server->getServerSocket()->getAddrlen())))
+//	{
+//		if (errno != EINPROGRESS)
+//		{
+//			protectedClose(server._server->getClientSocket()->getSockfd());
+//			protectedClose(server._server->getServerSocket()->getSockfd());
+//			protectedClose(_epfd);
+//			throw std::runtime_error("Failed to connect client socket to server\n");
+//		}
+//	}
+//	std::cout << "Connected client socket to server\n";
+//}
 
 void		Epoll::handleClose(t_serverData &server, t_clients &client)
 {
@@ -205,12 +205,28 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 	}
 }
 
-void Epoll::makeNewConnection(int fd, t_serverData &server)
+void	Epoll::connectClient(int fd, struct sockaddr_in addr, int addrlen)
+{
+	if (connect(fd, (struct sockaddr *)&addr, addrlen))
+	{
+		if (errno != EINPROGRESS)
+		{
+			protectedClose(fd);
+			protectedClose(_epfd);
+			std::cout << "Failed to connect client socket to server\n";
+			return ;
+		}
+	}
+	std::cout << "Connected client socket to server\n";
+}
+
+void Epoll::makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &servaddr)
 {
 	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
 	int clientfd;
 
+	// CREATE AND CONNECT CLIENT SOCKET
 	clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
 	if (clientfd < 0)
 	{
@@ -221,6 +237,8 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	{
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
 		setNonBlocking(clientfd);
+		(void) servaddr;
+		//connectClient(clientfd, servaddr, addrLen);
 		server.addClient(clientfd, clientAddr, addrLen);
 		addToEpoll(clientfd);
 		
@@ -240,10 +258,14 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 	{
 		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
-			std::cout << "handling new connection for server socket\n";
-			makeNewConnection(fd, serverData);
-			std::cout << "Amount of clients: " << serverData._clients.size() << std::endl;
-			break ;
+			if (event.events & EPOLLIN)
+			{
+				struct sockaddr_in addr = serverData._server->getServerSocket()->getSockaddr();
+				std::cout << "handling new connection for server socket\n";
+				makeNewConnection(fd, serverData, addr);
+				std::cout << "Amount of clients: " << serverData._clients.size() << std::endl;
+				//break ;
+			}
 		}
 		for (auto &client : serverData._clients)
 		{
