@@ -1,5 +1,48 @@
 
 
+
+Client State Management:
+
+You are updating client._clientState to clientState::READING and clientState::WRITING, but once you detect that the client has completed reading or writing (e.g., the full HTTP request or response is processed), you reset it to clientState::READY. This state flow looks good, but there are some edge cases where the state machine could be more robust, such as:
+Handling unexpected disconnections or incomplete requests/responses.
+Managing a transition from READY back to READING or WRITING if more data is expected after an initial request/response.
+Buffer Size (READ_BUFFER_SIZE / WRITE_BUFFER_SIZE):
+
+You're using READ_BUFFER_SIZE and WRITE_BUFFER_SIZE to control the size of each read and write operation. However, these buffers should be fine-tuned for your use case:
+If you expect very large requests or responses, consider dynamically adjusting the buffer size based on the needs of the client (e.g., if a request is too large to fit into a single buffer).
+Similarly, if the response is large and might take multiple writes, you correctly handle the write offset, but ensure the buffer size is large enough to handle the average message size.
+Error Handling:
+
+Your error handling looks solid (e.g., handling EAGAIN for non-blocking I/O). However, ensure you're handling all possible error conditions:
+recv() failure with -1: You currently check EAGAIN and EWOULDBLOCK, but other error codes like ECONNRESET (connection reset) could also occur, so make sure you're checking for these cases and handling them appropriately.
+Graceful client disconnection: You handle bytesRead == 0 (client disconnect), but make sure that any client disconnection (whether intentional or due to network issues) is cleanly handled, especially with regards to closing file descriptors.
+Response Generation Optimization:
+
+In the handleWrite() function, you're generating a response (HTTP status) each time the buffer is written to the client. This may be fine for simple cases, but ensure that the response generation (like the Content-Length header or any dynamic content) isn't unnecessarily repeated for every write. It would be more efficient to prepare the full response once and send it in chunks as needed.
+Consider buffering responses in memory (e.g., building the entire response in memory and sending it in chunks), especially if responses are large or generated dynamically.
+Connection Management:
+
+It's great that you're considering whether to keep the connection alive or close it after each request (client._connectionClose). This can be determined based on the HTTP request headers (e.g., Connection: keep-alive or Connection: close), and you already plan to handle that in the @todo section.
+You should ensure that the logic for closing the connection is implemented after finishing reading and writing the entire response. Additionally, you might want to handle graceful shutdown or handling of stale client connections.
+Optimizing recv() & send() Loops:
+
+Consider using a more efficient read/write loop, especially for large data. Right now, you're reading and writing in fixed-size chunks (READ_BUFFER_SIZE and WRITE_BUFFER_SIZE). Depending on the protocol, you might want to implement a more flexible system for dynamically allocating buffer sizes or breaking large requests/responses into smaller chunks.
+Dynamic buffer expansion: If the buffer is smaller than the request or response, you might need to dynamically allocate more memory for the request/response.
+Timeout Handling:
+
+If you haven't already, consider implementing timeout handling for long or stalled connections, which is important for managing resources (e.g., with epoll_wait()).
+Set a timeout for how long you wait for data to be read from a client, and close the connection if no data is received within that time.
+
+
+
+
+
+
+
+
+
+
+
 /** @todo add bool for close or keep connection alive depneding on the header */
 void		Epoll::handleRead(t_serverData &server, t_clients &client)
 {

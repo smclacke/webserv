@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:52:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 21:06:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,6 @@ Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
 {
 	setEventMax();
 }
-
 
 Epoll::Epoll(const Epoll &copy)
 {
@@ -40,7 +39,11 @@ Epoll::~Epoll()
 { 
 	std::cout << "epoll destructor called\n";
 	if (_epfd)
-		protectedClose(_epfd);
+	{
+		if (!protectedClose(_epfd))
+			std::cerr << "Failed to close epfd\n";
+	}
+			
 
 	// freeaddrinfo
 	// more clean
@@ -79,33 +82,42 @@ void		Epoll::clientTime(t_serverData server)
 	//}
 }
 
-//void Epoll::connectClient(t_serverData server)
-//{
-//	sockaddr_in serverSockAddr = server._server->getServerSocket()->getSockaddr();
-//	if ((connect(server._server->getClientSocket()->getSockfd(),
-//				 (struct sockaddr *)&serverSockAddr,
-//				 server._server->getServerSocket()->getAddrlen())))
-//	{
-//		if (errno != EINPROGRESS)
-//		{
-//			protectedClose(server._server->getClientSocket()->getSockfd());
-//			protectedClose(server._server->getServerSocket()->getSockfd());
-//			protectedClose(_epfd);
-//			throw std::runtime_error("Failed to connect client socket to server\n");
-//		}
-//	}
-//	std::cout << "Connected client socket to server\n";
-//}
-
+/** @todo work in progress */
 void		Epoll::handleClose(t_serverData &server, t_clients &client)
 {
-	std::cout << "closing connection for client " << client._fd << " \n";
-	auto it = std::find_if(server._clients.begin(), server._clients.end(), [&client](const t_clients &c) {return c._fd == client._fd; });
+    bool closeSuccess = true;
 
-	if (it != server._clients.end())
-		server._clients.erase(it);
-	modifyEvent(client._fd, EPOLL_CTL_DEL);
-	protectedClose(client._fd);
+    try
+	{
+		if (client._fd != -1)
+		{
+            if (!protectedClose(client._fd))
+			{
+                closeSuccess = false;
+                std::cerr << "Failed to close client socket " << client._fd << ": " << strerror(errno) << std::endl;
+            }
+			else
+                std::cout << "Closed client socket " << client._fd << std::endl;
+            client._fd = -1;
+        }
+    }
+	catch (const std::exception &e)
+	{
+        std::cerr << "Exception during close: " << e.what() << std::endl;
+        closeSuccess = false;
+    }
+
+    if (!closeSuccess) {
+        // If close failed, do other resource cleanup
+        // For example, unregister fd from epoll or cleanup client-specific data
+		(void) server;
+        //server._serverSocket->removeClient(client);
+    }
+    
+    // Clean up any additional resources (free memory, etc.)
+    client._clientState = clientState::CLOSED;
+    client._request.clear();
+    client._response.clear();
 }
 
 /** @todo make this function */
@@ -136,12 +148,9 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 			{
 				std::cout << "no data available right now\n";
 				client._clientState = clientState::BEGIN;
-				// connection bool
 				return ;
 			}
-			// recv failed
 			handleClose(server, client);
-			// connection bool ?
 			throw std::runtime_error("Reading from client connection failed\n");
 		}
 		else if (bytesRead == 0)
@@ -152,13 +161,13 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 		}
 		client._request += buffer;
 
-		if (client._request.find("\r\n\r\n") != std::string::npos) // find end of HTTP request
+		/** @todo  depends on our protocol for handling read, if finished or till max etc... */
+		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
-			buffer[bytesRead] = '\0';
+			//buffer[bytesRead] = '\0';
 			client._request += buffer;
 			std::cout << "request = " << client._request << "\n";
 
-			client._connectionClose = false;
 			client._clientState = clientState::READY;
 			return ;
 		}
@@ -182,13 +191,9 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 		if (client._bytesWritten == -1)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				client._connectionClose = false;
 				return ; // no space in socket's send buffer, wait for more space
-			}
+
 			std::cerr << "Write to client failed\n";
-			client._connectionClose = true;
-			client._clientState = clientState::ERROR; // this is useless if client gets closed next?
 			handleClose(server, client);
 			return ;
 		}
@@ -197,7 +202,6 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 		{
 			client._write_offset = 0;
 			std::cout << "Client " << client._fd << " sent message to server: " << client._response << "\n\n\n";
-			//client._connectionClose = true;
 			client._clientState = clientState::READY;
 			return ;
 		}
@@ -205,56 +209,41 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 	}
 }
 
-// CHANGE ALL OF THESE TO JUST TAKE A CLIENT????
-// ADD CLIENT SOCKET TO CLIENT VECTOR????
-// TRYING TO CREATE A SOCKET IN EPOLL FMFMFMFMFMFM
-
-void 		Epoll::createClientSocket(int fd, struct sockaddr_in addr, int addrlen)
+/** @todo finish initialisation */
+void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 {
-	if ((fd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		throw std::runtime_error("Error socketing sock\n");
+	static int clientId = 0;
 
-	int flags = fcntl(fd, F_GETFL, 0);
-	if (flags == -1 || fcntl(fd, F_SETFL, flags | O_NONBLOCK) < 0)
-	{
-		protectedClose(fd);
-		throw std::runtime_error("Error setting client socket to nonblocking\n");
-	}
-	std::cout << "created client socket\n";
-	//exit(EXIT_SUCCESS);
-	(void) addr;
-	(void) addrlen;
-	//setSockaddr(addr);
-	//addrlen = sizeof(addr);
-	//setAddrlen(addrlen);
+	t_clients	newClient;
+
+	newClient._fd = sock;
+	newClient._addr = addr;
+	newClient._addLen = len;
+	newClient._clientState = clientState::BEGIN;
+	// client time... init here?
+	newClient._connectionClose = false;
+	// request/response here needed?
+	newClient._write_offset = 0;
+	newClient._bytesWritten = 0;
+	newClient._clientId = clientId++;
+	
+	_clients.push_back(newClient);
+
+	std::cout << "new client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
 }
 
-
-void	Epoll::connectClient(int fd, struct sockaddr_in addr, int addrlen)
-{
-	createClientSocket(fd, addr, addrlen);
-	if (connect(fd, (struct sockaddr *)&addr, addrlen))
-	{
-		if (errno != EINPROGRESS)
-		{
-			protectedClose(fd);
-			protectedClose(_epfd);
-			std::cout << "Failed to connect client socket to server\n";
-			return ;
-		}
-	}
-	std::cout << "Connected client socket to server\n";
-}
-
-/** CREATE CLIENT SOCKET THEN ACCEPT ?? */
-void Epoll::makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &servaddr)
+/** @todo this: CONNECT (?) - 
+ *		When Do You Use connect()?
+		Client side: If your server is also acting as a client (for example, connecting to an external service), you would use connect() in that case to connect to another server.
+		Example: A client program connecting to a remote server (via connect()).
+		Another example: A server acting as a proxy or a backend service connecting to a database.
+ */
+void Epoll::makeNewConnection(int fd, t_serverData &server)
 {
 	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
-	int clientfd;
 
-	// CREATE AND CONNECT CLIENT SOCKET
-	clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
+	int clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
 	if (clientfd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
@@ -263,9 +252,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &
 	else
 	{
 		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
-		connectClient(clientfd, servaddr, addrLen);
 		setNonBlocking(clientfd);
-		//(void) servaddr;
 		server.addClient(clientfd, clientAddr, addrLen);
 		addToEpoll(clientfd);
 		
@@ -278,6 +265,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &
 /** @todo make sure we are not waiting for clients to finish read/write, continue after buffer done
  * 		once complete, then change EPOLL status to in/out and continue finishing that client
  * @todo finish handling HUP
+ * @todo i need to know when/where/how im getting connectionclose 1/0 and then i can add the bool correctly
  */
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
@@ -287,11 +275,8 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 		{
 			if (event.events & EPOLLIN)
 			{
-				struct sockaddr_in addr = serverData._server->getServerSocket()->getSockaddr();
 				std::cout << "handling new connection for server socket\n";
-				makeNewConnection(fd, serverData, addr);
-				std::cout << "Amount of clients: " << serverData._clients.size() << std::endl;
-				//break ;
+				makeNewConnection(fd, serverData);
 			}
 		}
 		for (auto &client : serverData._clients)
@@ -316,28 +301,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 		}
 	}
 }
-
-/* clients methods */
-
-
-/* serverData methods */
-void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
-{
-	t_clients	newClient;
-
-	newClient._fd = sock;
-	newClient._addr = addr;
-	newClient._addLen = len;
-	newClient._clientState = clientState::BEGIN;
-	// client time... init here?
-	newClient._connectionClose = false;
-	// request/response here needed?
-	newClient._write_offset = 0;
-	newClient._bytesWritten = 0;
-
-	_clients.push_back(newClient);
-}
-
 
 /* getters */
 int							Epoll::getEpfd() const

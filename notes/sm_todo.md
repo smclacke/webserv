@@ -5,16 +5,15 @@
 1) 
 	recv vs read?
 	write vs send? both?
+	(photo on phone - add to notes and make decisions)
 
 2) 
 	add some descriptions/briefs
 
 3) 
 	stuff im not sure about:
-		- always start with one client?
+		- when close connections
 
-4) 
-	when close connections?
 
 5) 
 	everywhere good error handling + closing + handling of fds/sockets etc
@@ -38,3 +37,10 @@
 	making use of the buffers etc
 
 	check this with buffer sizes of like 5 once implemented
+
+11) 
+	some exit / throws not necessary
+	some things should give error, be handled and server continues
+
+12) 
+	im reusing the same client info... need to make sure im creating new instances each time

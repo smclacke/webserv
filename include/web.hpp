@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:22:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 20:44:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,6 +144,6 @@ s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, si
 /* server */
 
 /* utils */
-void protectedClose(int fd);
+bool	protectedClose(int fd);
 
 #endif /* WEB_HPP */

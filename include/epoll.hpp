@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:53:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 20:59:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,8 @@ enum class clientState
 	READING = 1,
 	WRITING = 2,
 	ERROR = 3,
-	READY = 4 // finished reading/writing job
+	READY = 4, // finished reading/writing job
+	CLOSED = 5
 	//RESPONSE = 5,
 	//SENDING = 6	// might need, might not
 };
@@ -47,6 +48,7 @@ typedef struct s_clients
 	enum clientState								_clientState;
 	std::unordered_map<int, timePoint>				_clientTime;
 	bool											_connectionClose;
+	int												_clientId;
 	
 	// read
 	/** @todo want request to be stringstream for speed | ostringstream */
@@ -63,7 +65,7 @@ typedef struct s_clients
 typedef struct s_serverData
 {
 	std::shared_ptr<Server>							_server;
-	std::vector<t_clients> 							_clients; // YOU NEED A SOCKET OR TO BE SOCKET
+	std::vector<t_clients> 							_clients;
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in &addr, int len);
@@ -87,13 +89,11 @@ class Epoll
 		/* methods */
 		void							initEpoll();
 		void							clientTime(t_serverData server);
-		void 							createClientSocket(int fd, struct sockaddr_in addr, int addrlen);
-		void 							connectClient(int fd, struct sockaddr_in addr, int addrlen);
 		void							handleClose(t_serverData &server, t_clients &client);
 		void							handleFile();
 		void							handleRead(t_serverData &server, t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
-		void							makeNewConnection(int fd, t_serverData &server, struct sockaddr_in &servaddr);
+		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);
 
 		/* getters */
