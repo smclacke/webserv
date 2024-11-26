@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 15:19:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 16:26:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -80,7 +80,7 @@ void		Epoll::modifyEvent(int fd, uint32_t events)
 		protectedClose(fd);
 		throw std::runtime_error("Failed to modify socket event type\n");
 	}
-	std::cout << "Modified socket event type\n";
+	//std::cout << "Modified socket event type\n";
 	
 }
 

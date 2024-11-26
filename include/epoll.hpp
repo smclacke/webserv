@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 14:56:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 17:15:47 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,8 +36,8 @@ enum class clientState
 
 #define MAX_EVENTS 10
 #define TIMEOUT 3000 // milliseconds | 3 seconds
-#define READ_BUFFER_SIZE 1
-#define WRITE_BUFFER_SIZE 1
+#define READ_BUFFER_SIZE 5
+#define WRITE_BUFFER_SIZE 5
 
 typedef struct s_clients
 {
@@ -49,9 +49,11 @@ typedef struct s_clients
 	bool											_connectionClose;
 	
 	// read
-	//std::stringstream								_request;
-	char											_buffer[READ_BUFFER_SIZE];
-	size_t											_bytesRead;
+	/** @todo want request to be stringstream for speed | ostringstream */
+	//std::unique_ptr<std::stringstream>				_request;
+	std::string										_request;
+	//char											_buffer[READ_BUFFER_SIZE];
+	size_t											_totalBytes;
 	
 	// write
 	std::string										_response;
