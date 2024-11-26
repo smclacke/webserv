@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 17:51:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/26 14:56:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define EPOLL_HPP
 
 #include "socket.hpp"
+#include "web.hpp"
 
 class Webserv;
 class Socket;
@@ -24,20 +25,19 @@ using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 enum class clientState
 {
-	PARSING = 0,
-	BEGIN = 1,
-	READING = 2,
-	WRITING = 3,
-	ERROR = 4,
-	READY = 5,
-	RESPONSE = 6,
-	SENDING = 7
+	BEGIN = 0,
+	READING = 1,
+	WRITING = 2,
+	ERROR = 3,
+	READY = 4 // finished reading/writing job
+	//RESPONSE = 5,
+	//SENDING = 6	// might need, might not
 };
 
 #define MAX_EVENTS 10
 #define TIMEOUT 3000 // milliseconds | 3 seconds
-#define READ_BUFFER_SIZE 4096
-#define WRITE_BUFFER_SIZE 4096
+#define READ_BUFFER_SIZE 1
+#define WRITE_BUFFER_SIZE 1
 
 typedef struct s_clients
 {
@@ -47,7 +47,13 @@ typedef struct s_clients
 	enum clientState								_clientState;
 	std::unordered_map<int, timePoint>				_clientTime;
 	bool											_connectionClose;
-	std::stringstream								_request;
+	
+	// read
+	//std::stringstream								_request;
+	char											_buffer[READ_BUFFER_SIZE];
+	size_t											_bytesRead;
+	
+	// write
 	std::string										_response;
 	size_t											_write_offset;
 	ssize_t											_bytesWritten;
