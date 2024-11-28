@@ -59,7 +59,6 @@ directory -> url ends with "/$" . index / auto-index check-> return file or not 
 
 ----
 accepted content types
-1continue with body parsing tomorrw
-2 check which header types are mandatory to implement 
-
-do request types after
+1. in GET do parsing of the uri requests.
+2. in POST write the CGI part for any application type
+3. figure out what DELETE does
