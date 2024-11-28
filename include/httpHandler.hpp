@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 13:41:59 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 12:29:54 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -71,10 +71,10 @@ private:
 	void parseHeaders(std::stringstream &ss);
 	void parseBody(std::stringstream &ss);
 	// parse body
-	void parseChunkedBody(std::stringstream &ss, const std::optional<std::string> &contentType);
+	void parseChunkedBody(std::stringstream &ss);
 	void parseFixedLengthBody(std::stringstream &ss, size_t length);
 	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
-	void parseMultipartBody(std::istream &ss, const std::string &contentType);
+	void parseMultipartBody(const std::string &contentType);
 	std::string extractBoundary(const std::string &contentType);
 	std::string extractHeaderValue(const std::string &headers, const std::string &key);
 	std::string extractFilename(const std::string &contentDisposition);

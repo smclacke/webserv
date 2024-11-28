@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:26:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 13:10:03 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,7 @@ void Epoll::handleRead(t_serverData server, int j)
 		// read protocol
 		// process_incoming_data() - process a request, store it, or send a response.
 		buffer[bytesRead] = '\0';
-		_request << buffer; // Append to the _request stringstream
+		server._request.append(buffer); // Append to the _request stringstream
 		std::cout << "Server received: " << _request.str() << "\n";
 		switchOUTMode(_events[j].data.fd, _epfd, _event);
 	}
@@ -239,9 +239,9 @@ std::vector<t_serverData> Epoll::getAllServers() const
 	return this->_serverData;
 }
 
-t_serverData Epoll::getServer(size_t i) const
+t_serverData &Epoll::getServer(size_t i)
 {
-	return this->_serverData[i];
+	return (_serverData.at(i));
 }
 
 int Epoll::getNumEvents() const
@@ -265,7 +265,7 @@ void Epoll::setEpfd(int fd)
 	this->_epfd = fd;
 }
 
-void Epoll::setServer(t_serverData server)
+void Epoll::setServer(t_serverData &server)
 {
 	this->_serverData.push_back(server);
 }

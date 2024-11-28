@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:26:42 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 13:11:06 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ typedef struct s_serverData
 	socklen_t _serverAddlen;		 // replace
 	struct sockaddr_in _serverAddr;	 // replace
 	std::shared_ptr<Server> _server;
+	std::string _request;
 
 	/* methods */
 	void addClient(int sock, struct sockaddr_in addr, int len);
@@ -95,14 +96,14 @@ public:
 	/* getters */
 	int getEpfd() const;
 	std::vector<t_serverData> getAllServers() const;
-	t_serverData getServer(size_t i) const;
+	t_serverData &getServer(size_t i);
 	int getNumEvents() const;
 	std::vector<epoll_event> &getAllEvents();
 	struct epoll_event getEvent();
 
 	/* setters */
 	void setEpfd(int fd);
-	void setServer(t_serverData server);
+	void setServer(t_serverData &server);
 	void setNumEvents(int numEvents);
 	void setEventMax();
 	void setEvent(struct epoll_event event);
