@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 14:52:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:09:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,8 +85,9 @@ private:
 	s_httpSend writeResponse(bool keepalive);
 	void generateDirectoryListing(void);
 	// std Response
-	void stdResponse(void);
+	void callMethod(void);
 	void stdGet(void);
+	void getUriEncoded(void);
 	void stdPost(void);
 	void stdDelete(void);
 	// cgi Response

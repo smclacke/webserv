@@ -1,97 +1,20 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   stdResponse.cpp                                    :+:    :+:            */
+/*   POST.cpp                                           :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 15:15:52 by jde-baai      ########   odam.nl         */
+/*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
+/*   Updated: 2024/11/28 18:08:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 
-void httpHandler::stdResponse(void)
-{
-	std::cout << "It is a standard request" << std::endl;
-
-	if (_request.method == eHttpMethod::GET)
-		stdGet();
-	else if (_request.method == eHttpMethod::POST)
-		stdPost();
-	else if (_request.method == eHttpMethod::DELETE)
-		stdDelete();
-	return;
-}
-
-/**
- * @note needs to be tested
- */
-void httpHandler::stdGet(void)
-{
-	std::cout << "Handling GET request" << std::endl;
-
-	// Check if the requested path is a directory
-	if (std::filesystem::is_directory(_request.path))
-	{
-		if (_request.loc.autoindex)
-		{
-			generateDirectoryListing();
-			return;
-		}
-		else
-		{
-			// Look for index files in the directory
-			for (const auto &indexFile : _request.loc.index_files)
-			{
-				std::string indexPath = _request.path + "/" + indexFile;
-				if (std::filesystem::exists(indexPath))
-				{
-					_request.path = indexPath;
-					break;
-				}
-			}
-		}
-	}
-	// Read the file content
-	std::optional<std::string> fileContent = readFile(_request.path);
-	if (_statusCode > eHttpStatusCode::Accepted)
-		return;
-	// Set the response body
-	if (fileContent.has_value())
-		_response.body.str(fileContent.value());
-	else
-		return;
-	_response.headers[eResponseHeader::ContentType] = contentType(_request.path);
-	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
-
-	return;
-}
-
 void httpHandler::stdPost(void)
 {
 	std::cout << "Handling POST request" << std::endl;
-	// Add logic to handle POST request
-	/*
-	Purpose:
-	The primary purpose of a POST request is to submit data to be processed to a specified resource. This could involve creating a new resource or updating an existing one.
-	Request Body:
-	Unlike GET requests, POST requests include a body that contains the data to be sent to the server. This data can be in various formats, such as JSON, XML, or form data.
-	Idempotency:
-	POST requests are not idempotent, meaning that making the same POST request multiple times may result in different outcomes (e.g., creating multiple resources).
-	Headers:
-	POST requests typically include headers that specify the content type of the request body (e.g., Content-Type: application/json).
-	Response:
-	The server's response to a POST request usually includes a status code indicating the result of the request. Common status codes include:
-	201 Created: Indicates that the request was successful and a new resource was created.
-	200 OK: Indicates that the request was successful, and the server processed the data.
-	400 Bad Request: Indicates that the request was malformed or invalid.
-	500 Internal Server Error: Indicates that the server encountered an error while processing the request.
-	Location Header:
-	If a new resource is created, the server may include a Location header in the response, specifying the URI of the newly created resource.
-	*/
-	// validation of the request
 	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
 	if (contentTypeIt == _request.headers.end() || contentTypeIt->second.empty())
 	{
@@ -133,6 +56,7 @@ void httpHandler::stdPost(void)
 	else if (contentType == "application/x-www-form-urlencoded")
 	{
 		// Determine the file path
+		bool newfile = false;
 		std::string filePath;
 		if (std::filesystem::is_directory(_request.path))
 		{
@@ -292,11 +216,4 @@ std::string httpHandler::getTempFilePath(const std::string &filename)
 		return ("." + _server.getRoot() + _request.loc.path + _request.loc.upload_dir + "/" + filename);
 	else
 		return ("." + _request.loc.root + _request.loc.path + _request.loc.upload_dir + "/" + filename);
-}
-
-void httpHandler::stdDelete(void)
-{
-	std::cout << "Handling DELETE request" << std::endl;
-	// Add logic to handle DELETE request
-	return;
 }

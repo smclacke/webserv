@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/26 12:12:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 17:54:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,36 +22,6 @@
  *.
  * @return An optional string containing the file content if successful, or std::nullopt on failure.
  */
-std::optional<std::string> httpHandler::readFile(std::string &filename)
-{
-
-	if (!std::filesystem::exists(_request.path))
-	{
-		_statusCode = eHttpStatusCode::NotFound;
-		return std::nullopt;
-	}
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
-	{
-		_statusCode = eHttpStatusCode::Forbidden;
-		return std::nullopt;
-	}
-	std::ifstream file(filename);
-	std::ostringstream os;
-
-	if (file.is_open())
-	{
-		os << file.rdbuf(); // Read the file's buffer into the output stream
-		file.close();
-	}
-	else
-	{
-		_statusCode = eHttpStatusCode::InternalServerError;
-		return std::nullopt;
-	}
-
-	return os.str(); // Return the contents as a string
-}
 
 void httpHandler::generateDirectoryListing(void)
 {

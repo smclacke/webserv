@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 14:43:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:09:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,7 +41,7 @@ s_httpSend httpHandler::generateResponse(void)
 
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return (writeResponse(keepalive));
-	stdResponse();
+	callMethod();
 	return writeResponse(keepalive);
 }
 
@@ -88,4 +88,15 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 		s_httpSend response = {responseStream.str(), keepalive};
 		return (response);
 	}
+}
+
+void httpHandler::callMethod(void)
+{
+	if (_request.method == eHttpMethod::GET)
+		stdGet();
+	else if (_request.method == eHttpMethod::POST)
+		stdPost();
+	else if (_request.method == eHttpMethod::DELETE)
+		stdDelete();
+	return;
 }
