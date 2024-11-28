@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:44:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:53:26 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,15 @@ void httpHandler::stdGet(void)
 	if (_request.uriEncoded = true)
 	{
 		return getUriEncoded();
+	}
+	std::string contentReturn = contentType(_request.path);
+	auto expected = findHeaderValue(_request, eRequestHeader::Accept);
+	if (expected.has_value())
+	{
+		if (expected.value() != contentReturn)
+		{
+			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesnt match the requested Accept header");
+		}
 	}
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
@@ -53,7 +62,7 @@ void httpHandler::stdGet(void)
 		_response.body.str(fileContent.value());
 	else
 		return;
-	_response.headers[eResponseHeader::ContentType] = contentType(_request.path);
+	_response.headers[eResponseHeader::ContentType] = contentReturn;
 	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 	return;
 }
