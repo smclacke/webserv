@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 12:36:56 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 15:15:52 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,53 +130,72 @@ void httpHandler::stdPost(void)
 			_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 		}
 	}
-	else if (contentType == "application/json")
+	else if (contentType == "application/x-www-form-urlencoded")
 	{
-		if (_request.cgi == false || _request.loc.cgi_ext != ".json")
-			return setErrorResponse(eHttpStatusCode::Forbidden, "Cgi not allowe for file extension: .json");
+		// Determine the file path
+		std::string filePath;
+		if (std::filesystem::is_directory(_request.path))
+		{
+			filePath = _request.path + "/form_data.csv";
+		}
+		else if (std::filesystem::is_regular_file(_request.path))
+		{
+			if (_request.path.substr(_request.path.find_last_of(".") + 1) != "csv")
+			{
+				return setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Invalid file type: Only CSV files are supported");
+			}
+			filePath = _request.path;
+		}
+		else
+		{
+			return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid path: Not a directory or a valid CSV file");
+		}
+		// Parse the form data directly from the stringstream
+		std::string pair;
+		std::map<std::string, std::string> formFields;
+
+		while (std::getline(_request.body, pair, '&'))
+		{
+			size_t pos = pair.find('=');
+			if (pos != std::string::npos)
+			{
+				std::string key = pair.substr(0, pos);
+				std::string value = pair.substr(pos + 1);
+				formFields[key] = value;
+			}
+		}
+
+		// Write to CSV file
+		std::ofstream csvFile(filePath, std::ios::app);
+		if (csvFile.is_open())
+		{
+			for (const auto &field : formFields)
+			{
+				csvFile << field.first << "," << field.second << "\n";
+			}
+			csvFile.close();
+		}
+		else
+		{
+			std::cerr << "Unable to open file for writing" << std::endl;
+			return setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to CSV file");
+		}
+
+		_statusCode = eHttpStatusCode::OK;
+		_response.headers[eResponseHeader::Location] = filePath;
+		_response.body.str("Form data processed and stored successfully");
+		_response.headers[eResponseHeader::ContentLength] = "44";
+	}
+	else if (contentType == "application/json") // change to any applicatoin type, send it straight to cgi and let it try to pass it to a program
+	{
+		if (_request.cgi == false)
+			return setErrorResponse(eHttpStatusCode::Forbidden, "Cgi not allowed for this location");
 		// Process JSON data
 		// Example: Parse JSON and perform operations
 		std::cout << "Received JSON data: " << _request.body.str() << std::endl;
-		cgiResponse(); // call json something
+		cgiResponse(); // add application/json to the call
 		_statusCode = eHttpStatusCode::OK;
 		_response.body.str() = "JSON data processed successfully";
-	}
-	else if (contentType == "application/x-www-form-urlencoded")
-	{
-		// Process URL-encoded form data
-		// std::cout << "Received form data: " << _request.body.str() << std::endl;
-		// _statusCode = eHttpStatusCode::OK;
-		// _response.body.str() = "Form data processed successfully";
-
-		// std::cout << "Received form data: " << _request.body.str() << std::endl;
-
-		// // Parse the form data
-		// std::string formData = _request.body.str();
-		// std::istringstream stream(formData);
-		// std::string pair;
-		// std::map<std::string, std::string> formFields;
-
-		// while (std::getline(stream, pair, '&'))
-		// {
-		// 	size_t pos = pair.find('=');
-		// 	if (pos != std::string::npos)
-		// 	{
-		// 		std::string key = pair.substr(0, pos);
-		// 		std::string value = pair.substr(pos + 1);
-		// 		formFields[key] = value;
-		// 	}
-		// }
-
-		// // Example: Process the parsed data
-		// for (const auto &field : formFields)
-		// {
-		// 	std::cout << "Field: " << field.first << ", Value: " << field.second << std::endl;
-		// }
-
-		// GET /retrieve-data?key1=value1&key2=value2 HTTP/1.1
-
-		_statusCode = eHttpStatusCode::OK;
-		_response.body.str() = "Form data processed successfully";
 	}
 	else
 	{

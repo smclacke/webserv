@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 14:10:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 15:10:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,9 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 	parseHeaders(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-
+	checkUriPath();
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return;
 	std::string remainingData;
 	std::getline(httpRequest, remainingData, '\0');
 	// Check if the remaining data is not just the end of headers
@@ -95,6 +97,31 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
 	_request.loc = optLoc.value();
+}
+
+void httpHandler::checkUriPath(void)
+{
+	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
+	if (contentTypeIt != _request.headers.end())
+	{
+		const std::string &contentType = contentTypeIt->second;
+		if (contentType == "application/x-www-form-urlencoded")
+			_request.uriEncoded = true;
+		if (_request.uri.find("?") != std::string::npos)
+		{
+			std::string uripath = _request.uri.substr(0, _request.uri.find("?"));
+			std::string path;
+			if (_request.loc.root.empty())
+				std::string path = "." + _server.getRoot() + uripath;
+			else
+				std::string path = "." + _request.loc.root + uripath;
+			if (!std::filesystem::exists(path))
+				return setErrorResponse(eHttpStatusCode::NotFound, "Path doesnt exist: " + path);
+			return;
+		}
+		else
+			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
+	}
 	size_t pos = _request.uri.find_last_of(".");
 	if (pos != std::string::npos)
 	{

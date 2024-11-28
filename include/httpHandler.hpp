@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 12:29:54 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 14:52:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,7 @@ struct s_request
 	std::unordered_map<eRequestHeader, std::string> headers;
 	std::stringstream body;
 	std::vector<std::string> files;
+	bool uriEncoded;
 	bool cgi;
 };
 
@@ -70,6 +71,7 @@ private:
 	void parseRequestLine(std::stringstream &ss);
 	void parseHeaders(std::stringstream &ss);
 	void parseBody(std::stringstream &ss);
+	void checkUriPath(void);
 	// parse body
 	void parseChunkedBody(std::stringstream &ss);
 	void parseFixedLengthBody(std::stringstream &ss, size_t length);

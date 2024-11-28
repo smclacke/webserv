@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 13:06:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 14:43:07 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,18 @@
  */
 void httpHandler::parseBody(std::stringstream &ss)
 {
+	if (_request.uriEncoded == true)
+	{
+		size_t queryPos = _request.uri.find("?");
+		if (queryPos == std::string::npos)
+			setErrorResponse(eHttpStatusCode::InternalServerError, "Fault in setting uriEncoded requests");
+		// Extract the query string
+		std::string queryString = _request.uri.substr(queryPos + 1);
+
+		// Store the query string in the _request.body stringstream
+		_request.body.str(queryString);
+	}
+
 	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
 	std::optional<std::string> contentLength = findHeaderValue(_request, eRequestHeader::ContentLength);
 
