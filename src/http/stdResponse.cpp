@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 16:15:34 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 15:37:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 12:36:56 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -103,7 +103,8 @@ void httpHandler::stdPost(void)
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 	{
-		// Handle multipart form data
+		// Handle multipart form data using _request.body
+		parseMultipartBody(contentType);
 		if (_request.files.empty())
 		{
 			std::cerr << "No files found in request" << std::endl;
@@ -117,10 +118,14 @@ void httpHandler::stdPost(void)
 			_response.body << "Files processed successfully: \r\n";
 			for (auto file : _request.files)
 			{
+
 				if (file.find('/') != std::string::npos)
+				{
 					_response.body << file.substr(file.find_last_of('/') + 1) << "\r\n";
+				}
 				else
 					_response.body << file << "\r\n";
+				_response.headers[eResponseHeader::Location] = file;
 			}
 			_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 		}
@@ -179,6 +184,95 @@ void httpHandler::stdPost(void)
 		setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Unsupported Content-Type: " + contentType);
 	}
 	return;
+}
+
+void httpHandler::parseMultipartBody(const std::string &contentType)
+{
+	std::string boundary = extractBoundary(contentType);
+	if (boundary.empty())
+	{
+		std::cerr << "Boundary not found in Content-Type" << std::endl;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Boundary not found in Content-Type");
+	}
+
+	std::string line;
+	while (std::getline(_request.body, line))
+	{
+		if (line.find(boundary) != std::string::npos)
+		{
+			std::string headers;
+			while (std::getline(_request.body, line) && !line.empty() && line != "\r")
+			{
+				headers += line + "\n";
+			}
+
+			std::string contentDisposition = extractHeaderValue(headers, "Content-Disposition");
+			if (contentDisposition.find("filename=") != std::string::npos)
+			{
+				std::string filename = extractFilename(contentDisposition);
+				std::string filePath = getTempFilePath(filename);
+				std::ofstream outFile(filePath, std::ios::binary);
+				if (!outFile)
+				{
+					std::cerr << "Failed to open file for writing: " << filePath << std::endl;
+					setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to save file: " + filename);
+					return;
+				}
+
+				while (std::getline(_request.body, line) && line.find(boundary) == std::string::npos)
+				{
+					outFile << line << "\n";
+					if (line.size() > _request.loc.client_body_buffer_size)
+						return setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Line from multipart body exceeds client max body size");
+				}
+				outFile.close();
+				_request.files.push_back(filePath); // Store file path for later use
+				_statusCode = eHttpStatusCode::Created;
+			}
+		}
+	}
+}
+
+std::string httpHandler::extractBoundary(const std::string &contentType)
+{
+	size_t pos = contentType.find("boundary=");
+	if (pos != std::string::npos)
+	{
+		return "--" + contentType.substr(pos + 9);
+	}
+	return "";
+}
+
+std::string httpHandler::extractHeaderValue(const std::string &headers, const std::string &key)
+{
+	size_t pos = headers.find(key);
+	if (pos != std::string::npos)
+	{
+		size_t start = headers.find(":", pos) + 1;
+		size_t end = headers.find("\n", start);
+		return headers.substr(start, end - start);
+	}
+	return "";
+}
+
+std::string httpHandler::extractFilename(const std::string &contentDisposition)
+{
+	size_t pos = contentDisposition.find("filename=");
+	if (pos != std::string::npos)
+	{
+		size_t start = contentDisposition.find("\"", pos) + 1;
+		size_t end = contentDisposition.find("\"", start);
+		return contentDisposition.substr(start, end - start);
+	}
+	return "unknown";
+}
+
+std::string httpHandler::getTempFilePath(const std::string &filename)
+{
+	if (_request.loc.root.empty())
+		return ("." + _server.getRoot() + _request.loc.path + _request.loc.upload_dir + "/" + filename);
+	else
+		return ("." + _request.loc.root + _request.loc.path + _request.loc.upload_dir + "/" + filename);
 }
 
 void httpHandler::stdDelete(void)
