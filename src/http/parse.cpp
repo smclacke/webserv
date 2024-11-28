@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 15:10:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:43:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,13 +110,12 @@ void httpHandler::checkUriPath(void)
 		if (_request.uri.find("?") != std::string::npos)
 		{
 			std::string uripath = _request.uri.substr(0, _request.uri.find("?"));
-			std::string path;
 			if (_request.loc.root.empty())
-				std::string path = "." + _server.getRoot() + uripath;
+				_request.path = "." + _server.getRoot() + uripath;
 			else
-				std::string path = "." + _request.loc.root + uripath;
-			if (!std::filesystem::exists(path))
-				return setErrorResponse(eHttpStatusCode::NotFound, "Path doesnt exist: " + path);
+				_request.path = "." + _request.loc.root + uripath;
+			if (!std::filesystem::exists(_request.path))
+				return setErrorResponse(eHttpStatusCode::NotFound, "Path doesnt exist: " + _request.path);
 			return;
 		}
 		else

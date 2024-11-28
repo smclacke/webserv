@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:00:01 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:44:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ void httpHandler::stdGet(void)
 	{
 		return getUriEncoded();
 	}
-
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
 	{
@@ -56,12 +55,22 @@ void httpHandler::stdGet(void)
 		return;
 	_response.headers[eResponseHeader::ContentType] = contentType(_request.path);
 	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
-
 	return;
 }
 
+/**
+ * @brief processes the URI encoded body, gets all the keys and tries to extract from a .csv file
+ */
 void httpHandler::getUriEncoded(void)
 {
+	if (_request.path.find(".") != std::string::npos)
+	{
+		if (_request.path.substr(_request.path.find_last_of(".") + 1) != ".csv")
+			setErrorResponse(eHttpStatusCode::NotImplemented, "Only .csv is implemented for uri encoded");
+	}
+	else
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Path doesnt have file extension");
+
 	std::string pair;
 	std::map<std::string, std::string> params;
 	while (std::getline(_request.body, pair, '&'))
@@ -74,7 +83,15 @@ void httpHandler::getUriEncoded(void)
 			params[key] = value;
 		}
 	}
-	std::ifstream csvFile(_request.path, std::ios::app);
+
+	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
+	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	{
+		setErrorResponse(eHttpStatusCode::Forbidden, "No permission to read file: " + _request.path);
+	}
+
+	// Open the CSV file in input mode
+	std::ifstream csvFile(_request.path, std::ios::in);
 	if (!csvFile.is_open())
 	{
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "unable to open file: " + _request.path);
@@ -95,7 +112,6 @@ void httpHandler::getUriEncoded(void)
 		{
 			if (csvHeaders.find(param.first) == csvHeaders.end())
 			{
-				std::cerr << "Key '" << param.first << "' does not exist in the CSV file." << std::endl;
 				setErrorResponse(eHttpStatusCode::BadRequest, "Key '" + param.first + "' does not exist in the CSV file.");
 				return;
 			}
@@ -123,10 +139,10 @@ void httpHandler::getUriEncoded(void)
 				break;
 			}
 		}
-
 		if (rowMatches)
 		{
 			matchFound = true;
+			_response.body << value << "\n";
 			break;
 		}
 	}
@@ -134,23 +150,20 @@ void httpHandler::getUriEncoded(void)
 	{
 		return setErrorResponse(eHttpStatusCode::NotFound, "No matching values found in the CSV file.");
 	}
-	_response.body.str() = value;
-	// check if there a matching value
 	return;
 }
 
 std::optional<std::string> httpHandler::readFile(std::string &filename)
 {
-
 	if (!std::filesystem::exists(_request.path))
 	{
-		_statusCode = eHttpStatusCode::NotFound;
+		setErrorResponse(eHttpStatusCode::NotFound, "File to read doesn't exist: " + filename);
 		return std::nullopt;
 	}
 	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
 	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
 	{
-		_statusCode = eHttpStatusCode::Forbidden;
+		setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + filename);
 		return std::nullopt;
 	}
 	std::ifstream file(filename);
@@ -163,7 +176,7 @@ std::optional<std::string> httpHandler::readFile(std::string &filename)
 	}
 	else
 	{
-		_statusCode = eHttpStatusCode::InternalServerError;
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file: " + filename);
 		return std::nullopt;
 	}
 

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:09:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:35:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,7 +89,9 @@ private:
 	void stdGet(void);
 	void getUriEncoded(void);
 	void stdPost(void);
+	void wwwFormEncoded(void);
 	void stdDelete(void);
+	void deleteFromCSV();
 	// cgi Response
 	void cgiResponse(void);
 

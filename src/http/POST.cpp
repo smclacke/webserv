@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:08:16 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/28 18:40:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ void httpHandler::stdPost(void)
 		}
 		else
 		{
+			// return the processed files
 			_statusCode = eHttpStatusCode::Created;
 			_response.headers[eResponseHeader::ContentType] = "text/plain";
 			_response.body << "Files processed successfully: \r\n";
@@ -52,74 +53,18 @@ void httpHandler::stdPost(void)
 			}
 			_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 		}
+		return;
 	}
 	else if (contentType == "application/x-www-form-urlencoded")
 	{
-		// Determine the file path
-		bool newfile = false;
-		std::string filePath;
-		if (std::filesystem::is_directory(_request.path))
-		{
-			filePath = _request.path + "/form_data.csv";
-		}
-		else if (std::filesystem::is_regular_file(_request.path))
-		{
-			if (_request.path.substr(_request.path.find_last_of(".") + 1) != "csv")
-			{
-				return setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Invalid file type: Only CSV files are supported");
-			}
-			filePath = _request.path;
-		}
-		else
-		{
-			return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid path: Not a directory or a valid CSV file");
-		}
-		// Parse the form data directly from the stringstream
-		std::string pair;
-		std::map<std::string, std::string> formFields;
-
-		while (std::getline(_request.body, pair, '&'))
-		{
-			size_t pos = pair.find('=');
-			if (pos != std::string::npos)
-			{
-				std::string key = pair.substr(0, pos);
-				std::string value = pair.substr(pos + 1);
-				formFields[key] = value;
-			}
-		}
-
-		// Write to CSV file
-		std::ofstream csvFile(filePath, std::ios::app);
-		if (csvFile.is_open())
-		{
-			for (const auto &field : formFields)
-			{
-				csvFile << field.first << "," << field.second << "\n";
-			}
-			csvFile.close();
-		}
-		else
-		{
-			std::cerr << "Unable to open file for writing" << std::endl;
-			return setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to CSV file");
-		}
-
-		_statusCode = eHttpStatusCode::OK;
-		_response.headers[eResponseHeader::Location] = filePath;
-		_response.body.str("Form data processed and stored successfully");
-		_response.headers[eResponseHeader::ContentLength] = "44";
+		return wwwFormEncoded();
 	}
-	else if (contentType == "application/json") // change to any applicatoin type, send it straight to cgi and let it try to pass it to a program
+	else if (contentType.find("application/") == 0) // change to any applicatoin type, send it straight to cgi and let it try to pass it to a program
 	{
 		if (_request.cgi == false)
 			return setErrorResponse(eHttpStatusCode::Forbidden, "Cgi not allowed for this location");
-		// Process JSON data
-		// Example: Parse JSON and perform operations
-		std::cout << "Received JSON data: " << _request.body.str() << std::endl;
-		cgiResponse(); // add application/json to the call
-		_statusCode = eHttpStatusCode::OK;
-		_response.body.str() = "JSON data processed successfully";
+		std::cout << "Received app data: " << _request.body.str() << std::endl;
+		return cgiResponse();
 	}
 	else
 	{
@@ -174,6 +119,70 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 			}
 		}
 	}
+}
+
+void httpHandler::wwwFormEncoded(void)
+{
+	bool newfile = false;
+	std::string filePath;
+	if (std::filesystem::is_directory(_request.path))
+	{
+		filePath = _request.path + "/form_data.csv";
+	}
+	else if (std::filesystem::is_regular_file(_request.path))
+	{
+		if (_request.path.substr(_request.path.find_last_of(".") + 1) != "csv")
+		{
+			return setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Invalid file type: Only CSV files are supported");
+		}
+		filePath = _request.path;
+	}
+	else
+	{
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid path: Not a directory or a valid CSV file");
+	}
+	// check for perm
+	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
+	if (((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none) && (fileStatus.permissions() & std::filesystem::perms::owner_write) == std::filesystem::perms::none)
+	{
+		setErrorResponse(eHttpStatusCode::Forbidden, "No permission to read/write file: " + _request.path);
+	}
+
+	// Parse the form data directly from the stringstream
+	std::string pair;
+	std::map<std::string, std::string> formFields;
+
+	while (std::getline(_request.body, pair, '&'))
+	{
+		size_t pos = pair.find('=');
+		if (pos != std::string::npos)
+		{
+			std::string key = pair.substr(0, pos);
+			std::string value = pair.substr(pos + 1);
+			formFields[key] = value;
+		}
+	}
+
+	// Write to CSV file
+	std::ofstream csvFile(filePath, std::ios::out | std::ios::app);
+	if (csvFile.is_open())
+	{
+		for (const auto &field : formFields)
+		{
+			csvFile << field.first << "," << field.second << "\n";
+		}
+		csvFile.close();
+	}
+	else
+	{
+		std::cerr << "Unable to open file for writing" << std::endl;
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to CSV file");
+	}
+
+	_statusCode = eHttpStatusCode::OK;
+	_response.headers[eResponseHeader::Location] = filePath;
+	_response.body.str("Form data processed and stored successfully");
+	_response.headers[eResponseHeader::ContentLength] = "44";
 }
 
 std::string httpHandler::extractBoundary(const std::string &contentType)
