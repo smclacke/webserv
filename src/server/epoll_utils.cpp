@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 17:57:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:11:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,4 +173,9 @@ void		Epoll::handleClose(t_clients &client)
     client._clientState = clientState::CLOSED;
     client._request.clear();
     client._response.clear();
+}
+
+void	Epoll::cleanUp()
+{
+	
 }

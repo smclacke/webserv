@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 17:46:05 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:21:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,6 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 	return *this;
 }
 
-/** @todo check everything that needs to be cleaned here + freeaddress and event stuff */
 Epoll::~Epoll() 
 { 
 	std::cout << "epoll destructor called\n";
@@ -76,11 +75,11 @@ void		Epoll::handleRead(t_clients &client)
 {
 	char		buffer[READ_BUFFER_SIZE];
 	size_t		bytesRead = 0;
-	memset(buffer, 0, sizeof(buffer));
 
-	// read protocol
-	while (bytesRead < READ_BUFFER_SIZE)
+	while (true)
 	{
+		memset(buffer, 0, sizeof(buffer));
+
 		bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
 		client._clientState = clientState::READING;
 		if (bytesRead < 0)
@@ -96,18 +95,18 @@ void		Epoll::handleRead(t_clients &client)
 		}
 		else if (bytesRead == 0)
 		{
-				std::cout << "Client disconnected\n";
-				handleClose(client);
-				return ;
+			std::cout << "Client disconnected\n";
+			handleClose(client);
+			return ;
 		}
 		client._request += buffer;
 
 		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
-			//buffer[bytesRead] = '\0';
 			std::cout << "request = " << client._request << "\n";
 
 			client._clientState = clientState::READY;
+			client._request.clear();
 			return ;
 		}
 		client._connectionClose = false;
@@ -123,26 +122,24 @@ void		Epoll::handleWrite(t_clients &client)
 	if (client._response.empty())
 		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
 
-	// write protocol
-	while (client._bytesWritten < WRITE_BUFFER_SIZE)
+	while (true)
 	{
-		client._bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
-		client._clientState = clientState::WRITING;
-		if (client._bytesWritten == -1)
+		ssize_t	bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
+		if (bytesWritten < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return ; // no space in socket's send buffer, wait for more space
-
+				return ;
 			std::cerr << "Write to client failed\n";
 			handleClose(client);
 			return ;
 		}
-		client._write_offset += client._bytesWritten;
-		if (client._write_offset == strlen(client._response.c_str()))
+		client._write_offset += bytesWritten;
+		if (client._write_offset >= client._response.length())
 		{
 			client._write_offset = 0;
-			std::cout << "Client sent message to server: " << client._response << "\n\n\n";
 			client._clientState = clientState::READY;
+			
+			client._connectionClose = true;
 			return ;
 		}
 		client._connectionClose = false;
@@ -214,8 +211,9 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				makeNewConnection(fd, serverData);
 			}
 		}
-		//if () file std::String
-			//addFile();
+		//std::string file = 0;
+		//if (!file.empty())
+		//	addFile();
 		for (auto &client : serverData._clients)
 		{
 			//if (fd == _pipefd[0])
@@ -248,7 +246,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 			}
 		}
 	}
-	// clean up - file pipe etc closed
+	cleanUp();
 }
 
 /* getters */
