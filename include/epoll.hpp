@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:12:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:44:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,7 +112,6 @@ class Epoll
 		void							setEvent(struct epoll_event &event);
 
 		/* utils -> epoll_utils.cpp */
-		void							printAllEpoll();
 		std::string						generateHttpResponse(const std::string &message);
 		struct epoll_event				addServerSocketEpoll(int sockfd);
 		void							addFile();
@@ -122,7 +121,7 @@ class Epoll
 		void							closeDelete(int fd);
 		void							updateClientClock(t_clients &client);
 		void							clientTimeCheck(t_clients &client);
-		void							handleClose(t_clients &client);
+		void							handleClientClose(t_clients &client);
 		void							cleanUp();
 };
 

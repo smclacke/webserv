@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 17:26:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:50:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@ std::atomic<bool> keepRunning(true);
 
 // Signal handler function
 void signalHandler(int signum) {
-	std::cout << "~~~ Signal received: " << signum << "\n";
+	std::cout << "\n~~~ Signal received: " << signum << "\n";
     keepRunning = false; // Set the flag to false to exit the loop
 }
 

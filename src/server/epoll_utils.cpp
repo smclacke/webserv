@@ -6,21 +6,15 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:11:56 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:48:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
 
-void		Epoll::printAllEpoll()
-{
-	
-}
-
 /**
- * @todo removed http response function and use Julius' stuff
- * @todo check closeDelete order
+ * @todo remove http response function and use Julius' stuff
  */
 
 /* Epoll utils */
@@ -52,8 +46,7 @@ struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
 	return event;
 }
 
-/** @todo make this function
- * 	
+/** 
  * 	pipefd[0] - read
  * 	pipefd[1] - write
  */
@@ -86,7 +79,7 @@ void		Epoll::addToEpoll(int fd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Error adding fd to epoll\n");
+		std::cout << "Error adding fd to epoll\n";
 	}
 	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
 }
@@ -99,8 +92,8 @@ void		Epoll::modifyEvent(int fd, uint32_t events)
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
-		protectedClose(fd);
-		throw std::runtime_error("Failed to modify socket event type\n");
+		closeDelete(fd);
+		std::cout << "Failed to modify socket event type\n";
 	}
 }
 
@@ -112,8 +105,8 @@ void		Epoll::setNonBlocking(int connection)
 
 void		Epoll::closeDelete(int fd)
 {
-	protectedClose(fd);
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
+	protectedClose(fd);
 }
 
 void		Epoll::updateClientClock(t_clients &client)
@@ -121,7 +114,6 @@ void		Epoll::updateClientClock(t_clients &client)
 	client._clientTime[client._fd] = std::chrono::steady_clock::now();
 }
 
-/** @todo test this */
 void		Epoll::clientTimeCheck(t_clients &client)
 {
 	auto	now = std::chrono::steady_clock::now();
@@ -142,8 +134,7 @@ void		Epoll::clientTimeCheck(t_clients &client)
 	}
 }
 
-/** @todo work in progress */
-void		Epoll::handleClose(t_clients &client)
+void		Epoll::handleClientClose(t_clients &client)
 {
     bool closeSuccess = true;
 
@@ -175,7 +166,8 @@ void		Epoll::handleClose(t_clients &client)
     client._response.clear();
 }
 
-void	Epoll::cleanUp()
+// cleanup EVERYTHING at end of monitoring loop
+void		Epoll::cleanUp()
 {
 	
 }

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 17:56:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:45:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,6 @@ void		Webserv::monitorServers()
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
-	_epoll.printAllEpoll();
 	while (_keepRunning)
 	{
 		// check for client timeouts
@@ -125,6 +124,7 @@ void		Webserv::monitorServers()
 			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
 	}
+	_epoll.cleanUp();
 }
 
 /* setters */

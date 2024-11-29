@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:21:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:49:52 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,16 +36,19 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 
 Epoll::~Epoll() 
 { 
-	std::cout << "epoll destructor called\n";
+	std::cout << "Epoll destructor called\n";
 	if (_epfd > 0)
 	{
 		if (!protectedClose(_epfd))
 			std::cerr << "Failed to close epfd\n";
 	}
-	// freeaddrinfo
-	// more clean
+	/** @todo if the pipe moves, move the close
+	 * @todo if closeDelete fails? or pipe not added to epoll? */ 
+	if (_pipefd[0])
+		closeDelete(_pipefd[0]);
+	if (_pipefd[1])
+		closeDelete(_pipefd[1]);
 }
-
 
 /* methods */
 void		Epoll::initEpoll()
@@ -68,8 +71,8 @@ void	Epoll::handleFile()
 	}
 }
 
-/** @todo add bool for close or keep connection alive depneding on the header
- *  @todo handling bad fd to recv, not necessarily a throw
+/** 
+ *  @todo handling bad fd to recv, not necessarily a throw or exit server situ
  */
 void		Epoll::handleRead(t_clients &client)
 {
@@ -90,13 +93,13 @@ void		Epoll::handleRead(t_clients &client)
 				client._clientState = clientState::BEGIN;
 				return ;
 			}
-			handleClose(client);
+			handleClientClose(client);
 			throw std::runtime_error("Reading from client connection failed\n");
 		}
 		else if (bytesRead == 0)
 		{
 			std::cout << "Client disconnected\n";
-			handleClose(client);
+			handleClientClose(client);
 			return ;
 		}
 		client._request += buffer;
@@ -104,8 +107,8 @@ void		Epoll::handleRead(t_clients &client)
 		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
 			std::cout << "request = " << client._request << "\n";
-
 			client._clientState = clientState::READY;
+			client._connectionClose = true;
 			client._request.clear();
 			return ;
 		}
@@ -113,12 +116,12 @@ void		Epoll::handleRead(t_clients &client)
 	}
 }
 
-/** @todo add bool for close or keep connection alive depneding on the header
+/** 
  * @todo ensure generaterequest is not being called everytime for the same client when just filling buffer
+ * @todo get actual response message 
  */
 void		Epoll::handleWrite(t_clients &client)
 {
-	// get actual response
 	if (client._response.empty())
 		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
 
@@ -130,7 +133,7 @@ void		Epoll::handleWrite(t_clients &client)
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return ;
 			std::cerr << "Write to client failed\n";
-			handleClose(client);
+			handleClientClose(client);
 			return ;
 		}
 		client._write_offset += bytesWritten;
@@ -138,7 +141,6 @@ void		Epoll::handleWrite(t_clients &client)
 		{
 			client._write_offset = 0;
 			client._clientState = clientState::READY;
-			
 			client._connectionClose = true;
 			return ;
 		}
@@ -146,7 +148,6 @@ void		Epoll::handleWrite(t_clients &client)
 	}
 }
 
-/** @todo finish initialisation */
 void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 {
 	static int clientId = 0;
@@ -183,7 +184,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	if (clientfd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
-		return;
+		return ;
 	}
 	else
 	{
@@ -194,10 +195,9 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 }
 
-/** @todo make sure we are not waiting for clients to finish read/write, continue after buffer done
- * 		once complete, then change EPOLL status to in/out and continue finishing that client
- * @todo finish handling HUP
- * @todo i need to know when/where/how im getting connectionclose 1/0 and then i can add the bool correctly
+/** 
+ * @todo file stuff
+ * @todo connection bool handling/send somewhere so it is actually being used
  */
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
@@ -240,13 +240,12 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				}
 				else if (event.events & EPOLLHUP)
 				{
-					std::cout << "hup\n";
-					closeDelete(client._fd);
+					std::cout << "EPOLLHUP\n";
+					handleClientClose(client);
 				}
 			}
 		}
 	}
-	cleanUp();
 }
 
 /* getters */
