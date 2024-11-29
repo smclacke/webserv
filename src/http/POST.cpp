@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:40:28 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:38:35 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,6 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 
 void httpHandler::wwwFormEncoded(void)
 {
-	bool newfile = false;
 	std::string filePath;
 	if (std::filesystem::is_directory(_request.path))
 	{

@@ -6,12 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 14:46:19 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:40:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../include/web.hpp"
 #include "../include/webserv.hpp"
+#include "../include/server.hpp"
 #include "../include/error.hpp"
 
 int main(int argc, char **argv)

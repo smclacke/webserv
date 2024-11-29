@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:39:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:37:08 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -248,5 +248,24 @@ s_location Server::parseLocation(std::ifstream &file, std::string &line, int &li
 		loc.index_files.push_back("index.html");
 		loc.index_files.push_back("index.htm");
 	}
+	return (loc);
+}
+
+s_location addDefaultLoc(size_t servermaxsize)
+{
+	s_location loc;
+	loc.path = "/";
+	loc.root = "";
+	loc.client_body_buffer_size = servermaxsize;
+	loc.allowed_methods.push_back(eHttpMethod::GET);
+	loc.allowed_methods.push_back(eHttpMethod::POST);
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);
+	loc.redir_url = "";
+	loc.redirect_status = 0;
+	loc.autoindex = false;
+	loc.upload_dir = "";
+	loc.index = "";
+	loc.cgi_ext = "";
+	loc.cgi_path = "";
 	return (loc);
 }

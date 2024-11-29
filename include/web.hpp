@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/25 16:01:59 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:41:02 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,6 +82,7 @@ void checkLocationPaths(s_location &loc, std::string const root, int const line_
 void findLocationDirective(std::string &line, int &line_n, s_location &loc);
 void findServerDirective(Server &serv, std::string &line, int line_n);
 s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
+s_location addDefaultLoc(size_t servermaxsize);
 
 /* server */
 
