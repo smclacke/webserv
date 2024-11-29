@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 20:59:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:25:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,6 +39,7 @@ enum class clientState
 #define TIMEOUT 3000 // milliseconds | 3 seconds
 #define READ_BUFFER_SIZE 5
 #define WRITE_BUFFER_SIZE 5
+#define MAX_FILE_READ 256
 
 typedef struct s_clients
 {
@@ -79,6 +80,7 @@ class Epoll
 		int								_numEvents;
 		struct epoll_event				_event;
 		std::vector<epoll_event>		_events;
+		int								_pipefd[2]; // pipe[0] read | pipe[1] write
 
 	public:
 		Epoll();
@@ -88,8 +90,6 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
-		void							clientTime(t_serverData server);
-		void							handleClose(t_serverData &server, t_clients &client);
 		void							handleFile();
 		void							handleRead(t_serverData &server, t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
@@ -113,11 +113,14 @@ class Epoll
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
-		struct epoll_event				addSocketEpoll(int sockfd, eSocket type);
+		struct epoll_event				addServerSocketEpoll(int sockfd);
+		void							addFile();
 		void							addToEpoll(int fd);
 		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							closeDelete(int fd);
+		void							clientTime(t_serverData server);
+		void							handleClose(t_serverData &server, t_clients &client);
 };
 
 #endif /* EPOLL_HPP */

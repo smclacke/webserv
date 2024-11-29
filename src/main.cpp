@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/24 14:26:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 11:57:58 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 		Webserv wserv(config);
 		wserv.addServersToEpoll();
 		//wserv.printAllServerSocketEpoll();
-		wserv.monitorServers(wserv.getAllServers());
+		wserv.monitorServers();
 	}
 	catch (eConf &e)
 	{

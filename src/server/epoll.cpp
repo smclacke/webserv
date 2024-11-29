@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 21:06:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:25:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,8 +43,6 @@ Epoll::~Epoll()
 		if (!protectedClose(_epfd))
 			std::cerr << "Failed to close epfd\n";
 	}
-			
-
 	// freeaddrinfo
 	// more clean
 }
@@ -59,74 +57,17 @@ void		Epoll::initEpoll()
 	std::cout << "Successfully created Epoll instance\n";
 }
 
-
-/** @todo fix this */
-void		Epoll::clientTime(t_serverData server)
-{
-	auto now = std::chrono::steady_clock::now();
-	(void) now;
-	(void) server;
-	//for (auto it = server._clientTime.begin(); it != server._clientTime.end();)
-	//{
-	//	auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
-	//	if (elapsed.count() >= (TIMEOUT / 1000))
-	//	{
-	//		std::cout << "Client timed out\n";
-	//		protectedClose(it->first);
-	//		// remove server from epoll
-	//		// delete client(it->first)
-	//		// it = _clientTime.erase(it);
-	//	}
-	//	else
-	//		it++;
-	//}
-}
-
-/** @todo work in progress */
-void		Epoll::handleClose(t_serverData &server, t_clients &client)
-{
-    bool closeSuccess = true;
-
-    try
-	{
-		if (client._fd != -1)
-		{
-            if (!protectedClose(client._fd))
-			{
-                closeSuccess = false;
-                std::cerr << "Failed to close client socket " << client._fd << ": " << strerror(errno) << std::endl;
-            }
-			else
-                std::cout << "Closed client socket " << client._fd << std::endl;
-            client._fd = -1;
-        }
-    }
-	catch (const std::exception &e)
-	{
-        std::cerr << "Exception during close: " << e.what() << std::endl;
-        closeSuccess = false;
-    }
-
-    if (!closeSuccess) {
-        // If close failed, do other resource cleanup
-        // For example, unregister fd from epoll or cleanup client-specific data
-		(void) server;
-        //server._serverSocket->removeClient(client);
-    }
-    
-    // Clean up any additional resources (free memory, etc.)
-    client._clientState = clientState::CLOSED;
-    client._request.clear();
-    client._response.clear();
-}
-
-/** @todo make this function */
 void	Epoll::handleFile()
 {
-	// add file to epoll (error page)
-	
-}
+	char	buffer[MAX_FILE_READ];
+	int		n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
 
+	if (n > 0)
+	{
+		buffer[n] = '\0';
+		std::cout << "file read = " << buffer << "\n";
+	}
+}
 
 /** @todo add bool for close or keep connection alive depneding on the header
  *  @todo handling bad fd to recv, not necessarily a throw
@@ -164,7 +105,7 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 		/** @todo  depends on our protocol for handling read, if finished or till max etc... */
 		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
-			//buffer[bytesRead] = '\0';
+			buffer[bytesRead] = '\0';
 			client._request += buffer;
 			std::cout << "request = " << client._request << "\n";
 
@@ -279,6 +220,8 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				makeNewConnection(fd, serverData);
 			}
 		}
+		if (fd == _pipefd[0])
+			handleFile();
 		for (auto &client : serverData._clients)
 		{
 			if (fd == client._fd)
@@ -300,6 +243,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 			}
 		}
 	}
+	// clean up - file pipe etc closed
 }
 
 /* getters */

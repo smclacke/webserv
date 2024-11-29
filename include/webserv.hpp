@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/25 12:23:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 11:58:24 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,7 +35,7 @@ class Webserv
 		void				addServersToEpoll();
 		void				addFilesToEpoll(s_serverData clientSock, std::string file);
 		//void				printAllServerSocketEpoll();
-		void				monitorServers(std::vector<std::shared_ptr<Server>> &servers);
+		void				monitorServers();
 
 		/* Setters */
 		void				addServer(std::shared_ptr<Server> server);

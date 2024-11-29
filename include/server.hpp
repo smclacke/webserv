@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:39:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:18:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,7 +123,8 @@ class Server
 		const int 						&getPort(void) const;
 		const std::string 				&getRoot(void) const;
 		const std::vector<s_ePage> 		&getErrorPage(void) const;
-		const size_t 					&getClientMaxBodySize(void) const;
+		const size_t 				
+		_epoll.addFile();	&getClientMaxBodySize(void) const;
 		const std::vector<s_location> 	&getLocation(void) const;
 		std::shared_ptr<Socket>		 	&getServerSocket(void);
 };

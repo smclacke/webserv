@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:06:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:28:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,51 +84,34 @@ void		Webserv::addServersToEpoll()
 		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
 		struct epoll_event 	event;
 		event.data.fd = serverSockfd;
-		_epoll.addSocketEpoll(serverSockfd, eSocket::Server);
+		_epoll.addServerSocketEpoll(serverSockfd);
 		_epoll.setEvent(event);
+
 		std::cout << "Added server socket to epoll\n";
-
-		//int					clientSockfd = currentServer->getClientSocket()->getSockfd();
-		//event.data.fd = clientSockfd;
-		//_epoll.addSocketEpoll(clientSockfd, eSocket::Client);
-		//_epoll.setEvent(event);
-
 		_epoll.setServer(currentServer);
-		//_epoll.connectClient(thisServer);
-		//std::cout << "Added client socket to epoll\n";
+
+		// if file
+		//_epoll.addFile();
 
 	}
 	std::cout << "--------------------------\n";
 }
 
-void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
-{
-	(void) clientSock;
-	(void) file;
-	//int		fileFd = open(file.c_str(), O_RDONLY);
-	
-	//if (fileFd == -1)
-	//	throw std::runtime_error("Failed to open file\n");
-	//_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
-}
 
-void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
+void		Webserv::monitorServers()
 {
-	(void) servers;
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
 	while (true)
 	{
-		// all servers already added to epoll, can just call wait on all of them
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1)
 			throw std::runtime_error("epoll_wait() failed\n");
 		else if (numEvents == 0)
 			continue ;
 
-		// process events returned by epoll_wait
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;

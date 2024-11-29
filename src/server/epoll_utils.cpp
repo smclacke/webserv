@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 16:26:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:24:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,20 +33,11 @@ std::string Epoll::generateHttpResponse(const std::string &message)
 	return response.str();
 }
 
-struct epoll_event Epoll::addSocketEpoll(int sockfd, eSocket type)
+struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
 {
 	struct epoll_event	event;
 	event.data.fd = sockfd;
-
-	if (type == eSocket::Server)
-		event.events = EPOLLIN;
-	else if (type == eSocket::Client)
-		event.events = EPOLLIN | EPOLLOUT;
-	else
-	{
-		protectedClose(sockfd);
-		throw std::runtime_error("invalid socket type");
-	}
+	event.events = EPOLLIN;
 
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
 	{
@@ -56,10 +47,36 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, eSocket type)
 	return event;
 }
 
+/** @todo make this function
+ * 	
+ * 	pipefd[0] - read
+ * 	pipefd[1] - write
+ */
+void	Epoll::addFile()
+{
+	if (pipe(_pipefd) == -1)
+	{
+		std::cerr << "pipe for file failed\n";
+		return ;
+	}
+
+	struct epoll_event	event;
+	event.events = EPOLLIN;
+	event.data.fd = _pipefd[0];
+
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _pipefd[0], &event) == -1)
+	{
+		std::cerr << "epoll_ctl file failed\n";
+		protectedClose(_pipefd[0]);
+		protectedClose(_pipefd[1]);
+		return ;
+	}
+}
+
 void		Epoll::addToEpoll(int fd)
 {
 	struct epoll_event event;
-	event.events = EPOLLIN;
+	event.events = EPOLLIN | EPOLLOUT;
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
@@ -80,8 +97,6 @@ void		Epoll::modifyEvent(int fd, uint32_t events)
 		protectedClose(fd);
 		throw std::runtime_error("Failed to modify socket event type\n");
 	}
-	//std::cout << "Modified socket event type\n";
-	
 }
 
 void		Epoll::setNonBlocking(int connection)
@@ -94,4 +109,64 @@ void		Epoll::closeDelete(int fd)
 {
 	protectedClose(fd);
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
+}
+
+/** @todo fix this */
+void		Epoll::clientTime(t_serverData server)
+{
+	auto now = std::chrono::steady_clock::now();
+	(void) now;
+	(void) server;
+	//for (auto it = server._clientTime.begin(); it != server._clientTime.end();)
+	//{
+	//	auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
+	//	if (elapsed.count() >= (TIMEOUT / 1000))
+	//	{
+	//		std::cout << "Client timed out\n";
+	//		protectedClose(it->first);
+	//		// remove server from epoll
+	//		// delete client(it->first)
+	//		// it = _clientTime.erase(it);
+	//	}
+	//	else
+	//		it++;
+	//}
+}
+
+/** @todo work in progress */
+void		Epoll::handleClose(t_serverData &server, t_clients &client)
+{
+    bool closeSuccess = true;
+
+    try
+	{
+		if (client._fd != -1)
+		{
+            if (!protectedClose(client._fd))
+			{
+                closeSuccess = false;
+                std::cerr << "Failed to close client socket " << client._fd << ": " << strerror(errno) << std::endl;
+            }
+			else
+                std::cout << "Closed client socket " << client._fd << std::endl;
+            client._fd = -1;
+        }
+    }
+	catch (const std::exception &e)
+	{
+        std::cerr << "Exception during close: " << e.what() << std::endl;
+        closeSuccess = false;
+    }
+
+    if (!closeSuccess) {
+        // If close failed, do other resource cleanup
+        // For example, unregister fd from epoll or cleanup client-specific data
+		(void) server;
+        //server._serverSocket->removeClient(client);
+    }
+    
+    // Clean up any additional resources (free memory, etc.)
+    client._clientState = clientState::CLOSED;
+    client._request.clear();
+    client._response.clear();
 }
