@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:41:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:43:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -78,9 +78,6 @@ struct s_httpSend
 /* parser */
 void lineStrip(std::string &line);
 void verifyInput(int ac, char **av);
-void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
-void findLocationDirective(std::string &line, int &line_n, s_location &loc);
-void findServerDirective(Server &serv, std::string &line, int line_n);
 s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
 s_location addDefaultLoc(size_t servermaxsize);
 
