@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:35:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:26:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -67,6 +67,7 @@ private:
 	std::optional<std::string> readFile(std::string &filename);
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
+	std::string httpHandler::buildPath(void);
 	// parse
 	void parseRequestLine(std::stringstream &ss);
 	void parseHeaders(std::stringstream &ss);

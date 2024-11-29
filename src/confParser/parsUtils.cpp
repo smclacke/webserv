@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 14:37:23 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 16:14:07 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,18 +38,13 @@ void Server::checkLocationPaths(s_location &loc, std::string const root, int con
 	{
 		if (!std::filesystem::exists("." + loc.root)) // ignore the redline - compilation is fine
 			throw eConf("Root directory \'" + loc.root + "\'does not exist", line_n);
-
 		std::string combined;
-		combined = "." + loc.root + loc.path;	// check path
-		if (!std::filesystem::exists(combined)) // ignore the redline - compilation is fine
-			throw eConf("Path directory \'" + combined + "\' does not exist", line_n);
-
-		combined = "." + loc.root + loc.path + loc.cgi_path; // check cgi path
-		if (!std::filesystem::exists(combined))				 // ignore the redline - compilation is fine
+		combined = "." + loc.root + loc.cgi_path; // check cgi path
+		if (!std::filesystem::exists(combined))	  // ignore the redline - compilation is fine
 			throw eConf("cgi directory \'" + combined + "\' does not exist", line_n);
 
-		combined = "." + loc.root + loc.path + loc.upload_dir; // check upload directory
-		if (!std::filesystem::exists(combined))				   // ignore the redline - compilation is fine
+		combined = "." + loc.root + loc.upload_dir; // check upload directory
+		if (!std::filesystem::exists(combined))		// ignore the redline - compilation is fine
 			throw eConf("Upload directory \'" + combined + "\' does not exist", line_n);
 	}
 	else

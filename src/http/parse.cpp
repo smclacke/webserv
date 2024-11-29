@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:43:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:45:53 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,7 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 	parseRequestLine(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-	parseHeaders(httpRequest);
+	parseHeaders(httpRequest); //
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
 	checkUriPath();
@@ -46,6 +46,13 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 }
 
 /* private functions */
+
+/*
+ the path should be the server_root + uri but the start of the uri should
+  not contain the part that is replaced by the root
+
+
+*/
 
 /**
  * @brief Parses the request line of the HTTP request
@@ -99,6 +106,25 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 	_request.loc = optLoc.value();
 }
 
+/**
+ * @brief builds the path. Replaces the part of the uri that tags the location with the root of set location
+ */
+std::string httpHandler::buildPath(void)
+{
+	std::string uri = _request.uri;
+	std::string path;
+	if (!_request.loc.path.empty() && _request.loc.path != "/")
+		uri.erase(0, _request.loc.path.length());
+	if (_request.loc.root.empty())
+		path = "." + _server.getRoot() + uri;
+	else
+		path = "." + _request.loc.root + uri;
+	return (path);
+}
+
+/**
+ * @brief checks if the is a x-www-form-urlencoded request and if the path is valid
+ */
 void httpHandler::checkUriPath(void)
 {
 	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
@@ -109,11 +135,9 @@ void httpHandler::checkUriPath(void)
 			_request.uriEncoded = true;
 		if (_request.uri.find("?") != std::string::npos)
 		{
-			std::string uripath = _request.uri.substr(0, _request.uri.find("?"));
-			if (_request.loc.root.empty())
-				_request.path = "." + _server.getRoot() + uripath;
-			else
-				_request.path = "." + _request.loc.root + uripath;
+			std::string path = buildPath();
+			path.substr(0, _request.uri.find_last_of("?"));
+			_request.path = path;
 			if (!std::filesystem::exists(_request.path))
 				return setErrorResponse(eHttpStatusCode::NotFound, "Path doesnt exist: " + _request.path);
 			return;
@@ -128,30 +152,11 @@ void httpHandler::checkUriPath(void)
 		if (extension == _request.loc.cgi_ext)
 			_request.cgi = true;
 	}
-	if (_request.cgi == true)
+	_request.path = buildPath();
+	if (!std::filesystem::exists(_request.path))
 	{
-		std::cout << "This request is a cgi request" << std::endl;
-		if (!_request.loc.root.empty())
-			_request.path = "." + _request.loc.root + _request.uri;
-		else
-			_request.path = "." + _server.getRoot() + _request.uri;
-		if (!std::filesystem::exists(_request.path))
-		{
-			std::cerr << "CGI script not found at path: " << _request.path << std::endl;
-			return setErrorResponse(eHttpStatusCode::NotFound, "CGI script not found at path: " + _request.path);
-		}
-	}
-	else
-	{
-		if (!_request.loc.root.empty())
-			_request.path = "." + _request.loc.root + _request.uri;
-		else
-			_request.path = "." + _server.getRoot() + _request.uri;
-		if (!std::filesystem::exists(_request.path))
-		{
-			std::cerr << "Resource not found at path: " << _request.path << std::endl;
-			return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
-		}
+		std::cerr << "Resource not found at path: " << _request.path << std::endl;
+		return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
 	}
 }
 
