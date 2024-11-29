@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:52:36 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 16:16:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,30 +116,27 @@ void		Epoll::closeDelete(int fd)
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
-/** @todo fix this */
-void		Epoll::clientTime(t_serverData server)
+/** @todo test this */
+void		Epoll::clientTime(t_clients &client)
 {
 	auto now = std::chrono::steady_clock::now();
-	(void) now;
-	(void) server;
-	//for (auto it = server._clientTime.begin(); it != server._clientTime.end();)
-	//{
-	//	auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
-	//	if (elapsed.count() >= (TIMEOUT / 1000))
-	//	{
-	//		std::cout << "Client timed out\n";
-	//		protectedClose(it->first);
-	//		// remove server from epoll
-	//		// delete client(it->first)
-	//		// it = _clientTime.erase(it);
-	//	}
-	//	else
-	//		it++;
-	//}
+
+	for (auto it = client._clientTime.begin(); it != client._clientTime.end();)
+	{
+		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
+		if (elapsed.count() >= (TIMEOUT / 1000))
+		{
+			std::cout << "Client timed out\n";
+			closeDelete(it->first);
+			it = client._clientTime.erase(it);
+		}
+		else
+			it++;
+	}
 }
 
 /** @todo work in progress */
-void		Epoll::handleClose(t_serverData &server, t_clients &client)
+void		Epoll::handleClose(t_clients &client)
 {
     bool closeSuccess = true;
 
@@ -163,14 +160,9 @@ void		Epoll::handleClose(t_serverData &server, t_clients &client)
         closeSuccess = false;
     }
 
-    if (!closeSuccess) {
-        // If close failed, do other resource cleanup
-        // For example, unregister fd from epoll or cleanup client-specific data
-		(void) server;
-        //server._serverSocket->removeClient(client);
-    }
-    
-    // Clean up any additional resources (free memory, etc.)
+    if (!closeSuccess)
+		closeDelete(client._fd);
+
     client._clientState = clientState::CLOSED;
     client._request.clear();
     client._response.clear();

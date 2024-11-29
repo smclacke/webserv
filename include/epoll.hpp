@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:52:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 16:15:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,8 +91,8 @@ class Epoll
 		/* methods */
 		void							initEpoll();
 		void							handleFile();
-		void							handleRead(t_serverData &server, t_clients &client);
-		void							handleWrite(t_serverData &server, t_clients &client);
+		void							handleRead(t_clients &client);
+		void							handleWrite(t_clients &client);
 		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);
 
@@ -120,8 +120,8 @@ class Epoll
 		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							closeDelete(int fd);
-		void							clientTime(t_serverData server);
-		void							handleClose(t_serverData &server, t_clients &client);
+		void							clientTime(t_clients &client);
+		void							handleClose(t_clients &client);
 };
 
 #endif /* EPOLL_HPP */

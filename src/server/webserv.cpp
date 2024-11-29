@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:52:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 15:59:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,10 +89,6 @@ void		Webserv::addServersToEpoll()
 
 		std::cout << "Added server socket to epoll\n";
 		_epoll.setServer(currentServer);
-
-		// if file
-		//_epoll.addFile();
-
 	}
 	std::cout << "--------------------------\n";
 }

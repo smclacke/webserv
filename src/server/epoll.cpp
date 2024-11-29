@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:33:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 16:17:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,7 +72,7 @@ void	Epoll::handleFile()
 /** @todo add bool for close or keep connection alive depneding on the header
  *  @todo handling bad fd to recv, not necessarily a throw
  */
-void		Epoll::handleRead(t_serverData &server, t_clients &client)
+void		Epoll::handleRead(t_clients &client)
 {
 	char		buffer[READ_BUFFER_SIZE];
 	size_t		bytesRead = 0;
@@ -91,22 +91,20 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 				client._clientState = clientState::BEGIN;
 				return ;
 			}
-			handleClose(server, client);
+			handleClose(client);
 			throw std::runtime_error("Reading from client connection failed\n");
 		}
 		else if (bytesRead == 0)
 		{
 				std::cout << "Client disconnected\n";
-				handleClose(server, client);
+				handleClose(client);
 				return ;
 		}
 		client._request += buffer;
 
-		/** @todo  depends on our protocol for handling read, if finished or till max etc... */
 		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
 			buffer[bytesRead] = '\0';
-			client._request += buffer;
 			std::cout << "request = " << client._request << "\n";
 
 			client._clientState = clientState::READY;
@@ -119,8 +117,9 @@ void		Epoll::handleRead(t_serverData &server, t_clients &client)
 /** @todo add bool for close or keep connection alive depneding on the header
  * @todo ensure generaterequest is not being called everytime for the same client when just filling buffer
  */
-void		Epoll::handleWrite(t_serverData &server, t_clients &client)
+void		Epoll::handleWrite(t_clients &client)
 {
+	// get actual response
 	if (client._response.empty())
 		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
 
@@ -135,14 +134,14 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 				return ; // no space in socket's send buffer, wait for more space
 
 			std::cerr << "Write to client failed\n";
-			handleClose(server, client);
+			handleClose(client);
 			return ;
 		}
 		client._write_offset += client._bytesWritten;
 		if (client._write_offset == strlen(client._response.c_str()))
 		{
 			client._write_offset = 0;
-			std::cout << "Client " << client._fd << " sent message to server: " << client._response << "\n\n\n";
+			std::cout << "Client sent message to server: " << client._response << "\n\n\n";
 			client._clientState = clientState::READY;
 			return ;
 		}
@@ -161,9 +160,8 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	newClient._addr = addr;
 	newClient._addLen = len;
 	newClient._clientState = clientState::BEGIN;
-	// client time... init here?
+	newClient._clientTime[sock] = std::chrono::steady_clock::now();
 	newClient._connectionClose = false;
-	// request/response here needed?
 	newClient._write_offset = 0;
 	newClient._bytesWritten = 0;
 	newClient._clientId = clientId++;
@@ -196,10 +194,6 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 		setNonBlocking(clientfd);
 		server.addClient(clientfd, clientAddr, addrLen);
 		addToEpoll(clientfd);
-		
-		/** @todo how do i handle client state + time correctly */
-		//server._clients->_clientTime[fd] = std::chrono::steady_clock::now();
-		//server.setClientState(clientState::BEGIN);
 	}
 }
 
@@ -220,26 +214,32 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				makeNewConnection(fd, serverData);
 			}
 		}
-		if (fd == _pipefd[0])
-			handleFile();
+		//if () file
+			//addFile();
 		for (auto &client : serverData._clients)
 		{
+			//if (fd == _pipefd[0])
+			//	handleFile();
 			if (fd == client._fd)
 			{
+				clientTime(client);
 				if (event.events & EPOLLIN)
 				{
-					handleRead(serverData, client);
+					handleRead(client);
 					if (client._clientState == clientState::READY)
 						modifyEvent(client._fd, EPOLLOUT);
 				}
 				else if (event.events & EPOLLOUT)
 				{
-					handleWrite(serverData, client);
+					handleWrite(client);
 					if (client._clientState == clientState::READY)
 						modifyEvent(client._fd, EPOLLIN);
 				}
 				else if (event.events & EPOLLHUP)
+				{
 					std::cout << "hup\n"; // will handle close here
+					closeDelete(client._fd);
+				}
 			}
 		}
 	}
