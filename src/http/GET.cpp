@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:37:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:44:58 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,15 +21,6 @@ void httpHandler::stdGet(void)
 	if (_request.uriEncoded == true)
 	{
 		return getUriEncoded();
-	}
-	std::string contentReturn = contentType(_request.path);
-	auto expected = findHeaderValue(_request, eRequestHeader::Accept);
-	if (expected.has_value())
-	{
-		if (expected.value() != contentReturn)
-		{
-			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesnt match the requested Accept header");
-		}
 	}
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
@@ -48,27 +39,55 @@ void httpHandler::stdGet(void)
 				if (std::filesystem::exists(indexPath))
 				{
 					_request.path = indexPath;
+					std::string contentReturn = contentType(_request.path);
 					break;
 				}
 			}
 		}
 	}
-	// Read the file content
-	std::optional<std::string> fileContent = readFile(_request.path);
-	if (_statusCode > eHttpStatusCode::Accepted)
-		return;
-	// Set the response body
-	if (fileContent.has_value())
-		_response.body.str(fileContent.value());
 	else
-		return;
-	_response.headers[eResponseHeader::ContentType] = contentReturn;
-	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
+	{
+		// Check if the file is executable
+		std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
+		if ((fileStatus.permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none)
+		{
+			size_t pos = _request.path.find_last_of('.');
+			if (pos != std::string::npos)
+			{
+				std::string extension = _request.path.substr(pos);
+				if (extension != _request.loc.cgi_ext)
+				{
+					return setErrorResponse(eHttpStatusCode::Forbidden, "Executable request doesnt have the allowed cgi extension");
+				}
+			}
+			_response.cgi = true;
+			return;
+		}
+	}
+	// check if file permission is readable.
+	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
+	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	{
+		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
+	}
+	std::string type = contentType(_request.path);
+	auto AcceptedH = findHeaderValue(_request, eRequestHeader::Accept);
+	if (AcceptedH.has_value())
+	{
+		if (AcceptedH.value() != type)
+		{
+			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesnt match the requested Accept header");
+		}
+	}
+	// Read the file content
+	_response.headers[eResponseHeader::ContentType] = type;
+	readFile();
 	return;
 }
 
 /**
  * @brief processes the URI encoded body, gets all the keys and tries to extract from a .csv file
+ * @note replace this with CGI, send the uri encoded bit to a python script that retreives the value
  */
 void httpHandler::getUriEncoded(void)
 {
@@ -162,32 +181,52 @@ void httpHandler::getUriEncoded(void)
 	return;
 }
 
-std::optional<std::string> httpHandler::readFile(std::string &filename)
+/**
+ * @brief opens a pipe for the file and sets the outfile descriptor to _response.outFd
+ */
+void httpHandler::readFile(void)
 {
-	if (!std::filesystem::exists(_request.path))
+	int pipefd[2];
+	if (pipe(pipefd) == -1)
 	{
-		setErrorResponse(eHttpStatusCode::NotFound, "File to read doesn't exist: " + filename);
-		return std::nullopt;
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to create pipe");
+		return;
 	}
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
-	{
-		setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + filename);
-		return std::nullopt;
-	}
-	std::ifstream file(filename);
-	std::ostringstream os;
 
-	if (file.is_open())
+	pid_t pid = fork();
+	if (pid == -1)
 	{
-		os << file.rdbuf(); // Read the file's buffer into the output stream
-		file.close();
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to fork process");
+		close(pipefd[0]);
+		close(pipefd[1]);
+		return;
+	}
+
+	if (pid == 0)
+	{					  // Child process
+		close(pipefd[0]); // Close unused read end
+		int fileFd = open(_request.path.c_str(), O_RDONLY);
+		if (fileFd == -1)
+		{
+			setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
+			close(pipefd[1]);
+			exit(EXIT_FAILURE);
+		}
+
+		dup2(fileFd, STDIN_FILENO); // Redirect file to stdin
+		close(fileFd);
+
+		dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout to pipe
+		close(pipefd[1]);
+
+		execlp("cat", "cat", nullptr); // Use 'cat' to send file content to pipe
+		exit(EXIT_FAILURE);			   // If execlp fails
 	}
 	else
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file: " + filename);
-		return std::nullopt;
+	{								  // Parent process
+		close(pipefd[1]);			  // Close unused write end
+		_response.readFd = pipefd[0]; // Set the read end of the pipe for epoll
+		_response.pid = pid;
+		_response.readFile = true;
 	}
-
-	return os.str(); // Return the contents as a string
 }

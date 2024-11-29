@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:09:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:44:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,6 @@ s_httpSend httpHandler::generateResponse(void)
 	for (const auto &header : _request.headers)
 		std::cout << "Header: " << EheaderToString(header.first) << " - " << header.second << std::endl;
 	std::cout << "Body: " << _request.body.str() << std::endl;
-	std::cout << "CGI: " << _request.cgi << std::endl;
 
 	bool keepalive = true;
 	auto it = _request.headers.find(eRequestHeader::Connection);
@@ -70,8 +69,11 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 		// End headers section
 		responseStream << "\r\n";
 		// body
-		responseStream << _response.body.str();
-		s_httpSend response = {responseStream.str(), keepalive};
+		if (_response.readFile == false && _response.cgi == false)
+		{
+			responseStream << _response.body.str();
+		}
+		s_httpSend response = {responseStream.str(), keepalive, _response.readFd, _response.pid};
 		return (response);
 	}
 	else
@@ -85,7 +87,7 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 					   << "Connection: close\r\n"
 					   << "\r\n"
 					   << message;
-		s_httpSend response = {responseStream.str(), keepalive};
+		s_httpSend response = {responseStream.str(), keepalive, -1, -1};
 		return (response);
 	}
 }

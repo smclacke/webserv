@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 17:51:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:43:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,13 +38,16 @@ struct s_request
 	std::stringstream body;
 	std::vector<std::string> files;
 	bool uriEncoded;
-	bool cgi;
 };
 
 struct s_response
 {
 	std::unordered_map<eResponseHeader, std::string> headers;
 	std::stringstream body;
+	bool readFile = false;
+	bool cgi = false;
+	int readFd = -1;
+	pid_t pid = -1;
 };
 
 struct s_httpSend;
@@ -64,7 +67,7 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	std::optional<std::string> readFile(std::string &filename);
+	void readFile(void);
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 14:38:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:20:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ httpHandler::httpHandler(Server &server) : _server(server)
 	_request.path = "";
 	_request.body.str() = "";
 	_request.uriEncoded = false;
-	_request.cgi = false;
 }
 
 httpHandler::~httpHandler(void)

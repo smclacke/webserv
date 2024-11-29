@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 17:45:53 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:18:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -144,13 +144,6 @@ void httpHandler::checkUriPath(void)
 		}
 		else
 			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
-	}
-	size_t pos = _request.uri.find_last_of(".");
-	if (pos != std::string::npos)
-	{
-		std::string extension = _request.uri.substr(pos);
-		if (extension == _request.loc.cgi_ext)
-			_request.cgi = true;
 	}
 	_request.path = buildPath();
 	if (!std::filesystem::exists(_request.path))
