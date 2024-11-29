@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:23:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:37:08 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,9 +15,6 @@
 #include "../../include/server.hpp"
 #include <functional>
 
-/**
- * @note check if root dir actually exists
- */
 static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string root;
@@ -28,6 +25,7 @@ static void parseRoot(std::stringstream &ss, int line_n, s_location &loc)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	loc.root = root;
 }
+
 static void parseClientMaxBodySize(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string size;
@@ -113,9 +111,6 @@ static void parseAutoindex(std::stringstream &ss, int line_n, s_location &loc)
 		loc.autoindex = false;
 }
 
-/**
- * @note check if the dir actually exists? add the dir to the root dir?
- */
 static void parseUploadDir(std::stringstream &ss, int line_n, s_location &loc)
 {
 	std::string dir;
@@ -167,15 +162,9 @@ static void parseCgiPath(std::stringstream &ss, int line_n, s_location &loc)
 	loc.cgi_path = path;
 }
 
-void findLocationDirective(std::string &line, int &line_n, s_location &loc)
+static std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>> createDirMap()
 {
-	std::stringstream ss(line);
-	std::string directive;
-	ss >> directive;
-	if (directive.empty())
-		throw eConf("No directive found in line", line_n);
-
-	auto dirMap = std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>>{
+	return {
 		{"root", parseRoot},
 		{"client_max_body_size", parseClientMaxBodySize},
 		{"allowed_methods", parseAcceptedMethods},
@@ -186,17 +175,28 @@ void findLocationDirective(std::string &line, int &line_n, s_location &loc)
 		{"index", parseIndex},
 		{"cgi_ext", parseCgiExt},
 		{"cgi_path", parseCgiPath}};
+}
+
+void Server::findLocationDirective(std::string &line, int &line_n, s_location &loc)
+{
+	std::stringstream ss(line);
+	std::string directive;
+	ss >> directive;
+	if (directive.empty())
+		throw eConf("No directive found in line", line_n);
+
+	static const std::map<std::string, std::function<void(std::stringstream &, int, s_location &)>> dirMap = createDirMap();
 
 	if (dirMap.find(directive) == dirMap.end())
 		throw eConf("Invalid directive found: " + directive, line_n);
-	dirMap[directive](ss, line_n, loc);
+	dirMap.at(directive)(ss, line_n, loc);
 }
 
 /**
  * @note check if the location path exists
  * after perhaps replace path and root with just path if the root overwrite it but need to figure out how that works :)
  */
-s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody)
+s_location Server::parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody)
 {
 	(void)file;
 	s_location loc;
@@ -251,36 +251,21 @@ s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, si
 	return (loc);
 }
 
-/*
-allowed_methods:
-GET / POST / DELETE
-eHttpMethod
-
-root
-path
-
-autoindex
-on / off
-
-index
-index.html index.htm
-if neither file is found server may return 403 Forbidden or 404 Not Found
-
-upload_dir
-path
-
-client_max_body_size
-same as other max_body_size parser
-
-return -- redirects request from old route to new-route wiht a 301 status
-301 /new-route
-
-cgi_ext
-.php / .pl / .py
-
--> only 1 per location possible
-
-cgi_path -> allow only 1
-path
-
-*/
+s_location addDefaultLoc(size_t servermaxsize)
+{
+	s_location loc;
+	loc.path = "/";
+	loc.root = "";
+	loc.client_body_buffer_size = servermaxsize;
+	loc.allowed_methods.push_back(eHttpMethod::GET);
+	loc.allowed_methods.push_back(eHttpMethod::POST);
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);
+	loc.redir_url = "";
+	loc.redirect_status = 0;
+	loc.autoindex = false;
+	loc.upload_dir = "";
+	loc.index = "";
+	loc.cgi_ext = "";
+	loc.cgi_path = "";
+	return (loc);
+}

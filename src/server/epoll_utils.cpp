@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:48:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 19:01:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,21 +20,21 @@
 /* Epoll utils */
 std::string Epoll::generateHttpResponse(const std::string &message)
 {
-	size_t	contentLength = message.size();
-	std::ostringstream	response;
-	response	<< "HTPP/1.1 200 OK\r\n"
-				<< "Content-Type: text/plain\r\n"
-				<< "Content-Length: " << contentLength << "\r\n"
-				<< "Connection : close\r\n"
-				<< "\r\n"
-				<< message;
-	
+	size_t contentLength = message.size();
+	std::ostringstream response;
+	response << "HTPP/1.1 200 OK\r\n"
+			 << "Content-Type: text/plain\r\n"
+			 << "Content-Length: " << contentLength << "\r\n"
+			 << "Connection : close\r\n"
+			 << "\r\n"
+			 << message;
+
 	return response.str();
 }
 
 struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
 {
-	struct epoll_event	event;
+	struct epoll_event event;
 	event.data.fd = sockfd;
 	event.events = EPOLLIN;
 
@@ -97,9 +97,9 @@ void		Epoll::modifyEvent(int fd, uint32_t events)
 	}
 }
 
-void		Epoll::setNonBlocking(int connection)
+void Epoll::setNonBlocking(int connection)
 {
-	int	flag = fcntl(connection, F_GETFL, 0);
+	int flag = fcntl(connection, F_GETFL, 0);
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:49:52 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 19:02:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ Epoll::~Epoll()
 }
 
 /* methods */
-void		Epoll::initEpoll()
+void Epoll::initEpoll()
 {
 	_epfd = epoll_create(10);
 	if (_epfd < 0)
@@ -280,7 +280,7 @@ struct epoll_event	&Epoll::getEvent()
 }
 
 /* setters */
-void				Epoll::setEpfd(int fd)
+void Epoll::setEpfd(int fd)
 {
 	this->_epfd = fd;
 }
@@ -293,7 +293,7 @@ void				Epoll::setServer(std::shared_ptr<Server> server)
 	this->_serverData.push_back(newServerData);
 }
 
-void				Epoll::setNumEvents(int numEvents)
+void Epoll::setNumEvents(int numEvents)
 {
 	this->_numEvents = numEvents;
 }

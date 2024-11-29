@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/11/26 14:55:10 by smclacke      ########   odam.nl          #
+#    Updated: 2024/11/29 19:03:58 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -19,15 +19,19 @@ FLAGS += -g -fsanitize=address
 
 OBJDIR := objs
 TPP_FILES := web.tpp
-HEADER_FILES := server.hpp error.hpp httpHandler.hpp socket.hpp webserv.hpp web.hpp 
+HEADER_FILES := server.hpp error.hpp httpHandler.hpp httpConstants.hpp socket.hpp webserv.hpp web.hpp  epoll.hpp
 
 
 SRC_FILES := main.cpp					\
-			http/cgiRequest.cpp			\
+			http/cgi.cpp				\
 			http/generate.cpp			\
+			http/generateUtils.cpp		\
 			http/httpHandler.cpp		\
 			http/parse.cpp				\
-			http/stdRequest.cpp			\
+			http/parsebody.cpp			\
+			http/GET.cpp				\
+			http/POST.cpp				\
+			http/DELETE.cpp				\
 			confParser/error.cpp		\
 			confParser/parsLocation.cpp	\
 			confParser/parsUtils.cpp	\

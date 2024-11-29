@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:51:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:59:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,6 +36,7 @@ const std::unordered_map<eHttpMethod, std::string> HttpMethodToString = {
 	{eHttpMethod::HEAD, "HEAD"},
 	{eHttpMethod::OPTIONS, "OPTIONS"},
 	{eHttpMethod::PATCH, "PATCH"},
+	{eHttpMethod::INVALID, "INVALID"},
 };
 
 const std::unordered_map<std::string, eHttpMethod> StringToHttpMethod = {
@@ -58,7 +59,7 @@ struct s_location
 	int redirect_status = 0;											 // No redirection status by default (0 indicates no redirect)
 	std::list<std::string> index_files;									 // Standard index files
 	bool autoindex = false;												 // Directory listing off by default
-	std::string upload_dir = "/tmp/uploads";							 // Default upload directory
+	std::string upload_dir = "";										 // Default upload directory
 	std::string index = "index.html";									 // Primary index file if directory is requested
 	std::string cgi_ext = "";											 // No default CGI extension
 	std::string cgi_path = "";											 // No default CGI path
@@ -84,29 +85,37 @@ class Server
 		std::vector<s_location> _location;
 		std::shared_ptr<Socket> _serverSocket;
 
-	public:
-		Server(void);
-		Server &operator=(const Server &rhs);
-		Server(std::ifstream &file, int &line_n);
-		Server(int portnum);
-		~Server(void);
+	/* Location Parsing */
+	void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
+	void findLocationDirective(std::string &line, int &line_n, s_location &loc);
+	s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
+	void parseRoot(std::stringstream &ss, int line_n);
 
-		/* Member functions */
-		std::string handleRequest(const std::string &request);
-		eHttpMethod allowedHttpMethod(std::string &str);
-		void printServer(void);
+	/* Server parsing*/
+	void findServerDirective(Server &serv, std::string &line, int line_n);
+	void parseServerName(std::stringstream &ss, int line_n);
+	void parseListen(std::stringstream &ss, int line_n);
+	void parseErrorPage(std::stringstream &ss, int line_n);
+	void parseClientMaxBody(std::stringstream &ss, int line_n);
+
+public:
+	Server(void);
+	Server &operator=(const Server &rhs);
+	Server(std::ifstream &file, int &line_n);
+	Server(int portnum);
+	~Server(void);
+
+	/* Member functions */
+	s_httpSend handleRequest(std::stringstream &request);
+	eHttpMethod allowedHttpMethod(std::string &str);
+	void printServer(void);
 
 		/* add */
 		void addLocation(s_location route);
 		void addErrorPage(s_ePage errorPage);
 
-		/* directives */
-		void parseServerName(std::stringstream &ss, int line_n);
-		void parseListen(std::stringstream &ss, int line_n);
-		void parseErrorPage(std::stringstream &ss, int line_n);
-		void parseClientMaxBody(std::stringstream &ss, int line_n);
-		void parseRoot(std::stringstream &ss, int line_n);
-
+		/* directives parsing */
+		
 		/* setters */
 		void setServerName(std::string serverName);
 		void setHost(std::string host);
@@ -126,6 +135,7 @@ class Server
 		const size_t					&getClientMaxBodySize(void) const;
 		const std::vector<s_location>	&getLocation(void) const;
 		std::shared_ptr<Socket>		 	&getServerSocket(void);
+
 };
 
 #endif /* SERVER_HPP */

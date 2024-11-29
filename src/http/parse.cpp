@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/20 15:49:05 by julius        ########   odam.nl         */
+/*   Updated: 2024/11/29 18:18:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,49 +15,49 @@
 #include "../../include/error.hpp"
 #include "../../include/web.hpp"
 
-/*
-Request line - "method request_URI HTTP version"
-Host line - "Host: domain name of the server"
-User-Agent - "Information about the client doing the request"
-Content-type - "Content-Type: type of media"
-Content-Length - "Content-Length: number"
-Body - "Name=John&age=30"
-
-Request line -> must always be on top
-Headers -> can appear in any order
-Body -> after headers and appears after a blank line inbetween
-
-*/
-
 /* member functions */
 
-std::string httpHandler::parseRequest(const std::string &httpRequest)
+/**
+ * @brief Parses the https request and stores it in the httpHandler::_request
+ */
+void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
-	std::istringstream ss(httpRequest);
-
-	// Get the request line
-	parseRequestLine(ss);
-	if (_request.statusCode != eHttpStatusCode::NotSet)
-		return (generateHttpResponse(_request.statusCode));
-	parseHeaders(ss);
-	if (_request.statusCode != eHttpStatusCode::NotSet)
-		return (generateHttpResponse(_request.statusCode));
-	parseBody(ss);
-	if (_request.statusCode != eHttpStatusCode::NotSet)
-		return (generateHttpResponse(_request.statusCode));
-	if (_request.cgi == true)
-		cgiRequest();
-	else
-		stdRequest();
-	return (generateHttpResponse(_request.statusCode));
+	parseRequestLine(httpRequest);
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return;
+	parseHeaders(httpRequest); //
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return;
+	checkUriPath();
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return;
+	std::string remainingData;
+	std::getline(httpRequest, remainingData, '\0');
+	// Check if the remaining data is not just the end of headers
+	if (!remainingData.empty() && remainingData != "\r\n\r\n")
+	{
+		// Place the remaining data back into the stream
+		httpRequest.clear();			// Clear any error flags
+		httpRequest.str(remainingData); // Reset the stream with the remaining data
+		httpRequest.seekg(0);			// Reset the position to the beginning of the stream
+		parseBody(httpRequest);
+	}
+	return;
 }
 
 /* private functions */
 
+/*
+ the path should be the server_root + uri but the start of the uri should
+  not contain the part that is replaced by the root
+
+
+*/
+
 /**
  * @brief Parses the request line of the HTTP request
  */
-void httpHandler::parseRequestLine(std::istringstream &ss)
+void httpHandler::parseRequestLine(std::stringstream &ss)
 {
 	std::string requestLine;
 
@@ -65,78 +65,98 @@ void httpHandler::parseRequestLine(std::istringstream &ss)
 	if (!std::getline(ss, requestLine))
 	{
 		std::cerr << "Failed to read request line" << std::endl;
-		_request.statusCode = eHttpStatusCode::BadRequest;
-		return;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Failed to read request line");
 	}
 	/* parse request line */
 	std::istringstream requestss(requestLine);
 	std::string methodstring, version;
 	if (!(requestss >> methodstring >> _request.uri >> version))
 	{
-		_request.statusCode = eHttpStatusCode::BadRequest;
-		return;
+		std::cerr << "Invalid request line format" << std::endl;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid request line format");
 	}
 	// check METHOD
 	_request.method = _server.allowedHttpMethod(methodstring);
 	if (_request.method == eHttpMethod::INVALID) // method check
 	{
-		_request.statusCode = eHttpStatusCode::MethodNotAllowed;
-		return;
+		std::cerr << "HTTP method not allowed: " << methodstring << std::endl;
+		return setErrorResponse(eHttpStatusCode::MethodNotAllowed, "HTTP method not allowed: " + methodstring);
 	}
 	// Check if URI is too long
-    const size_t MAX_URI_LENGTH = 2048; // Example limit, adjust as needed
-    if (_request.uri.length() > MAX_URI_LENGTH)
-    {
-        _request.statusCode = eHttpStatusCode::URITooLong;
-        return;
-    }
+	const size_t MAX_URI_LENGTH = 2048; // Example limit, adjust as needed
+	if (_request.uri.length() > MAX_URI_LENGTH)
+	{
+		std::cerr << "URI too long: " << _request.uri << std::endl;
+		return setErrorResponse(eHttpStatusCode::URITooLong, "URI too long: " + _request.uri);
+	}
 	// check version
 	if (version != "HTTP/1.1")
 	{
-		_request.statusCode = eHttpStatusCode::HTTPVersionNotSupported;
-		return;
+		std::cerr << "HTTP version not supported: " << version << std::endl;
+		return setErrorResponse(eHttpStatusCode::HTTPVersionNotSupported, "HTTP version not supported: " + version);
 	}
 
 	// URI match against location
-	_request.loc = findLongestPrefixMatch(_request.uri, _server.getLocation());
-	size_t pos = _request.uri.find_last_of(".");
-	if (pos != std::string::npos)
+	std::optional<s_location> optLoc = findLongestPrefixMatch(_request.uri, _server.getLocation());
+	if (!optLoc.has_value())
 	{
-		std::string extension = _request.uri.substr(pos);
-		if (extension == _request.loc.cgi_ext)
-			_request.cgi = true;
+		std::cerr << "No Matching location for URI: " << _request.uri << std::endl;
+		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
-	if (_request.cgi == true)
-	{
-		std::cout << "This request is a cgi request" << std::endl;
-		if (!_request.loc.root.empty())
-			_request.path = "." + _request.loc.root + _request.uri;
-		else
-			_request.path = "." + _server.getRoot() + _request.uri;
-		if (!std::filesystem::exists(_request.path))
-		{
-			_request.statusCode = eHttpStatusCode::NotFound;
-			return;
-		}
-	}
+	_request.loc = optLoc.value();
+}
+
+/**
+ * @brief builds the path. Replaces the part of the uri that tags the location with the root of set location
+ */
+std::string httpHandler::buildPath(void)
+{
+	std::string uri = _request.uri;
+	std::string path;
+	if (!_request.loc.path.empty() && _request.loc.path != "/")
+		uri.erase(0, _request.loc.path.length());
+	if (_request.loc.root.empty())
+		path = "." + _server.getRoot() + uri;
 	else
+		path = "." + _request.loc.root + uri;
+	return (path);
+}
+
+/**
+ * @brief checks if the is a x-www-form-urlencoded request and if the path is valid
+ */
+void httpHandler::checkUriPath(void)
+{
+	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
+	if (contentTypeIt != _request.headers.end())
 	{
-		if (!_request.loc.root.empty())
-			_request.path = "." + _request.loc.root + _request.uri;
-		else
-			_request.path = "." + _server.getRoot() + _request.uri;
-		if (!std::filesystem::exists(_request.path))
+		const std::string &contentType = contentTypeIt->second;
+		if (contentType == "application/x-www-form-urlencoded")
+			_request.uriEncoded = true;
+		if (_request.uri.find("?") != std::string::npos)
 		{
-			_request.statusCode = eHttpStatusCode::NotFound;
+			std::string path = buildPath();
+			path.substr(0, _request.uri.find_last_of("?"));
+			_request.path = path;
+			if (!std::filesystem::exists(_request.path))
+				return setErrorResponse(eHttpStatusCode::NotFound, "Path doesnt exist: " + _request.path);
 			return;
 		}
+		else
+			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
+	}
+	_request.path = buildPath();
+	if (!std::filesystem::exists(_request.path))
+	{
+		std::cerr << "Resource not found at path: " << _request.path << std::endl;
+		return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
 	}
 }
 
 /**
  * @brief Parses the headers of the HTTP request
  */
-void httpHandler::parseHeaders(std::istringstream &ss)
+void httpHandler::parseHeaders(std::stringstream &ss)
 {
 	std::string header;
 	std::string key, value;
@@ -148,145 +168,16 @@ void httpHandler::parseHeaders(std::istringstream &ss)
 		getline(split, key, ':');
 		getline(split >> std::ws, value);
 		eRequestHeader headerType = toEHeader(key);
-		if (headerType == Invalid)
+		if (headerType == eRequestHeader::Invalid)
 		{
-			_request.statusCode = eHttpStatusCode::BadRequest;
-			return;
+			std::cerr << "Invalid header key: " << key << std::endl;
+			return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid header key: " + key);
 		}
-		else if (headerType > 5)
+		if (headerType == eRequestHeader::Connection)
 		{
-			_request.statusCode = eHttpStatusCode::NotImplemented;
-			return;
+			if (key != "keep-alive" && key != "close")
+				return setErrorResponse(eHttpStatusCode::NotImplemented, "Connection type not implemented: " + key);
 		}
 		_request.headers[headerType] = value;
-	}
-}
-
-/**
- * @brief Parses the body of the HTTP request
- */
-void httpHandler::parseBody(std::istringstream &ss)
-{
-	std::optional<std::string> transferEncoding = findHeaderValue(_request, eRequestHeader::TransferEncoding);
-	std::optional<std::string> contentEncoding = findHeaderValue(_request, eRequestHeader::ContentEncoding);
-	std::optional<std::string> contentLength = findHeaderValue(_request, eRequestHeader::ContentLength);
-
-	if (transferEncoding.has_value())
-	{
-		if (transferEncoding.value() == "chunked")
-		{
-			parseChunkedBody(ss);
-		}
-		else if (transferEncoding.value() == "identity" && contentLength.has_value())
-		{
-			parseFixedLengthBody(ss, std::stoul(contentLength.value()));
-		}
-		else
-		{
-			std::cerr << "Unsupported Transfer-Encoding: " << transferEncoding.value() << std::endl;
-			_request.statusCode = eHttpStatusCode::NotImplemented;
-			return;
-		}
-	}
-	else if (contentLength.has_value())
-	{
-		parseFixedLengthBody(ss, std::stoi(contentLength.value()));
-	}
-	else
-	{
-		std::cerr << "No Content-Length or Transfer-Encoding header present" << std::endl;
-		_request.statusCode = eHttpStatusCode::LengthRequired;
-		return;
-	}
-	if (contentEncoding.has_value())
-	{
-		decodeContentEncoding(_request.body, contentEncoding.value());
-	}
-}
-
-/**
- * @brief Reads a chunked body from the HTTP request
- */
-void httpHandler::parseChunkedBody(std::istringstream &ss)
-{
-	// Implement chunked body parsing logic here
-	// Handle chunked transfer encoding
-	std::string chunkSizeLine;
-	size_t chunkSize;
-	size_t cumulitiveChunkSize = 0;
-	while (std::getline(ss, chunkSizeLine))
-	{
-		if (!chunkSizeLine.empty() && chunkSizeLine.back() == '\r')
-			chunkSizeLine.pop_back();
-
-		std::istringstream chunkSizeStream(chunkSizeLine);
-		chunkSizeStream >> std::hex >> chunkSize;
-
-		if (chunkSize == 0)
-			break;
-		cumulitiveChunkSize += chunkSize;
-		if (cumulitiveChunkSize > _request.loc.client_body_buffer_size)
-		{
-			_request.statusCode = eHttpStatusCode::InsufficientStorage;
-			return;
-		}
-
-		std::string chunkData(chunkSize, '\0');
-		ss.read(&chunkData[0], chunkSize);
-		_request.body << chunkData;
-		std::getline(ss, chunkSizeLine);
-	}
-}
-
-/**
- * @note do something with length
- */
-void httpHandler::parseFixedLengthBody(std::istringstream &ss, size_t length)
-{
-	(void) length;
-	if (length > _request.loc.client_body_buffer_size)
-	{	
-		_request.statusCode = eHttpStatusCode::InsufficientStorage;
-		return;
-	}
-	// Implement fixed-length body parsing logic here
-	std::string bodyLine;
-	while (std::getline(ss, bodyLine) && bodyLine != "0\r")
-	{
-		if (!bodyLine.empty() && bodyLine.back() == '\r')
-			bodyLine.pop_back();
-		_request.body << bodyLine << "\n";
-	}
-	std::string bodyStr = _request.body.str();
-	if (!bodyStr.empty() && bodyStr.back() == '\n')
-	{
-		bodyStr.pop_back();
-		_request.body.str(bodyStr);
-	}
-}
-
-void httpHandler::decodeContentEncoding(std::stringstream &body, const std::string &encoding)
-{
-	(void) body;
-	if (encoding == "identity")
-	{
-		return;
-	}
-	else if (encoding == "gzip")
-	{
-		// Implement gzip decoding logic here
-	}
-	else if (encoding == "deflate")
-	{
-		// Implement deflate decoding logic here
-	}
-	else if (encoding == "br")
-	{
-		// Implement Brotli decoding logic here
-	}
-	else
-	{
-		std::cerr << "Unsupported Content-Encoding: " << encoding << std::endl;
-		_request.statusCode = eHttpStatusCode::NotImplemented;
 	}
 }

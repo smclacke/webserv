@@ -6,156 +6,99 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 14:20:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:44:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 
-#define LINEBREAK "\r\n"
-const std::string CONTENT_TYPE_TEXT = "Content-Type: text/plain";
-const std::string CONTENT_TYPE_HTML = "Content-Type: text/html";
-const std::string CONTENT_TYPE_JSON = "Content-Type: application/json";
-const std::string CONTENT_TYPE_XML = "Content-Type: application/xml";
-const std::string CONTENT_TYPE_JAVASCRIPT = "Content-Type: application/javascript";
-const std::string CONTENT_TYPE_CSS = "Content-Type: text/css";
-const std::string CONTENT_TYPE_OCTET_STREAM = "Content-Type: application/octet-stream";
-
-std::string httpHandler::generateHttpResponse(eHttpStatusCode statusCode)
+/**
+ * @brief generates the httpResponse based on the information inside _request
+ * @note remove printing later
+ */
+s_httpSend httpHandler::generateResponse(void)
 {
-	std::string message;
-	auto it = statusMessages.find(statusCode);
-	if (it != statusMessages.end())
-		message = it->second;
-	else
-	{
-		message = "Bad request";
-		statusCode = eHttpStatusCode::BadRequest;
-	}
-	std::ostringstream response;
-	response << "HTTP/1.1 " << static_cast<int>(statusCode) << " " << message << "\r\n"
-			 << "Content-Type: text/plain\r\n"
-			 << "Content-Length: " << message.size() << "\r\n"
-			 << "Connection: close\r\n"
-			 << "\r\n"
-			 << message;
+	/* printing to be removed later */
+	std::cout << "By generateResponse(), incoming request is as follows:\n";
+	std::cout << "Status code: " << static_cast<int>(_statusCode) << std::endl;
+	std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
+	std::cout << "URI: " << _request.uri << std::endl;
+	if (!_request.path.empty())
+		std::cout << "Location: " << _request.loc.path << std::endl;
+	std::cout << "Path: " << _request.path << std::endl;
+	for (const auto &header : _request.headers)
+		std::cout << "Header: " << EheaderToString(header.first) << " - " << header.second << std::endl;
+	std::cout << "Body: " << _request.body.str() << std::endl;
 
-	return response.str();
+	bool keepalive = true;
+	auto it = _request.headers.find(eRequestHeader::Connection);
+	if (it != _request.headers.end())
+	{
+		if (it->second == "close")
+			keepalive = false;
+	}
+
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return (writeResponse(keepalive));
+	callMethod();
+	return writeResponse(keepalive);
 }
 
-// linebreak in http = CRLF = \r\n
+/**
+ * @brief Builds the response based on the information in s_response;
+ */
+s_httpSend httpHandler::writeResponse(bool keepalive)
+{
+	auto it = statusMessages.find(_statusCode);
+	if (it != statusMessages.end())
+	{
+		std::stringstream responseStream;
+		// status line
+		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " "
+					   << statusMessages.at(_statusCode) << "\r\n";
+		if (!_response.body.str().empty())
+		{
+			if (_response.headers.find(eResponseHeader::ContentLength) == _response.headers.end())
+				_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
+		}
+		// headers
+		for (const auto &header : _response.headers)
+		{
+			responseStream << responseHeaderToString(header.first) << header.second << "\r\n";
+		}
+		// End headers section
+		responseStream << "\r\n";
+		// body
+		if (_response.readFile == false && _response.cgi == false)
+		{
+			responseStream << _response.body.str();
+		}
+		s_httpSend response = {responseStream.str(), keepalive, _response.readFd, _response.pid};
+		return (response);
+	}
+	else
+	{
+		_statusCode = eHttpStatusCode::BadRequest;
+		std::string message = "Bad request";
+		std::ostringstream responseStream;
+		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " " << message << "\r\n"
+					   << "Content-Type: text/plain\r\n"
+					   << "Content-Length: " << message.size() << "\r\n"
+					   << "Connection: close\r\n"
+					   << "\r\n"
+					   << message;
+		s_httpSend response = {responseStream.str(), keepalive, -1, -1};
+		return (response);
+	}
+}
 
-// 		  +-------+-----------------------------+---------------+
-// 		  | Index | Header Name                 | Header Value  |
-// 		  +-------+-----------------------------+---------------+
-// 		  | 1     | :authority                  |               |
-// 		  | 2     | :method                     | GET           |
-// 		  | 3     | :method                     | POST          |
-// 		  | 4     | :path                       | /             |
-// 		  | 5     | :path                       | /index.html   |
-// 		  | 6     | :scheme                     | http          |
-// 		  | 7     | :scheme                     | https         |
-// 		  | 8     | :status                     | 200           |
-// 		  | 9     | :status                     | 204           |
-// 		  | 10    | :status                     | 206           |
-// 		  | 11    | :status                     | 304           |
-// 		  | 12    | :status                     | 400           |
-// 		  | 13    | :status                     | 404           |
-// 		  | 14    | :status                     | 500           |
-// 		  | 15    | accept-charset              |               |
-// 		  | 16    | accept-encoding             | gzip, deflate |
-// 		  | 17    | accept-language             |               |
-// 		  | 18    | accept-ranges               |               |
-// 		  | 19    | accept                      |               |
-// 		  | 20    | access-control-allow-origin |               |
-// 		  | 21    | age                         |               |
-// 		  | 22    | allow                       |               |
-// 		  | 23    | authorization               |               |
-// 		  | 24    | cache-control               |               |
-// 		  | 25    | content-disposition         |               |
-// 		  | 26    | content-encoding            |               |
-// 		  | 27    | content-language            |               |
-// 		  | 28    | content-length              |               |
-// 		  | 29    | content-location            |               |
-// 		  | 30    | content-range               |               |
-// 		  | 31    | content-type                |               |
-// 		  | 32    | cookie                      |               |
-// 		  | 33    | date                        |               |
-// 		  | 34    | etag                        |               |
-// 		  | 35    | expect                      |               |
-// 		  | 36    | expires                     |               |
-// 		  | 37    | from                        |               |
-// 		  | 38    | host                        |               |
-// 		  | 39    | if-match                    |               |
-// 		  | 40    | if-modified-since           |               |
-// 		  | 41    | if-none-match               |               |
-// 		  | 42    | if-range                    |               |
-// 		  | 43    | if-unmodified-since         |               |
-// 		  | 44    | last-modified               |               |
-// 		  | 45    | link                        |               |
-// 		  | 46    | location                    |               |
-// 		  | 47    | max-forwards                |               |
-// 		  | 48    | proxy-authenticate          |               |
-// 		  | 49    | proxy-authorization         |               |
-// 		  | 50    | range                       |               |
-// 		  | 51    | referer                     |               |
-// 		  | 52    | refresh                     |               |
-// 		  | 53    | retry-after                 |               |
-// 		  | 54    | server                      |               |
-// 		  | 55    | set-cookie                  |               |
-// 		  | 56    | strict-transport-security   |               |
-// 		  | 57    | transfer-encoding           |               |
-// 		  | 58    | user-agent                  |               |
-// 		  | 59    | vary                        |               |
-// 		  | 60    | via                         |               |
-// 		  | 61    | www-authenticate            |               |
-// 		  +-------+-----------------------------+---------------+
-
-// 					   Table 1: Static Table Entries
-
-//  */
-
-// /**
-//  * CGI
-//  *
-
-// A Web server that supports CGI can be configured to interpret a URL that it serves as a reference
-// to a CGI script. A common convention is to have a cgi-bin/ directory at the base of the directory
-// tree and treat all executable files within this directory (and no other, for security) as CGI scripts.
-// When a Web browser requests a URL that points to a file within the CGI directory
-// (e.g., http://example.com/cgi-bin/printenv.pl/with/additional/path?and=a&query=string),
-// then, instead of simply sending that file (/usr/local/apache/htdocs/cgi-bin/printenv.pl) to the Web browser,
-// the HTTP server runs the specified script and passes the output of the script to the Web browser.
-// That is, anything that the script sends to standard output is passed to the Web client instead
-// of being shown in the terminal window that started the web server.
-
-// Another popular convention is to use filename extensions; for instance,
-// if CGI scripts are consistently given the extension .cgi,
-// the Web server can be configured to interpret all such files as CGI scripts.
-// While convenient, and required by many prepackaged scripts,
-// it opens the server to attack if a remote user can upload executable code with the proper extension.
-// The CGI specification defines how additional information passed with the request is passed to the script.
-// The Web server creates a subset of the environment variables passed to it and
-// adds details pertinent to the HTTP environment.
-// For instance, if a slash and additional directory name(s) are appended to the URL immediately
-// after the name of the script (in this example, /with/additional/path),
-// then that path is stored in the PATH_INFO environment variable before the script is called.
-// If parameters are sent to the script via an HTTP GET request (a question mark appended to the URL,
-// followed by param=value pairs; in the example, ?and=a&query=string),
-// then those parameters are stored in the QUERY_STRING environment variable before the script is called.
-// Request HTTP message body, such as form parameters sent via an HTTP POST request,
-// are passed to the script's standard input.
-// The script can then read these environment variables or data from standard input and
-// adapt to the Web browser's request.[8]
-
-// Do you wonder what a CGI is?
-// ∗ Because you won’t call the CGI directly, use the full path as PATH_INFO.
-// ∗ Just remember that, for chunked request, your server needs to unchunk
-// it, the CGI will expect EOF as end of the body.
-// ∗ Same things for the output of the CGI. If no content_length is returned
-// from the CGI, EOF will mark the end of the returned data.
-// ∗ Your program should call the CGI with the file requested as first argument.
-// ∗ The CGI should be run in the correct directory for relative path file access.
-// ∗ Your server should work with one CGI (php-CGI, Python, and so forth).
-
-//  */
+void httpHandler::callMethod(void)
+{
+	if (_request.method == eHttpMethod::GET)
+		stdGet();
+	else if (_request.method == eHttpMethod::POST)
+		stdPost();
+	else if (_request.method == eHttpMethod::DELETE)
+		stdDelete();
+	return;
+}

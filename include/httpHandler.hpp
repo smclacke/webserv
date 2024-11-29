@@ -5,8 +5,8 @@
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/11/06 14:31:03 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/20 14:59:57 by julius        ########   odam.nl         */
+/*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
+/*   Updated: 2024/11/29 18:43:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,92 +15,8 @@
 
 #include "web.hpp"
 #include "server.hpp"
+#include "httpConstants.hpp"
 
-const std::unordered_map<eHttpStatusCode, std::string> statusMessages = {
-	{eHttpStatusCode::NotSet, "Bad Request"},
-	{eHttpStatusCode::Continue, "Continue"},
-	{eHttpStatusCode::SwitchingProtocols, "Switching Protocols"},
-	{eHttpStatusCode::OK, "OK"},
-	{eHttpStatusCode::Created, "Created"},
-	{eHttpStatusCode::Accepted, "Accepted"},
-	{eHttpStatusCode::NonAuthoritativeInformation, "Non-Authoritative Information"},
-	{eHttpStatusCode::NoContent, "No Content"},
-	{eHttpStatusCode::ResetContent, "Reset Content"},
-	{eHttpStatusCode::PartialContent, "Partial Content"},
-	{eHttpStatusCode::MultipleChoices, "Multiple Choices"},
-	{eHttpStatusCode::MovedPermanently, "Moved Permanently"},
-	{eHttpStatusCode::Found, "Found"},
-	{eHttpStatusCode::SeeOther, "See Other"},
-	{eHttpStatusCode::NotModified, "Not Modified"},
-	{eHttpStatusCode::UseProxy, "Use Proxy"},
-	{eHttpStatusCode::TemporaryRedirect, "Temporary Redirect"},
-	{eHttpStatusCode::PermanentRedirect, "Permanent Redirect"},
-	{eHttpStatusCode::BadRequest, "Bad Request"},
-	{eHttpStatusCode::Unauthorized, "Unauthorized"},
-	{eHttpStatusCode::PaymentRequired, "Payment Required"},
-	{eHttpStatusCode::Forbidden, "Forbidden"},
-	{eHttpStatusCode::NotFound, "Not Found"},
-	{eHttpStatusCode::MethodNotAllowed, "Method Not Allowed"},
-	{eHttpStatusCode::NotAcceptable, "Not Acceptable"},
-	{eHttpStatusCode::ProxyAuthenticationRequired, "Proxy Authentication Required"},
-	{eHttpStatusCode::RequestTimeout, "Request Timeout"},
-	{eHttpStatusCode::Conflict, "Conflict"},
-	{eHttpStatusCode::Gone, "Gone"},
-	{eHttpStatusCode::LengthRequired, "Length Required"},
-	{eHttpStatusCode::PreconditionFailed, "Precondition Failed"},
-	{eHttpStatusCode::PayloadTooLarge, "Payload Too Large"},
-	{eHttpStatusCode::URITooLong, "URI Too Long"},
-	{eHttpStatusCode::UnsupportedMediaType, "Unsupported Media Type"},
-	{eHttpStatusCode::RangeNotSatisfiable, "Range Not Satisfiable"},
-	{eHttpStatusCode::ExpectationFailed, "Expectation Failed"},
-	{eHttpStatusCode::IAmATeapot, "I'm a teapot"},
-	{eHttpStatusCode::MisdirectedRequest, "Misdirected Request"},
-	{eHttpStatusCode::UnprocessableEntity, "Unprocessable Entity"},
-	{eHttpStatusCode::Locked, "Locked"},
-	{eHttpStatusCode::FailedDependency, "Failed Dependency"},
-	{eHttpStatusCode::UpgradeRequired, "Upgrade Required"},
-	{eHttpStatusCode::PreconditionRequired, "Precondition Required"},
-	{eHttpStatusCode::TooManyRequests, "Too Many Requests"},
-	{eHttpStatusCode::RequestHeaderFieldsTooLarge, "Request Header Fields Too Large"},
-	{eHttpStatusCode::UnavailableForLegalReasons, "Unavailable For Legal Reasons"},
-	{eHttpStatusCode::InternalServerError, "Internal Server Error"},
-	{eHttpStatusCode::NotImplemented, "Not Implemented"},
-	{eHttpStatusCode::BadGateway, "Bad Gateway"},
-	{eHttpStatusCode::ServiceUnavailable, "Service Unavailable"},
-	{eHttpStatusCode::GatewayTimeout, "Gateway Timeout"},
-	{eHttpStatusCode::HTTPVersionNotSupported, "HTTP Version Not Supported"},
-	{eHttpStatusCode::VariantAlsoNegotiates, "Variant Also Negotiates"},
-	{eHttpStatusCode::InsufficientStorage, "Insufficient Storage"},
-	{eHttpStatusCode::LoopDetected, "Loop Detected"},
-	{eHttpStatusCode::NotExtended, "Not Extended"},
-	{eHttpStatusCode::NetworkAuthenticationRequired, "Network Authentication Required"}};
-
-enum eRequestHeader
-{
-	Host,
-	UserAgent,
-	ContentType,
-	ContentLength,
-	TransferEncoding,
-	ContentEncoding,
-	Accept, // from here on not implemented
-	Authorization,
-	CacheControl,
-	Connection,
-	Cookie,
-	Date,
-	Expect,
-	Origin,
-	Referer,
-	ContentDisposition,
-	IfModifiedSince,
-	IfNoneMatch,
-	IfMatch,
-	IfUnmodifiedSince,
-	Invalid
-};
-
-enum class eHttpMethod;
 struct s_location;
 
 /**
@@ -114,38 +30,74 @@ struct s_location;
  */
 struct s_request
 {
-	eHttpStatusCode statusCode = eHttpStatusCode::NotSet;
 	eHttpMethod method;
 	std::string uri;
 	s_location loc;
 	std::string path;
 	std::unordered_map<eRequestHeader, std::string> headers;
 	std::stringstream body;
-	bool cgi = false;
+	std::vector<std::string> files;
+	bool uriEncoded;
 };
+
+struct s_response
+{
+	std::unordered_map<eResponseHeader, std::string> headers;
+	std::stringstream body;
+	bool readFile = false;
+	bool cgi = false;
+	int readFd = -1;
+	pid_t pid = -1;
+};
+
+struct s_httpSend;
+
 class httpHandler
 {
 private:
 	Server &_server;
+	eHttpStatusCode _statusCode;
 	s_request _request;
+	s_response _response;
 
-	// utils
+	// headers to strings and back
 	eRequestHeader toEHeader(const std::string &header);
+	std::string EheaderToString(const eRequestHeader &header);
+	std::string responseHeaderToString(const eResponseHeader &header);
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
-	s_location findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
+	// utils
+	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
+	void readFile(void);
+	std::string contentType(const std::string &filePath);
+	void setErrorResponse(eHttpStatusCode code, std::string msg);
+	std::string buildPath(void);
 	// parse
-	void parseRequestLine(std::istringstream &ss);
-	void parseHeaders(std::istringstream &ss);
-	void parseBody(std::istringstream &ss);
+	void parseRequestLine(std::stringstream &ss);
+	void parseHeaders(std::stringstream &ss);
+	void parseBody(std::stringstream &ss);
+	void checkUriPath(void);
 	// parse body
-	void parseChunkedBody(std::istringstream &ss);
-	void parseFixedLengthBody(std::istringstream &ss, size_t length);
+	void parseChunkedBody(std::stringstream &ss);
+	void parseFixedLengthBody(std::stringstream &ss, size_t length);
 	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
-
+	void parseMultipartBody(const std::string &contentType);
+	std::string extractBoundary(const std::string &contentType);
+	std::string extractHeaderValue(const std::string &headers, const std::string &key);
+	std::string extractFilename(const std::string &contentDisposition);
+	std::string getTempFilePath(const std::string &filename);
 	// response
-	std::string generateHttpResponse(eHttpStatusCode statusCode);
-	std::string cgiRequest(void);
-	std::string stdRequest(void);
+	s_httpSend writeResponse(bool keepalive);
+	void generateDirectoryListing(void);
+	// std Response
+	void callMethod(void);
+	void stdGet(void);
+	void getUriEncoded(void);
+	void stdPost(void);
+	void wwwFormEncoded(void);
+	void stdDelete(void);
+	void deleteFromCSV();
+	// cgi Response
+	void cgiResponse(void);
 
 public:
 	/* constructor and deconstructor */
@@ -153,7 +105,8 @@ public:
 	~httpHandler(void);
 
 	/* member functions */
-	std::string parseRequest(const std::string &response);
+	void parseRequest(std::stringstream &response);
+	s_httpSend generateResponse(void);
 };
 
 #endif /* HTTP_HANDLER_HPP */

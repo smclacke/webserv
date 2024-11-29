@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:44:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:58:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,7 @@
 #include "web.hpp"
 
 class Webserv;
+class Server;
 class Socket;
 
 enum class eSocket;
@@ -82,11 +83,11 @@ class Epoll
 		std::vector<epoll_event>		_events;
 		int								_pipefd[2]; // pipe[0] read | pipe[1] write
 
-	public:
-		Epoll();
-		Epoll(const Epoll &copy);
-		Epoll &operator=(const Epoll &epoll);
-		~Epoll();
+public:
+	Epoll();
+	Epoll(const Epoll &copy);
+	Epoll &operator=(const Epoll &epoll);
+	~Epoll();
 
 		/* methods */
 		void							initEpoll();

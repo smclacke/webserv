@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:49:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 19:06:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 	s_location loc;
 	loc.allowed_methods.push_back(eHttpMethod::GET);
 	loc.allowed_methods.push_back(eHttpMethod::POST);
-	loc.allowed_methods.push_back(eHttpMethod::DELETE);	
+	loc.allowed_methods.push_back(eHttpMethod::DELETE);
 	loc.index_files.push_back("index.html");
 	loc.index_files.push_back("index.htm");
 	loc.index = "index.html";
@@ -98,6 +98,8 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		{
 			if (line.size() != 1)
 				throw eConf("Unexpected text with closing }", line_n);
+			if (_location.size() == 0)
+				addLocation(addDefaultLoc(_clientMaxBodySize));
 			return;
 		}
 		size_t pos = line.find("location");
@@ -122,10 +124,14 @@ Server::~Server()
 
 /* member functions */
 
-std::string Server::handleRequest(const std::string &request)
+/**
+ * @note might make epoll inheret http so might not need this :D
+ */
+s_httpSend Server::handleRequest(std::stringstream &request)
 {
 	httpHandler parser(*this);
-	return (parser.parseRequest(request));
+	parser.parseRequest(request);
+	return (parser.generateResponse());
 }
 
 /**
@@ -325,14 +331,14 @@ void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 
 void Server::parseRoot(std::stringstream &ss, int line_n)
 {
-	std::string root;
+	std::string root, rootpath;
 	std::string unexpected;
 	if (!(ss >> root))
 		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
-	root = "." + root;
-	if (!std::filesystem::exists(root)) // ignore the redline - compilation is fine
+	rootpath = "." + root;
+	if (!std::filesystem::exists(rootpath)) // ignore the redline - compilation is fine
 		throw eConf("Root directory \'" + root + "\'does not exist", line_n);
 	_root = root;
 }

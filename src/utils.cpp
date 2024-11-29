@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/18 14:06:02 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 20:44:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 19:03:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,3 +29,4 @@ bool		protectedClose(int fd)
 	std::cout << "Successfully closed fd: " << fd << "\n";
 	return true;
 }
+

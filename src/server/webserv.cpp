@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:45:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 19:03:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,43 +26,43 @@ Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
 
 Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
-    std::cout << "Webserv booting up" << std::endl;
+	std::cout << "Webserv booting up" << std::endl;
 	_epoll.initEpoll();
-    if (config.empty())
-    {
+	if (config.empty())
+	{
 		std::cout << "default configuration\n";
-        auto default_server = std::make_shared<Server>(8080);
-        _servers.push_back(default_server);
-        auto default_server2 = std::make_shared<Server>(9999);
-        _servers.push_back(default_server2);
-        return;
-    }
-    std::cout << "config: " << config << std::endl;
-    std::ifstream file(config);
-    if (!file.is_open())
-        throw std::runtime_error("unable to open file: \"" + config + "\"");
-    std::string line;
-    int line_n = 0; // keeps track of the line_number for accurate error outputs
-    while (std::getline(file, line))
-    {
-        ++line_n;
-        lineStrip(line);
-        if (line.empty()) // skip empty lines
-            continue;
-        if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
-        {
-            auto nServer = std::make_shared<Server>(file, line_n);
-            _servers.push_back(nServer);
-            if (_servers.size() == 10)
-            {
-                std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
-                return;
-            }
-            continue;
-        }
-        else
-            throw eConf("line : \"" + line + "\": not recognized", line_n);
-    }
+		auto default_server = std::make_shared<Server>(8080);
+		_servers.push_back(default_server);
+		auto default_server2 = std::make_shared<Server>(9999);
+		_servers.push_back(default_server2);
+		return;
+	}
+	std::cout << "config: " << config << std::endl;
+	std::ifstream file(config);
+	if (!file.is_open())
+		throw std::runtime_error("unable to open file: \"" + config + "\"");
+	std::string line;
+	int line_n = 0; // keeps track of the line_number for accurate error outputs
+	while (std::getline(file, line))
+	{
+		++line_n;
+		lineStrip(line);
+		if (line.empty()) // skip empty lines
+			continue;
+		if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
+		{
+			auto nServer = std::make_shared<Server>(file, line_n);
+			_servers.push_back(nServer);
+			if (_servers.size() == 10)
+			{
+				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
+				return;
+			}
+			continue;
+		}
+		else
+			throw eConf("line : \"" + line + "\": not recognized", line_n);
+	}
 }
 
 Webserv::~Webserv(void)
@@ -71,7 +71,7 @@ Webserv::~Webserv(void)
 }
 
 /* member functions */
-void		Webserv::addServersToEpoll()
+void Webserv::addServersToEpoll()
 {
 	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
@@ -162,7 +162,7 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 	throw std::runtime_error("Server not found"); // Handle the case where the server is not found
 }
 
-Epoll	&Webserv::getEpoll()
+Epoll &Webserv::getEpoll()
 {
 	return this->_epoll;
 }
