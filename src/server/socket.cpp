@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 18:31:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:48:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,7 +75,8 @@ void		Socket::openServerSocket(const Server &servInstance)
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY); // i need the location from config in uint32_t
+	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//_sockaddr.sin_addr.s_addr = servInstance.getHost();
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	_addrlen = sizeof(_sockaddr);
 

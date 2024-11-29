@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:28:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:52:06 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -97,13 +97,13 @@ void		Webserv::addServersToEpoll()
 	std::cout << "--------------------------\n";
 }
 
-
 void		Webserv::monitorServers()
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
+	_epoll.printAllEpoll();
 	while (true)
 	{
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);

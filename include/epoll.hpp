@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:25:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:52:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ class Epoll
 		void							setEvent(struct epoll_event &event);
 
 		/* utils -> epoll_utils.cpp */
+		void							printAllEpoll();
 		std::string						generateHttpResponse(const std::string &message);
 		struct epoll_event				addServerSocketEpoll(int sockfd);
 		void							addFile();
