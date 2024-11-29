@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 15:04:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:48:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,7 @@
 #include "../../include/epoll.hpp"
 
 /**
- * @todo removed http response function and use Julius' stuff
- * @todo check closeDelete order
+ * @todo remove http response function and use Julius' stuff
  */
 
 /* Epoll utils */
@@ -33,25 +32,13 @@ std::string Epoll::generateHttpResponse(const std::string &message)
 	return response.str();
 }
 
-struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
+struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
 {
 	struct epoll_event	event;
 	event.data.fd = sockfd;
-	std::string		sortSocket;
+	event.events = EPOLLIN;
 
-	if (type == eSocket::Server)
-	{
-		event.events = EPOLLIN;
-		sortSocket = "Server";
-	}
-	else if (type == eSocket::Client)
-	{
-		event.events = EPOLLIN | EPOLLOUT;
-		sortSocket = "Client";
-	}
-	else
-		throw std::runtime_error("invalid socket type passed as argument\n");
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
 	{
 		protectedClose(sockfd);
 		throw std::runtime_error("Error adding socket to epoll\n");
@@ -59,41 +46,55 @@ struct epoll_event Epoll::addSocketEpoll(int sockfd, int epfd, eSocket type)
 	return event;
 }
 
-void		Epoll::addToEpoll(int fd, int epfd, struct epoll_event event)
+/** 
+ * 	pipefd[0] - read
+ * 	pipefd[1] - write
+ */
+void	Epoll::addFile()
 {
+	if (pipe(_pipefd) == -1)
+	{
+		std::cerr << "pipe for file failed\n";
+		return ;
+	}
+
+	struct epoll_event	event;
 	event.events = EPOLLIN;
-	event.data.fd = fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_ADD, fd, &event) < 0)
+	event.data.fd = _pipefd[0];
+
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _pipefd[0], &event) == -1)
 	{
-		protectedClose(fd);
-		throw std::runtime_error("Error adding fd to epoll\n");
+		std::cerr << "epoll_ctl file failed\n";
+		protectedClose(_pipefd[0]);
+		protectedClose(_pipefd[1]);
+		return ;
 	}
-	std::cout << "New fd added to epoll\n";
 }
 
-
-void		Epoll::switchOUTMode(int fd, int epfd, struct epoll_event event)
+void		Epoll::addToEpoll(int fd)
 {
-	event.events = EPOLLOUT | EPOLLHUP;
+	struct epoll_event event;
+	event.events = EPOLLIN | EPOLLOUT;
 	event.data.fd = fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		throw std::runtime_error("Failed to modify socket to EPOLLOUT\n");
+		std::cout << "Error adding fd to epoll\n";
 	}
-	std::cout << "Modified socket to EPOLLOUT mode\n";
+	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
 }
 
-void		Epoll::switchINMode(int fd, int epfd, struct epoll_event event)
+void		Epoll::modifyEvent(int fd, uint32_t events)
 {
-	event.events = EPOLLIN | EPOLLHUP;
+	struct epoll_event event;
+
+	event.events = events;
 	event.data.fd = fd;
-	if (epoll_ctl(epfd, EPOLL_CTL_MOD, fd, &event) == -1)
+	if (epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
-		protectedClose(fd);
-		throw std::runtime_error("Failed to modify socket to EPOLLIN\n");
+		closeDelete(fd);
+		std::cout << "Failed to modify socket event type\n";
 	}
-	std::cout << "Modified socket to EPOLLIN mode\n";
 }
 
 void		Epoll::setNonBlocking(int connection)
@@ -102,8 +103,71 @@ void		Epoll::setNonBlocking(int connection)
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-void		Epoll::closeDelete(int fd, int epfd)
+void		Epoll::closeDelete(int fd)
 {
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
 	protectedClose(fd);
-	epoll_ctl(epfd, EPOLL_CTL_DEL, fd, nullptr);
+}
+
+void		Epoll::updateClientClock(t_clients &client)
+{
+	client._clientTime[client._fd] = std::chrono::steady_clock::now();
+}
+
+void		Epoll::clientTimeCheck(t_clients &client)
+{
+	auto	now = std::chrono::steady_clock::now();
+
+	for (auto it = client._clientTime.begin(); it != client._clientTime.end();)
+	{
+		int client_fd = it->first;
+		auto lastActivity = it->second;
+
+		if (std::chrono::duration_cast<std::chrono::seconds>(now - lastActivity).count() > TIMEOUT)
+		{
+			std::cout << "Client timed out\n";
+			closeDelete(client_fd);
+			it = client._clientTime.erase(it);	
+		}
+		else
+			it++;
+	}
+}
+
+void		Epoll::handleClientClose(t_clients &client)
+{
+    bool closeSuccess = true;
+
+    try
+	{
+		if (client._fd != -1)
+		{
+            if (!protectedClose(client._fd))
+			{
+                closeSuccess = false;
+                std::cerr << "Failed to close client socket " << client._fd << ": " << strerror(errno) << std::endl;
+            }
+			else
+                std::cout << "Closed client socket " << client._fd << std::endl;
+            client._fd = -1;
+        }
+    }
+	catch (const std::exception &e)
+	{
+        std::cerr << "Exception during close: " << e.what() << std::endl;
+        closeSuccess = false;
+    }
+
+    if (!closeSuccess)
+		closeDelete(client._fd);
+
+    client._clientState = clientState::CLOSED;
+    client._request.clear();
+    client._response.clear();
+}
+
+// cleanup EVERYTHING at end of monitoring loop
+void		Epoll::cleanUp()
+{
+	
 }

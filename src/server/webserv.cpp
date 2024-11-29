@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 19:09:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:45:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,14 @@
 /**
  * @brief default constructor in case no config file was provided.
  */
-Webserv::Webserv(void)
+Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
 	auto default_server = std::make_shared<Server>();
 	_servers.push_back(default_server);
 }
 
-Webserv::Webserv(std::string config)
+Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
     std::cout << "Webserv booting up" << std::endl;
 	_epoll.initEpoll();
@@ -76,69 +76,55 @@ void		Webserv::addServersToEpoll()
 	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		t_serverData	thisServer;
+		std::shared_ptr<Server>		currentServer = getServer(i);
+		t_serverData				thisServer;
+		
+		thisServer._server = currentServer;
 
-		thisServer._serverSock = getServer(i)->getServerSocket()->getSockfd();
-		thisServer._clientSock = getServer(i)->getClientSocket()->getSockfd();
-		thisServer._serverAddlen = getServer(i)->getServerSocket()->getAddrlen();
-		thisServer._serverAddr = getServer(i)->getServerSocket()->getSockaddr();
-		thisServer._event = _epoll.addSocketEpoll(thisServer._serverSock, _epoll.getEpfd(), eSocket::Server);
+		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
+		struct epoll_event 	event;
+		event.data.fd = serverSockfd;
+		_epoll.addServerSocketEpoll(serverSockfd);
+		_epoll.setEvent(event);
 
-		_epoll.setServer(thisServer);
-		_epoll.connectClient(thisServer);
-		std::cout << "Added server [" << i << "] sockets to epoll monitoring\n";
+		std::cout << "Added server socket to epoll\n";
+		_epoll.setServer(currentServer);
 	}
 	std::cout << "--------------------------\n";
 }
 
-void		Webserv::addFilesToEpoll(s_serverData clientSock, std::string file)
-{
-	int		fileFd = open(file.c_str(), O_RDONLY);
-	
-	if (fileFd == -1)
-		throw std::runtime_error("Failed to open file\n");
-	_epoll.addToEpoll(fileFd, _epoll.getEpfd(), clientSock._event);
-}
-
-void		Webserv::monitorServers(std::vector<std::shared_ptr<Server>> &servers)
+void		Webserv::monitorServers()
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
-	while (true)
+	while (_keepRunning)
 	{
-		for (size_t i = 0; i < getServerCount(); ++i)
+		// check for client timeouts
+		for (auto &servers : _epoll.getAllServers())
 		{
-			if (_epoll.getServer(i)._serverSock < 0)
-				throw std::runtime_error("Server fd is < 0\n");
-			t_serverData	thisServer = _epoll.getServer(i);
-			_epoll.clientTime(thisServer);
-
-			int numEvents = epoll_wait(_epoll.getEpfd(), thisServer._events, 10, TIMEOUT);
-			if (numEvents == -1)
-				throw std::runtime_error("epoll_wait() failed\n");
-			else if (numEvents == 0)
-				continue ;
-
-			for (int j = 0; j < numEvents; ++j)
-			{
-				if (thisServer._events[j].data.fd == thisServer._serverSock)
-					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
-				else if (thisServer._events[j].events & EPOLLIN)
-					_epoll.handleRead(thisServer, i);
-				else if (thisServer._events[j].events & EPOLLOUT)
-					_epoll.handleWrite(thisServer, i);
-				else if (EPOLLHUP)
-				{
-					// hang up happened on fd
-					// handle close connection
-					std::cout << "EPOLLHUP -> breaking\n";
-					break ;
-				}
-			}
+			for (auto &client : servers._clients)
+				_epoll.clientTimeCheck(client);
+		}
+		// wait for events
+		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
+		if (numEvents == -1)
+		{
+			if (_keepRunning == false)
+				return ;
+			throw std::runtime_error("epoll_wait() failed\n");
+		}
+		else if (numEvents == 0)
+			continue ;
+		// handle incoming events
+		for (int i = 0; i < numEvents; ++i)
+		{
+			int fd = _epoll.getAllEvents()[i].data.fd;
+			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
 	}
+	_epoll.cleanUp();
 }
 
 /* setters */

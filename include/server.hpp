@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 19:14:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:51:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,14 +76,13 @@ class Server
 {
 	private:
 		std::string _serverName;
-		std::string _host;
+		in_addr_t _host;
 		int _port;
 		std::string _root;
 		std::vector<s_ePage> _errorPage;
 		size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
 		std::vector<s_location> _location;
 		std::shared_ptr<Socket> _serverSocket;
-		std::shared_ptr<Socket> _clientSocket;
 
 	public:
 		Server(void);
@@ -117,18 +116,16 @@ class Server
 		void setClientMaxBodySize(size_t clientMaxBodySize);
 		void setLocation(std::vector<s_location> location);
 		void setServerSocket(std::shared_ptr<Socket> serverSocket);
-		void setClientSocket(std::shared_ptr<Socket> clientSocket);
 
 		/* getters */
 		std::string const 				&getServerName(void) const;
-		const std::string 				&getHost(void) const;
+		const in_addr_t 				&getHost(void) const;
 		const int 						&getPort(void) const;
 		const std::string 				&getRoot(void) const;
 		const std::vector<s_ePage> 		&getErrorPage(void) const;
-		const size_t 					&getClientMaxBodySize(void) const;
-		const std::vector<s_location> 	&getLocation(void) const;
+		const size_t					&getClientMaxBodySize(void) const;
+		const std::vector<s_location>	&getLocation(void) const;
 		std::shared_ptr<Socket>		 	&getServerSocket(void);
-		std::shared_ptr<Socket>		 	&getClientSocket(void);
 };
 
 #endif /* SERVER_HPP */

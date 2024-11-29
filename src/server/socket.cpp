@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 17:44:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:48:01 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,34 +14,22 @@
 
 /**
  * @todo correct destruction + clean up
+ * @todo addrs get from parser
  */
 
 /* constructors */
 Socket::Socket() {}
 
-Socket::Socket(const Server &servInstance, eSocket type) : _maxConnections(10), _reuseaddr(1), _flags(0)
+Socket::Socket(const Server &servInstance) : _maxConnections(10), _reuseaddr(1), _flags(0)
 {
-	if (type == eSocket::Server)
-	{
-		openServerSocket(servInstance);
-		std::cout << "Server socket setup successful\n";
-
-	}
-	else if (type == eSocket::Client)
-	{
-		openClientSocket();
-		std::cout << "Client socket setup successful\n";
-		std::cout << "---------------------------------\n\n";
-
-	}
-	else
-		throw std::runtime_error("Error invalid socket type argument passed\n");
+	openServerSocket(servInstance);
+	std::cout << "Server socket setup successful\n";
 }
 
-Socket::Socket(const Socket &copy)
-{
-	*this = copy;
-}
+//Socket::Socket(const Socket &copy)
+//{
+//	*this = copy;
+//}
 
 Socket &Socket::operator=(const Socket &socket)
 {
@@ -69,6 +57,7 @@ Socket::~Socket()
 }
 
 /* methods */
+/** @todo if this server fails, continue and make the rest? */
 void		Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -87,8 +76,10 @@ void		Socket::openServerSocket(const Server &servInstance)
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
 	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	//_sockaddr.sin_addr.s_addr = servInstance.getHost();
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	_addrlen = sizeof(_sockaddr);
+
 
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
@@ -101,20 +92,9 @@ void		Socket::openServerSocket(const Server &servInstance)
 		protectedClose(_sockfd);
 		throw std::runtime_error("Error listening for connections\n");
 	}
-	std::cout << "Listening on port - " << servInstance.getPort() << " \n";
-}
-
-void 		Socket::openClientSocket()
-{
-	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		throw std::runtime_error("Error socketing sock\n");
-
-	_flags = fcntl(_sockfd, F_GETFL, 0);
-	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
-	{
-		protectedClose(_sockfd);
-		throw std::runtime_error("Error setting client socket to nonblocking\n");
-	}
+	std::cout << "Listening on port - " << servInstance.getPort() << " \n\n";
+	setSockaddr(_sockaddr);
+	setAddrlen(_addrlen);
 }
 
 /* getters */

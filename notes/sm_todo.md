@@ -2,49 +2,45 @@
 
 **TODOTODOTODO**
 
+1) 
+	recv vs read?
+	write vs send? both?
+	(photo on phone - add to notes and make decisions)
 
-recv vs read?
-write vs send? both?
+2) 
+	add some descriptions/briefs
 
-
-julius - i need to check im not doing weird shit with sockets - socket sockets + epoll sockets + epoll has addresses and shit tooo
-
-
-1)
-			struct sockaddr_in		address;
-			address = thisServer._serverAddr;
-			std::cout << "check where address stored " << inet_ntoa(address.sin_addr) << "\n";
-
-		this is zero in monitoring probs cause i dont use the addr etc for server in serverData struct
-
-2)
-							if (thisServer._events[j].data.fd == thisServer._serverSock)
-				{
-					_epoll.makeNewConnection(servers[i]->getServerSocket(), thisServer);
-					struct sockaddr_in		address;
-					address = thisServer._clients[0]._addr;
-					std::cout << "check where address stored " << inet_ntoa(address.sin_addr) << "\n";
-				}
-
-		this crashes :)
-
-3)
-
-	else 
-	{
-		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
-		setNonBlocking(newSock);
-		addToEpoll(newSock, _epfd, server._event);
-		server.addClient(newSock, clientAddr, addrLen);
-**std::cout << "server new client address = " << inet_ntoa(clientAddr.sin_addr) << "\n";**
-		server._clientTime[newSock] = std::chrono::steady_clock::now();
-		server.setClientState(clientState::PARSING);
-	}
+3) 
+	stuff im not sure about:
+		- when close connections
 
 
-		HERE I GET 127.0.0.1
+5) 
+	everywhere good error handling + closing + handling of fds/sockets etc
 
+6) 
+	check print statements, simplify / comment some out
 
+7) 
+	add a close functionality so not only ctrl c-ing out everytime
 
-4)
-	possibily shit from opening sockets (addres etc) only used in those functions to open sockets, then use those per server to connect client connections - check this
+8) 
+	leave any todos in files as todos
+		see what i can already/have already handled
+
+9) 
+	adding files to epoll
+
+10) 
+	client state stuff, reading writing till buffer, monitoring continues
+	everything handled correctly, no waiting unnecessarily
+	making use of the buffers etc
+
+	check this with buffer sizes of like 5 once implemented
+
+11) 
+	some exit / throws not necessary
+	some things should give error, be handled and server continues
+
+12) 
+	im reusing the same client info... need to make sure im creating new instances each time

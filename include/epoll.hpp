@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/19 14:41:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 18:44:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,6 +14,7 @@
 #define EPOLL_HPP
 
 #include "socket.hpp"
+#include "web.hpp"
 
 class Webserv;
 class Socket;
@@ -24,44 +25,51 @@ using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 enum class clientState
 {
-	PARSING = 0,
-	BEGIN = 1,
-	READING = 2,
-	WRITING = 3,
-	ERROR = 4,
-	READY = 5,
-	RESPONSE = 6,
-	SENDING = 7
+	BEGIN = 0,
+	READING = 1,
+	WRITING = 2,
+	ERROR = 3,
+	READY = 4, // finished reading/writing job
+	CLOSED = 5
+	//RESPONSE = 5,
+	//SENDING = 6	// might need, might not
 };
 
 #define MAX_EVENTS 10
-#define TIMEOUT 30000 // milliseconds
-#define READ_BUFFER_SIZE 4096
-#define WRITE_BUFFER_SIZE 4096
+#define TIMEOUT 3000 // milliseconds | 3 seconds
+#define READ_BUFFER_SIZE 5
+#define WRITE_BUFFER_SIZE 5
+#define MAX_FILE_READ 256
 
 typedef struct s_clients
 {
-	int							_fd;
-	struct sockaddr_in			_addr;
-	socklen_t					_addLen;
+	int												_fd;
+	struct sockaddr_in								_addr;
+	socklen_t										_addLen;
+	enum clientState								_clientState;
+	std::unordered_map<int, timePoint>				_clientTime;
+	bool											_connectionClose;
+	int												_clientId;
+	
+	// read
+	/** @todo want request to be stringstream for speed | ostringstream */
+	//std::unique_ptr<std::stringstream>				_request;
+	std::string										_request;
+	
+	// write
+	std::string										_response;
+	size_t											_write_offset;
+	ssize_t											_bytesWritten;
+
 }				t_clients;
 
 typedef struct s_serverData
 {
-	int															_serverSock;
-	int															_clientSock;
-	std::unordered_map<int, timePoint>							_clientTime;
-	enum clientState											_clientState;
-	std::vector<t_clients> 										_clients;		// connections for server socket to accept
-	socklen_t													_serverAddlen;
-	struct sockaddr_in											_serverAddr;
-	struct epoll_event											_event;
-	struct epoll_event											_events[MAX_EVENTS];
+	std::shared_ptr<Server>							_server;
+	std::vector<t_clients> 							_clients;
 
 	/* methods */
-	void								addClient(int sock, struct sockaddr_in addr, int len);
-	void								setClientState(enum clientState state);
-	enum clientState					getClientState();
+	void								addClient(int sock, struct sockaddr_in &addr, int len);
 }				t_serverData;
 
 class Epoll
@@ -70,6 +78,9 @@ class Epoll
 		int								_epfd;
 		std::vector<t_serverData>		_serverData;
 		int								_numEvents;
+		struct epoll_event				_event;
+		std::vector<epoll_event>		_events;
+		int								_pipefd[2]; // pipe[0] read | pipe[1] write
 
 	public:
 		Epoll();
@@ -79,32 +90,39 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
-		void							clientTime(t_serverData server);
-		void							connectClient(t_serverData server);
-		void							makeNewConnection(std::shared_ptr<Socket> &serverSock, t_serverData server);
-		void							handleRead(t_serverData server, int i);
-		void							handleWrite(t_serverData server, int i);
 		void							handleFile();
+		void							handleRead(t_clients &client);
+		void							handleWrite(t_clients &client);
+		void							makeNewConnection(int fd, t_serverData &server);
+		void							processEvent(int fd, epoll_event &event);
 
 		/* getters */
 		int								getEpfd() const;
-		std::vector<t_serverData>		getAllServers() const;
-		t_serverData					getServer(size_t i) const;
+		std::vector<t_serverData>		&getAllServers();
+		std::shared_ptr<Server>			getServer(size_t i);
 		int								getNumEvents() const;
+		std::vector<epoll_event>&		getAllEvents();
+		struct epoll_event				&getEvent();
 
 		/* setters */
 		void							setEpfd(int fd);
-		void							setServer(t_serverData server);
+		void							setServer(std::shared_ptr<Server>);
 		void							setNumEvents(int numEvents);
+		void							setEventMax();
+		void							setEvent(struct epoll_event &event);
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
-		struct epoll_event				addSocketEpoll(int sockfd, int epfd, eSocket type);
-		void							addToEpoll(int fd, int epfd, struct epoll_event event);
-		void							switchOUTMode(int fd, int epfd, struct epoll_event event);
-		void							switchINMode(int fd, int epfd, struct epoll_event event);
+		struct epoll_event				addServerSocketEpoll(int sockfd);
+		void							addFile();
+		void							addToEpoll(int fd);
+		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
-		void							closeDelete(int fd, int epfd);
+		void							closeDelete(int fd);
+		void							updateClientClock(t_clients &client);
+		void							clientTimeCheck(t_clients &client);
+		void							handleClientClose(t_clients &client);
+		void							cleanUp();
 };
 
 #endif /* EPOLL_HPP */

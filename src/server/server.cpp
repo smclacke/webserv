@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/19 18:22:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 13:49:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,11 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this))
 {
 	_serverName = "default_server";
-	_host = "127.0.0.01";
+	//setHost("127.0.0.01");
+	_host = htonl(INADDR_ANY);
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -48,10 +49,11 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this))
 {
 	_serverName = "default_server";
-	_host = "127.0.0.01";
+	//setHost("127.0.0.01");
+	_host = htonl(INADDR_ANY);
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 8192;
@@ -78,13 +80,13 @@ Server &Server::operator=(const Server &rhs)
 		_clientMaxBodySize = rhs._clientMaxBodySize;
 		_location = rhs._location;
 		_serverSocket = rhs._serverSocket;
-		_clientSocket = rhs._clientSocket;
 	}
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _host("0.0.0.1"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this, eSocket::Server)), _clientSocket(std::make_shared<Socket>(*this, eSocket::Client))
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this))
 {
+	setHost("0.0.0.0");
 	std::string line;
 	while (std::getline(file, line))
 	{
@@ -353,7 +355,12 @@ void Server::setServerName(std::string serverName)
 
 void Server::setHost(std::string host)
 {
-	_host = host;
+	in_addr_t addr;
+	if (inet_pton(AF_INET, host.c_str(), &addr) <= 0)
+	{
+		throw std::runtime_error("Invalid IP address format");
+	}
+	_host = addr;
 }
 
 void Server::setPort(int port)
@@ -386,18 +393,13 @@ void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 	_serverSocket = serverSocket;
 }
 
-void Server::setClientSocket(std::shared_ptr<Socket> clientSocket)
-{
-	_clientSocket = clientSocket;
-}
-
 /* getters */
 const std::string &Server::getServerName(void) const
 {
 	return _serverName;
 }
 
-const std::string &Server::getHost(void) const
+const in_addr_t &Server::getHost(void) const
 {
 	return _host;
 }
@@ -430,9 +432,4 @@ const std::vector<s_location> &Server::getLocation(void) const
 std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
-}
-
-std::shared_ptr<Socket> &Server::getClientSocket(void)
-{
-	return _clientSocket;
 }

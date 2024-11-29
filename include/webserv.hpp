@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/18 19:44:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:16:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,17 +24,17 @@ class Webserv
 	private:
 		std::vector<std::shared_ptr<Server>>	_servers;
 		Epoll 									_epoll;
+		std::atomic<bool> 						&_keepRunning;
 
 	public:
 		/* constructors */
-		Webserv(void);
-		Webserv(std::string config);
+		Webserv(std::atomic<bool>  &keepRunning);
+		Webserv(std::string config, std::atomic<bool>  &keepRunning);
 		~Webserv(void);
 
 		/* member functions */
 		void				addServersToEpoll();
-		void				addFilesToEpoll(s_serverData clientSock, std::string file);
-		void				monitorServers(std::vector<std::shared_ptr<Server>> &servers);
+		void				monitorServers();
 
 		/* Setters */
 		void				addServer(std::shared_ptr<Server> server);
