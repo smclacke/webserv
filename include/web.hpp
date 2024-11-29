@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/26 20:44:29 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:17:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,7 @@
 #include <memory>	  // shared pointers header
 #include <filesystem> // for directory checking
 #include <optional>
+#include <atomic>
 
 // CPP containers
 #include <algorithm>
@@ -55,6 +56,8 @@
 #include <time.h>
 #include <limits.h>
 #include <errno.h>
+#include <csignal>
+
 
 /* forward declarations*/
 struct s_location;

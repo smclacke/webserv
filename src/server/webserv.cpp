@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 15:59:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:56:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,14 +17,14 @@
 /**
  * @brief default constructor in case no config file was provided.
  */
-Webserv::Webserv(void)
+Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
 	auto default_server = std::make_shared<Server>();
 	_servers.push_back(default_server);
 }
 
-Webserv::Webserv(std::string config)
+Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
     std::cout << "Webserv booting up" << std::endl;
 	_epoll.initEpoll();
@@ -100,14 +100,25 @@ void		Webserv::monitorServers()
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
 	_epoll.printAllEpoll();
-	while (true)
+	while (_keepRunning)
 	{
+		// check for client timeouts
+		for (auto &servers : _epoll.getAllServers())
+		{
+			for (auto &client : servers._clients)
+				_epoll.clientTimeCheck(client);
+		}
+		// wait for events
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1)
+		{
+			if (_keepRunning == false)
+				return ;
 			throw std::runtime_error("epoll_wait() failed\n");
+		}
 		else if (numEvents == 0)
 			continue ;
-
+		// handle incoming events
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;

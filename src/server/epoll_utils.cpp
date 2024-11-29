@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 16:16:45 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:57:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,19 +116,26 @@ void		Epoll::closeDelete(int fd)
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
 }
 
-/** @todo test this */
-void		Epoll::clientTime(t_clients &client)
+void		Epoll::updateClientClock(t_clients &client)
 {
-	auto now = std::chrono::steady_clock::now();
+	client._clientTime[client._fd] = std::chrono::steady_clock::now();
+}
+
+/** @todo test this */
+void		Epoll::clientTimeCheck(t_clients &client)
+{
+	auto	now = std::chrono::steady_clock::now();
 
 	for (auto it = client._clientTime.begin(); it != client._clientTime.end();)
 	{
-		auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(now - it->second);
-		if (elapsed.count() >= (TIMEOUT / 1000))
+		int client_fd = it->first;
+		auto lastActivity = it->second;
+
+		if (std::chrono::duration_cast<std::chrono::seconds>(now - lastActivity).count() > TIMEOUT)
 		{
 			std::cout << "Client timed out\n";
-			closeDelete(it->first);
-			it = client._clientTime.erase(it);
+			closeDelete(client_fd);
+			it = client._clientTime.erase(it);	
 		}
 		else
 			it++;

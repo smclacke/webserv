@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 11:57:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:26:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,17 +14,26 @@
 #include "../include/webserv.hpp"
 #include "../include/error.hpp"
 
+// Atomic flag to indicate when to stop the program
+std::atomic<bool> keepRunning(true);
+
+// Signal handler function
+void signalHandler(int signum) {
+	std::cout << "~~~ Signal received: " << signum << "\n";
+    keepRunning = false; // Set the flag to false to exit the loop
+}
+
 int main(int argc, char **argv)
 {
+	std::signal(SIGINT, signalHandler);
 	try
 	{
 		verifyInput(argc, argv);
 		std::string config = "";
 		if (argc == 2)
 			config = std::string(argv[1]);
-		Webserv wserv(config);
+		Webserv wserv(config, keepRunning);
 		wserv.addServersToEpoll();
-		//wserv.printAllServerSocketEpoll();
 		wserv.monitorServers();
 	}
 	catch (eConf &e)

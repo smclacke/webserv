@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 16:17:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 17:46:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ void		Epoll::handleRead(t_clients &client)
 
 		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
-			buffer[bytesRead] = '\0';
+			//buffer[bytesRead] = '\0';
 			std::cout << "request = " << client._request << "\n";
 
 			client._clientState = clientState::READY;
@@ -214,7 +214,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				makeNewConnection(fd, serverData);
 			}
 		}
-		//if () file
+		//if () file std::String
 			//addFile();
 		for (auto &client : serverData._clients)
 		{
@@ -222,22 +222,27 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 			//	handleFile();
 			if (fd == client._fd)
 			{
-				clientTime(client);
 				if (event.events & EPOLLIN)
 				{
 					handleRead(client);
 					if (client._clientState == clientState::READY)
+					{
 						modifyEvent(client._fd, EPOLLOUT);
+						updateClientClock(client);
+					}
 				}
 				else if (event.events & EPOLLOUT)
 				{
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
+					{	
 						modifyEvent(client._fd, EPOLLIN);
+						updateClientClock(client);
+					}
 				}
 				else if (event.events & EPOLLHUP)
 				{
-					std::cout << "hup\n"; // will handle close here
+					std::cout << "hup\n";
 					closeDelete(client._fd);
 				}
 			}
