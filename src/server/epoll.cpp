@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:02:01 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/11/29 19:09:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,10 +44,10 @@ Epoll::~Epoll()
 	}
 	/** @todo if the pipe moves, move the close
 	 * @todo if closeDelete fails? or pipe not added to epoll? */ 
-	if (_pipefd[0])
-		closeDelete(_pipefd[0]);
-	if (_pipefd[1])
-		closeDelete(_pipefd[1]);
+	//if (_pipefd[0])
+	//	closeDelete(_pipefd[0]);
+	//if (_pipefd[1])
+	//	closeDelete(_pipefd[1]);
 }
 
 /* methods */
