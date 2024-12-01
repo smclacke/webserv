@@ -38,3 +38,8 @@
 	message and continuing creating the others if there are any? + if only one then what? 
 
 12) 
+	CHECK - close connection after each read and write or only after the write?
+
+13) 
+	CHECK - why am i making connections when i have only typed the address in
+		and not entered in browser?

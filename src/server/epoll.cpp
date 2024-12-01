@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 16:40:05 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/01 16:57:52 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -118,6 +118,8 @@ void		Epoll::handleRead(t_clients &client)
 
 /** 
  * @todo get actual response message 
+ * @todo what about when bytesWritten hits the buffer size? where did this go?
+ * 			or is this only necessary for handling read?
  */
 void		Epoll::handleWrite(t_clients &client)
 {
@@ -165,7 +167,7 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	
 	_clients.push_back(newClient);
 
-	std::cout << "new client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
+	std::cout << "New client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
 }
 
 /** @todo this: CONNECT (?) - this is not necessary right?
@@ -208,7 +210,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 		{
 			if (event.events & EPOLLIN)
 			{
-				std::cout << "handling new connection for server socket\n";
+				std::cout << "Handling new connection for server socket\n";
 				makeNewConnection(fd, serverData);
 			}
 		}
