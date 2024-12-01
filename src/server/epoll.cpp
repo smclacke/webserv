@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 11:51:03 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/12/01 11:52:21 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -77,7 +77,7 @@ void Epoll::handleFile()
 void Epoll::handleRead(t_clients &client)
 {
 	char buffer[READ_BUFFER_SIZE];
-	ssize_t bytesRead = 0;
+	ssize_t bytesRead = 0; // should probably just be an integer since we will set buffer to 1000 right?
 
 	while (true)
 	{
