@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:10:59 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/01 11:51:03 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,8 +34,8 @@ Epoll &Epoll::operator=(const Epoll &epoll)
 	return *this;
 }
 
-Epoll::~Epoll() 
-{ 
+Epoll::~Epoll()
+{
 	std::cout << "Epoll destructor called\n";
 	if (_epfd > 0)
 	{
@@ -43,10 +43,10 @@ Epoll::~Epoll()
 			std::cerr << "Failed to close epfd\n";
 	}
 	/** @todo if the pipe moves, move the close
-	 * @todo if closeDelete fails? or pipe not added to epoll? */ 
-	//if (_pipefd[0])
+	 * @todo if closeDelete fails? or pipe not added to epoll? */
+	// if (_pipefd[0])
 	//	closeDelete(_pipefd[0]);
-	//if (_pipefd[1])
+	// if (_pipefd[1])
 	//	closeDelete(_pipefd[1]);
 }
 
@@ -59,10 +59,10 @@ void Epoll::initEpoll()
 	std::cout << "Successfully created Epoll instance\n";
 }
 
-void	Epoll::handleFile()
+void Epoll::handleFile()
 {
-	char	buffer[MAX_FILE_READ];
-	int		n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
+	char buffer[MAX_FILE_READ];
+	int n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
 
 	if (n > 0)
 	{
@@ -71,13 +71,13 @@ void	Epoll::handleFile()
 	}
 }
 
-/** 
+/**
  *  @todo handling bad fd to recv, not necessarily a throw or exit server situ
  */
-void		Epoll::handleRead(t_clients &client)
+void Epoll::handleRead(t_clients &client)
 {
-	char		buffer[READ_BUFFER_SIZE];
-	size_t		bytesRead = 0;
+	char buffer[READ_BUFFER_SIZE];
+	ssize_t bytesRead = 0;
 
 	while (true)
 	{
@@ -91,7 +91,7 @@ void		Epoll::handleRead(t_clients &client)
 			{
 				std::cout << "no data available right now\n";
 				client._clientState = clientState::BEGIN;
-				return ;
+				return;
 			}
 			handleClientClose(client);
 			throw std::runtime_error("Reading from client connection failed\n");
@@ -100,7 +100,7 @@ void		Epoll::handleRead(t_clients &client)
 		{
 			std::cout << "Client disconnected\n";
 			handleClientClose(client);
-			return ;
+			return;
 		}
 		client._request += buffer;
 
@@ -110,31 +110,31 @@ void		Epoll::handleRead(t_clients &client)
 			client._clientState = clientState::READY;
 			client._connectionClose = true;
 			client._request.clear();
-			return ;
+			return;
 		}
 		client._connectionClose = false;
 	}
 }
 
-/** 
+/**
  * @todo ensure generaterequest is not being called everytime for the same client when just filling buffer
- * @todo get actual response message 
+ * @todo get actual response message
  */
-void		Epoll::handleWrite(t_clients &client)
+void Epoll::handleWrite(t_clients &client)
 {
 	if (client._response.empty())
 		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
 
 	while (true)
 	{
-		ssize_t	bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
+		ssize_t bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
 		if (bytesWritten < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return ;
+				return;
 			std::cerr << "Write to client failed\n";
 			handleClientClose(client);
-			return ;
+			return;
 		}
 		client._write_offset += bytesWritten;
 		if (client._write_offset >= client._response.length())
@@ -142,17 +142,17 @@ void		Epoll::handleWrite(t_clients &client)
 			client._write_offset = 0;
 			client._clientState = clientState::READY;
 			client._connectionClose = true;
-			return ;
+			return;
 		}
 		client._connectionClose = false;
 	}
 }
 
-void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
+void s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 {
 	static int clientId = 0;
 
-	t_clients	newClient;
+	t_clients newClient;
 
 	newClient._fd = sock;
 	newClient._addr = addr;
@@ -163,13 +163,13 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	newClient._write_offset = 0;
 	newClient._bytesWritten = 0;
 	newClient._clientId = clientId++;
-	
+
 	_clients.push_back(newClient);
 
 	std::cout << "new client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
 }
 
-/** @todo this: CONNECT (?) - 
+/** @todo this: CONNECT (?) -
  *		When Do You Use connect()?
 		Client side: If your server is also acting as a client (for example, connecting to an external service), you would use connect() in that case to connect to another server.
 		Example: A client program connecting to a remote server (via connect()).
@@ -184,7 +184,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	if (clientfd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
-		return ;
+		return;
 	}
 	else
 	{
@@ -195,11 +195,11 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 }
 
-/** 
+/**
  * @todo file stuff
  * @todo connection bool handling/send somewhere so it is actually being used
  */
-void	Epoll::processEvent(int fd, epoll_event &event)
+void Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
 	{
@@ -211,12 +211,12 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				makeNewConnection(fd, serverData);
 			}
 		}
-		//std::string file = 0;
-		//if (!file.empty())
+		// std::string file = 0;
+		// if (!file.empty())
 		//	addFile();
 		for (auto &client : serverData._clients)
 		{
-			//if (fd == _pipefd[0])
+			// if (fd == _pipefd[0])
 			//	handleFile();
 			if (fd == client._fd)
 			{
@@ -233,7 +233,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				{
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
-					{	
+					{
 						modifyEvent(client._fd, EPOLLIN);
 						updateClientClock(client);
 					}
@@ -249,32 +249,32 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 }
 
 /* getters */
-int							Epoll::getEpfd() const
+int Epoll::getEpfd() const
 {
 	return this->_epfd;
 }
 
-std::vector<t_serverData>	&Epoll::getAllServers()
+std::vector<t_serverData> &Epoll::getAllServers()
 {
 	return this->_serverData;
 }
 
-std::shared_ptr<Server>		Epoll::getServer(size_t i)
+std::shared_ptr<Server> Epoll::getServer(size_t i)
 {
 	return this->_serverData[i]._server;
 }
 
-int							Epoll::getNumEvents() const
+int Epoll::getNumEvents() const
 {
 	return this->_numEvents;
 }
 
-std::vector<epoll_event>	&Epoll::getAllEvents()
+std::vector<epoll_event> &Epoll::getAllEvents()
 {
 	return _events;
 }
 
-struct epoll_event	&Epoll::getEvent()
+struct epoll_event &Epoll::getEvent()
 {
 	return this->_event;
 }
@@ -285,11 +285,11 @@ void Epoll::setEpfd(int fd)
 	this->_epfd = fd;
 }
 
-void				Epoll::setServer(std::shared_ptr<Server> server)
+void Epoll::setServer(std::shared_ptr<Server> server)
 {
-	t_serverData	newServerData;
+	t_serverData newServerData;
 	newServerData._server = server;
-	
+
 	this->_serverData.push_back(newServerData);
 }
 
@@ -298,12 +298,12 @@ void Epoll::setNumEvents(int numEvents)
 	this->_numEvents = numEvents;
 }
 
-void				Epoll::setEventMax()
+void Epoll::setEventMax()
 {
 	_events.resize(MAX_EVENTS);
 }
 
-void				Epoll::setEvent(struct epoll_event &event)
+void Epoll::setEvent(struct epoll_event &event)
 {
 	this->_event = event;
 }
