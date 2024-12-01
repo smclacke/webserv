@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:58:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/01 16:43:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,14 +26,15 @@ using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 enum class clientState
 {
-	BEGIN = 0,
-	READING = 1,
-	WRITING = 2,
-	ERROR = 3,
-	READY = 4, // finished reading/writing job
-	CLOSED = 5
-	//RESPONSE = 5,
-	//SENDING = 6	// might need, might not
+	BEGIN = 0,				// ready to read/write
+	READING = 1,			// currently reading
+	WRITING = 2,			// currently writing
+	ERROR = 3,				// something wrong
+	READY = 4,				// finished reading/writing job
+	CLOSED = 5,				// connection closed
+	RESPONSE = 6,			// handling response
+	SENDING = 7,			// sending response
+	REQUEST = 8				// handling request
 };
 
 #define MAX_EVENTS 10

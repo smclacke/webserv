@@ -6,16 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:01:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/01 16:48:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
-
-/**
- * @todo remove http response function and use Julius' stuff
- */
 
 /* Epoll utils */
 std::string Epoll::generateHttpResponse(const std::string &message)
@@ -134,6 +130,7 @@ void		Epoll::clientTimeCheck(t_clients &client)
 	}
 }
 
+/** @todo check proerper handling if close fails.. */
 void		Epoll::handleClientClose(t_clients &client)
 {
     bool closeSuccess = true;
@@ -142,6 +139,7 @@ void		Epoll::handleClientClose(t_clients &client)
 	{
 		if (client._fd != -1)
 		{
+			epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr);
             if (!protectedClose(client._fd))
 			{
                 closeSuccess = false;
@@ -159,7 +157,7 @@ void		Epoll::handleClientClose(t_clients &client)
     }
 
     if (!closeSuccess)
-		closeDelete(client._fd);
+		protectedClose(client._fd); // calling again won't cause error?
 
     client._clientState = clientState::CLOSED;
     client._request.clear();
@@ -167,6 +165,7 @@ void		Epoll::handleClientClose(t_clients &client)
 }
 
 // cleanup EVERYTHING at end of monitoring loop
+// what - how - etc.. need to check this
 void		Epoll::cleanUp()
 {
 	

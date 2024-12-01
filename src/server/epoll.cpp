@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:11:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/01 16:40:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,7 +55,7 @@ void Epoll::initEpoll()
 {
 	_epfd = epoll_create(10);
 	if (_epfd < 0)
-		throw std::runtime_error("Error creating Epoll instance\n");
+		throw std::runtime_error("Error creating Epoll instance\n");    // or just error + try again? in this case, surely end server?
 	std::cout << "Successfully created Epoll instance\n";
 }
 
@@ -94,7 +94,7 @@ void		Epoll::handleRead(t_clients &client)
 				return ;
 			}
 			handleClientClose(client);
-			throw std::runtime_error("Reading from client connection failed\n");
+			throw std::runtime_error("Reading from client connection failed\n"); // error + remove anything read(?) + return
 		}
 		else if (bytesRead == 0)
 		{
@@ -117,7 +117,6 @@ void		Epoll::handleRead(t_clients &client)
 }
 
 /** 
- * @todo ensure generaterequest is not being called everytime for the same client when just filling buffer
  * @todo get actual response message 
  */
 void		Epoll::handleWrite(t_clients &client)
@@ -169,9 +168,10 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	std::cout << "new client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
 }
 
-/** @todo this: CONNECT (?) - 
+/** @todo this: CONNECT (?) - this is not necessary right?
  *		When Do You Use connect()?
-		Client side: If your server is also acting as a client (for example, connecting to an external service), you would use connect() in that case to connect to another server.
+		Client side: If your server is also acting as a client (for example, connecting to an external service),
+		you would use connect() in that case to connect to another server.
 		Example: A client program connecting to a remote server (via connect()).
 		Another example: A server acting as a proxy or a backend service connecting to a database.
  */
@@ -198,6 +198,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 /** 
  * @todo file stuff
  * @todo connection bool handling/send somewhere so it is actually being used
+ * 			if connectionClose bool == false - keepAlive else if true - close connection
  */
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
@@ -227,6 +228,8 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					{
 						modifyEvent(client._fd, EPOLLOUT);
 						updateClientClock(client);
+						if (client._connectionClose == true)
+							handleClientClose(client);
 					}
 				}
 				else if (event.events & EPOLLOUT)
@@ -236,6 +239,8 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					{	
 						modifyEvent(client._fd, EPOLLIN);
 						updateClientClock(client);
+						if (client._connectionClose == true)
+							handleClientClose(client);
 					}
 				}
 				else if (event.events & EPOLLHUP)
