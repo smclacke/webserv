@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 16:35:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:06:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ Socket &Socket::operator=(const Socket &socket)
 
 Socket::~Socket()
 {
-	std::cout << "Socket deconstr" << std::endl;
+	std::cout << "Socket destructor called" << std::endl;
 	protectedClose(_sockfd);
 }
 
@@ -65,11 +65,15 @@ void		Socket::openServerSocket(const Server &servInstance)
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	//_sockaddr.sin_addr.s_addr = servInstance.getHost();
+
+	if (inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr) <= 0)
+	{
+		protectedClose(_sockfd);
+		throw std::runtime_error("Invalid IP address format\n");
+	}
+
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	_addrlen = sizeof(_sockaddr);
-
 
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
@@ -82,9 +86,11 @@ void		Socket::openServerSocket(const Server &servInstance)
 		protectedClose(_sockfd);
 		throw std::runtime_error("Error listening for connections\n");    // or error message + return
 	}
-	std::cout << "Listening on port - " << servInstance.getPort() << " \n\n";
 	setSockaddr(_sockaddr);
 	setAddrlen(_addrlen);
+
+	std::cout << "\nListening on port - " << servInstance.getPort() << "\n";
+	std::cout << "Host address - " << servInstance.getHost().c_str() << " \n\n";
 }
 
 /* getters */

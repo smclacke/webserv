@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 20:07:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:09:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,12 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this))
+Server::Server(void) : _port(8080)
 {
+	/** @todo both _host = and setHost() work fine, J preference? */
 	_serverName = "default_server";
-	//setHost("127.0.0.01");
-	_host = htonl(INADDR_ANY);
+	_host = "0.0.0.0";
+	//setHost("0.0.0.0");
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -43,17 +44,17 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
+	_serverSocket = std::make_shared<Socket>(*this);
 }
 
 /**
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this))
+Server::Server(int portnum) : _port(portnum)
 {
 	_serverName = "default_server";
-	//setHost("127.0.0.01");
-	_host = htonl(INADDR_ANY);
+	setHost("127.0.0.1");
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 8192;
@@ -67,6 +68,7 @@ Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Soc
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
+	_serverSocket = std::make_shared<Socket>(*this);
 }
 
 Server &Server::operator=(const Server &rhs)
@@ -84,9 +86,9 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _port(9999), _root("./server_files"),  _serverSocket(std::make_shared<Socket>(*this))
+/** @note, julius - don't need to set port in init list */
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("./server_files")
 {
-	setHost("0.0.0.0");
 	std::string line;
 	while (std::getline(file, line))
 	{
@@ -100,6 +102,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 				throw eConf("Unexpected text with closing }", line_n);
 			if (_location.size() == 0)
 				addLocation(addDefaultLoc(_clientMaxBodySize));
+			_serverSocket = std::make_shared<Socket>(*this);
 			return;
 		}
 		size_t pos = line.find("location");
@@ -361,12 +364,7 @@ void Server::setServerName(std::string serverName)
 
 void Server::setHost(std::string host)
 {
-	in_addr_t addr;
-	if (inet_pton(AF_INET, host.c_str(), &addr) <= 0)
-	{
-		throw std::runtime_error("Invalid IP address format");
-	}
-	_host = addr;
+	_host = host;
 }
 
 void Server::setPort(int port)
@@ -405,7 +403,7 @@ const std::string &Server::getServerName(void) const
 	return _serverName;
 }
 
-const in_addr_t &Server::getHost(void) const
+const std::string &Server::getHost(void) const
 {
 	return _host;
 }

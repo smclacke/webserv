@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:03:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:06:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 	if (config.empty())
 	{
 		std::cout << "default configuration\n";
-		auto default_server = std::make_shared<Server>(8080);
+		auto default_server = std::make_shared<Server>();
 		_servers.push_back(default_server);
 		auto default_server2 = std::make_shared<Server>(9999);
 		_servers.push_back(default_server2);
@@ -73,7 +73,6 @@ Webserv::~Webserv(void)
 /* member functions */
 void Webserv::addServersToEpoll()
 {
-	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
 		std::shared_ptr<Server>		currentServer = getServer(i);
