@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 16:48:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 19:18:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,35 +130,19 @@ void		Epoll::clientTimeCheck(t_clients &client)
 	}
 }
 
+
 /** @todo check proerper handling if close fails.. */
 void		Epoll::handleClientClose(t_clients &client)
 {
-    bool closeSuccess = true;
+    //bool closeSuccess = true;
 
-    try
-	{
-		if (client._fd != -1)
-		{
-			epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr);
-            if (!protectedClose(client._fd))
-			{
-                closeSuccess = false;
-                std::cerr << "Failed to close client socket " << client._fd << ": " << strerror(errno) << std::endl;
-            }
-			else
-                std::cout << "Closed client socket " << client._fd << std::endl;
-            client._fd = -1;
-        }
-    }
-	catch (const std::exception &e)
-	{
-        std::cerr << "Exception during close: " << e.what() << std::endl;
-        closeSuccess = false;
-    }
+	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr) == -1)
+		std::cerr << "Failed to remove fd from epoll\n";
 
-    if (!closeSuccess)
-		protectedClose(client._fd); // calling again won't cause error?
-
+	if (close(client._fd) == -1)
+		std::cerr << "Failed to close clent socket\n";
+	else
+		std::cout << "Successfully closed fd: " << client._fd << "\n";  
     client._clientState = clientState::CLOSED;
     client._request.clear();
     client._response.clear();

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 17:30:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 19:20:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,7 @@ void		Epoll::handleRead(t_clients &client)
 		else if (bytesRead == 0)
 		{
 			std::cout << "Client disconnected\n";
-			handleClientClose(client);
+			handleClientClose(client); // should we close???
 			return ;
 		}
 		client._request += buffer;
@@ -108,7 +108,6 @@ void		Epoll::handleRead(t_clients &client)
 		{
 			std::cout << "request = " << client._request << "\n";
 			client._clientState = clientState::READY;
-			client._connectionClose = true;
 			client._request.clear();
 			return ;
 		}
@@ -142,7 +141,6 @@ void		Epoll::handleWrite(t_clients &client)
 		{
 			client._write_offset = 0;
 			client._clientState = clientState::READY;
-			client._connectionClose = true;
 			return ;
 		}
 		client._connectionClose = false;
@@ -227,8 +225,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					{
 						modifyEvent(client._fd, EPOLLOUT);
 						updateClientClock(client);
-						if (client._connectionClose == true)
-							handleClientClose(client);
 					}
 				}
 				else if (event.events & EPOLLOUT)
@@ -238,8 +234,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					{	
 						modifyEvent(client._fd, EPOLLIN);
 						updateClientClock(client);
-						if (client._connectionClose == true)
-							handleClientClose(client);
 					}
 				}
 				else if (event.events & EPOLLHUP)
@@ -247,6 +241,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					std::cout << "EPOLLHUP\n";
 					handleClientClose(client);
 				}
+				break ;
 			}
 		}
 	}
