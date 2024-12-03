@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 16:57:52 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:30:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -209,10 +209,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
 			if (event.events & EPOLLIN)
-			{
-				std::cout << "Handling new connection for server socket\n";
 				makeNewConnection(fd, serverData);
-			}
 		}
 		//std::string file = 0;
 		//if (!file.empty())

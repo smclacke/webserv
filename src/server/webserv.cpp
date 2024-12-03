@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/03 17:06:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:33:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,14 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 	_epoll.initEpoll();
 	if (config.empty())
 	{
-		std::cout << "default configuration\n";
-		auto default_server = std::make_shared<Server>();
-		_servers.push_back(default_server);
+		std::cout << "Default configuration\n\n";
+		//auto default_server = std::make_shared<Server>();
+		//_servers.push_back(default_server);
 		auto default_server2 = std::make_shared<Server>(9999);
 		_servers.push_back(default_server2);
 		return;
 	}
-	std::cout << "config: " << config << std::endl;
+	std::cout << "config: " << config << std::endl << "\n";
 	std::ifstream file(config);
 	if (!file.is_open())
 		throw std::runtime_error("unable to open file: \"" + config + "\"");

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/03 17:09:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:33:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,15 @@ enum class SizeUnit
 	gigabytes = 3
 };
 
+/** @todo both _host = and setHost() work fine, J preference? */
 /**
  * @brief	data filler for testing
  * @note	to be removed.
  */
 Server::Server(void) : _port(8080)
 {
-	/** @todo both _host = and setHost() work fine, J preference? */
 	_serverName = "default_server";
-	_host = "0.0.0.0";
-	//setHost("0.0.0.0");
+	_host = "127.0.0.1";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;

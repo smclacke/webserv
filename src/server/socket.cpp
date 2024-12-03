@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 17:06:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 17:27:25 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@ Socket::Socket() {}
 Socket::Socket(const Server &servInstance) : _maxConnections(10), _reuseaddr(1), _flags(0)
 {
 	openServerSocket(servInstance);
-	std::cout << "Server socket setup successful\n";
+	std::cout << "Server socket setup successful\n\n";
 }
 
 Socket::Socket(const Socket &copy)
@@ -65,13 +65,11 @@ void		Socket::openServerSocket(const Server &servInstance)
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
-
 	if (inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr) <= 0)
 	{
 		protectedClose(_sockfd);
 		throw std::runtime_error("Invalid IP address format\n");
 	}
-
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	_addrlen = sizeof(_sockaddr);
 
@@ -89,8 +87,8 @@ void		Socket::openServerSocket(const Server &servInstance)
 	setSockaddr(_sockaddr);
 	setAddrlen(_addrlen);
 
-	std::cout << "\nListening on port - " << servInstance.getPort() << "\n";
-	std::cout << "Host address - " << servInstance.getHost().c_str() << " \n\n";
+	std::cout << "Listening on port - " << servInstance.getPort() << "\n";
+	std::cout << "Host address - " << servInstance.getHost().c_str() << " \n";
 }
 
 /* getters */
