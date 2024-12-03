@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:03:04 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 16:23:31 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@ Socket::Socket(const Server &servInstance) : _maxConnections(10), _reuseaddr(1),
 	std::cout << "Server socket setup successful\n";
 }
 
-//Socket::Socket(const Socket &copy)
+// Socket::Socket(const Socket &copy)
 //{
 //	*this = copy;
-//}
+// }
 
 Socket &Socket::operator=(const Socket &socket)
 {
@@ -58,7 +58,7 @@ Socket::~Socket()
 
 /* methods */
 /** @todo if this server fails, continue and make the rest? */
-void		Socket::openServerSocket(const Server &servInstance)
+void Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
 		throw std::runtime_error("Error socketing sock\n");
@@ -75,11 +75,15 @@ void		Socket::openServerSocket(const Server &servInstance)
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
-	_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	//_sockaddr.sin_addr.s_addr = servInstance.getHost();
+	//_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
+	std::cout << "AAGRIHTEAEA Host = " << servInstance.getHost().c_str() << std::endl;
+	if (inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr) <= 0)
+	{
+		protectedClose(_sockfd);
+		throw std::runtime_error("Invalid IP address format\n");
+	}
 	_sockaddr.sin_port = htons(servInstance.getPort());
 	_addrlen = sizeof(_sockaddr);
-
 
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
