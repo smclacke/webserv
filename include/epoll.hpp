@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 16:43:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 22:54:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,11 @@ typedef struct s_clients
 typedef struct s_serverData
 {
 	std::shared_ptr<Server>							_server;
-	std::vector<t_clients> 							_clients;
+	std::deque<t_clients> 							_clients;
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in &addr, int len);
+	void								removeClient(t_clients &client);
 }				t_serverData;
 
 class Epoll
@@ -123,7 +124,7 @@ public:
 		void							closeDelete(int fd);
 		void							updateClientClock(t_clients &client);
 		void							clientTimeCheck(t_clients &client);
-		void							handleClientClose(t_clients &client);
+		void							handleClientClose(t_serverData &server, t_clients &client);
 		void							cleanUp();
 };
 

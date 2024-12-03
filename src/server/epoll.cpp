@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 19:20:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 22:58:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,10 +38,8 @@ Epoll::~Epoll()
 { 
 	std::cout << "Epoll destructor called\n";
 	if (_epfd > 0)
-	{
-		if (!protectedClose(_epfd))
-			std::cerr << "Failed to close epfd\n";
-	}
+		protectedClose(_epfd);
+
 	/** @todo if the pipe moves, move the close
 	 * @todo if closeDelete fails? or pipe not added to epoll? */ 
 	//if (_pipefd[0])
@@ -55,7 +53,7 @@ void Epoll::initEpoll()
 {
 	_epfd = epoll_create(10);
 	if (_epfd < 0)
-		throw std::runtime_error("Error creating Epoll instance\n");    // or just error + try again? in this case, surely end server?
+		throw std::runtime_error("Error creating Epoll instance\n");
 	std::cout << "Successfully created Epoll instance\n";
 }
 
@@ -89,21 +87,22 @@ void		Epoll::handleRead(t_clients &client)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 			{
-				std::cout << "no data available right now\n";
+				std::cout << "No data available right now\n";
 				client._clientState = clientState::BEGIN;
 				return ;
 			}
-			handleClientClose(client);
-			throw std::runtime_error("Reading from client connection failed\n"); // error + remove anything read(?) + return
+			
+			std::cerr << "Reading from client connection failed\n";
+			client._connectionClose = true;
+			return ;
 		}
 		else if (bytesRead == 0)
 		{
 			std::cout << "Client disconnected\n";
-			handleClientClose(client); // should we close???
+			client._connectionClose = true;
 			return ;
 		}
 		client._request += buffer;
-
 		if (client._request.find("\r\n\r\n") != std::string::npos)
 		{
 			std::cout << "request = " << client._request << "\n";
@@ -116,9 +115,7 @@ void		Epoll::handleRead(t_clients &client)
 }
 
 /** 
- * @todo get actual response message 
- * @todo what about when bytesWritten hits the buffer size? where did this go?
- * 			or is this only necessary for handling read?
+ * @todo get actual response message || error page
  */
 void		Epoll::handleWrite(t_clients &client)
 {
@@ -133,13 +130,20 @@ void		Epoll::handleWrite(t_clients &client)
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return ;
 			std::cerr << "Write to client failed\n";
-			handleClientClose(client);
+			client._connectionClose = true;
+			return ;
+		}
+		else if (bytesWritten == 0)
+		{
+			std::cout << "Client disconnected\n";
+			client._connectionClose = true;
 			return ;
 		}
 		client._write_offset += bytesWritten;
 		if (client._write_offset >= client._response.length())
 		{
 			client._write_offset = 0;
+			client._response.clear();
 			client._clientState = clientState::READY;
 			return ;
 		}
@@ -197,8 +201,6 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 
 /** 
  * @todo file stuff
- * @todo connection bool handling/send somewhere so it is actually being used
- * 			if connectionClose bool == false - keepAlive else if true - close connection
  */
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
@@ -227,7 +229,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 						updateClientClock(client);
 					}
 				}
-				else if (event.events & EPOLLOUT)
+				if (event.events & EPOLLOUT)
 				{
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
@@ -236,12 +238,23 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 						updateClientClock(client);
 					}
 				}
-				else if (event.events & EPOLLHUP)
+				if (event.events & EPOLLHUP)
 				{
-					std::cout << "EPOLLHUP\n";
-					handleClientClose(client);
+					std::cout << "Epoll: EPOLLHUP\n";
+					client._connectionClose = true;
 				}
-				break ;
+				if (event.events & EPOLLRDHUP)
+				{
+					std::cout << "Epoll: EPOLLRDHUP\n";
+					client._connectionClose = true;
+				}
+				if (event.events & EPOLLERR)
+				{
+					std::cout << "EPoll: EPOLLERR\n";
+					client._connectionClose = true;
+				}
+				if (client._connectionClose == true)
+					handleClientClose(serverData, client);
 			}
 		}
 	}

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/03 19:14:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 22:34:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,8 +31,8 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 	if (config.empty())
 	{
 		std::cout << "Default configuration\n\n";
-		//auto default_server = std::make_shared<Server>();
-		//_servers.push_back(default_server);
+		auto default_server = std::make_shared<Server>();
+		_servers.push_back(default_server);
 		auto default_server2 = std::make_shared<Server>(9999);
 		_servers.push_back(default_server2);
 		return;
@@ -77,11 +77,11 @@ void Webserv::addServersToEpoll()
 	{
 		std::shared_ptr<Server>		currentServer = getServer(i);
 		t_serverData				thisServer;
-		
-		thisServer._server = currentServer;
+		//thisServer._server = currentServer; // was this ever doing anything?
 
 		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
 		struct epoll_event 	event;
+
 		event.data.fd = serverSockfd;
 		_epoll.addServerSocketEpoll(serverSockfd);
 		_epoll.setEvent(event);
@@ -100,13 +100,11 @@ void		Webserv::monitorServers()
 
 	while (_keepRunning)
 	{
-		// check for client timeouts
 		for (auto &servers : _epoll.getAllServers())
 		{
 			for (auto &client : servers._clients)
 				_epoll.clientTimeCheck(client);
 		}
-		// wait for events
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1)
 		{
@@ -116,7 +114,6 @@ void		Webserv::monitorServers()
 		}
 		else if (numEvents == 0)
 			continue ;
-		// handle incoming events
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;

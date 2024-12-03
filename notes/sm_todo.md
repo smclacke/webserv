@@ -43,3 +43,6 @@
 13) 
 	CHECK - why am i making connections when i have only typed the address in
 		and not entered in browser?
+
+14) 
+	CHECK - JULIUS: openserver socket erroring handling?

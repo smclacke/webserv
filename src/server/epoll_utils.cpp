@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 19:18:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 22:56:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,7 +37,7 @@ struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
 	{
 		protectedClose(sockfd);
-		throw std::runtime_error("Error adding socket to epoll\n");
+		std::cerr << "Error adding socket to epoll\n";
 	}
 	return event;
 }
@@ -75,7 +75,8 @@ void		Epoll::addToEpoll(int fd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		std::cout << "Error adding fd to epoll\n";
+		std::cerr << "Error adding fd to epoll\n";
+		return ;
 	}
 	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
 }
@@ -89,7 +90,7 @@ void		Epoll::modifyEvent(int fd, uint32_t events)
 	if (epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event) == -1)
 	{
 		closeDelete(fd);
-		std::cout << "Failed to modify socket event type\n";
+		std::cerr << "Failed to modify socket event type\n";
 	}
 }
 
@@ -121,7 +122,7 @@ void		Epoll::clientTimeCheck(t_clients &client)
 
 		if (std::chrono::duration_cast<std::chrono::seconds>(now - lastActivity).count() > TIMEOUT)
 		{
-			std::cout << "Client timed out\n";
+			std::cerr << "Client timed out\n";
 			closeDelete(client_fd);
 			it = client._clientTime.erase(it);	
 		}
@@ -130,22 +131,36 @@ void		Epoll::clientTimeCheck(t_clients &client)
 	}
 }
 
+void		s_serverData::removeClient(t_clients &client)
+{
+	auto it = std::find_if(_clients.begin(), _clients.end(), [&client](const t_clients &c)
+	{
+		return &c == &client;	
+	});
 
-/** @todo check proerper handling if close fails.. */
-void		Epoll::handleClientClose(t_clients &client)
+	if (it != _clients.end())
+	{
+		_clients.erase(it);
+		std::cout << "Client successfully removed from deque\n";
+	}
+	else
+		std::cerr << "Error: Client not found in _clients deque\n";
+}
+
+void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 {
     //bool closeSuccess = true;
 
 	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr) == -1)
 		std::cerr << "Failed to remove fd from epoll\n";
 
-	if (close(client._fd) == -1)
-		std::cerr << "Failed to close clent socket\n";
-	else
-		std::cout << "Successfully closed fd: " << client._fd << "\n";  
+	protectedClose(client._fd);
     client._clientState = clientState::CLOSED;
     client._request.clear();
     client._response.clear();
+	client._fd = -1;
+
+	server.removeClient(client);
 }
 
 // cleanup EVERYTHING at end of monitoring loop

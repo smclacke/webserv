@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 17:27:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/03 22:59:52 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,21 +47,21 @@ Socket::~Socket()
 }
 
 /* methods */
-/** @todo if this server fails, continue and make the rest? */
+/** @todo if this server fails, continue and make the rest? if second(...) server fails, need to clean up rest */
 void		Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		throw std::runtime_error("Error socketing sock\n"); // or error message, close sockfd + return
+		throw std::runtime_error("Error socketing sock\n");
 
 	_flags = fcntl(_sockfd, F_GETFL, 0);
 	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error setting nonblocking\n");  // or error message, close sockfd + return
+		throw std::runtime_error("Error setting nonblocking\n");
 	}
 
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
-		throw std::runtime_error("Error setsockopt sock\n");   // or error message, close sockfd + return
+		throw std::runtime_error("Error setsockopt sock\n");
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
@@ -76,13 +76,13 @@ void		Socket::openServerSocket(const Server &servInstance)
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error binding sock\n");   // or error message + return
+		throw std::runtime_error("Error binding sock\n");
 	}
 
 	if (listen(_sockfd, _maxConnections) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error listening for connections\n");    // or error message + return
+		throw std::runtime_error("Error listening for connections\n");
 	}
 	setSockaddr(_sockaddr);
 	setAddrlen(_addrlen);
