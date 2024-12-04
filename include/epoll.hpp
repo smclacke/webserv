@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 22:54:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 14:52:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,9 +116,9 @@ public:
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::string &message);
-		struct epoll_event				addServerSocketEpoll(int sockfd);
 		void							addFile();
 		void							addToEpoll(int fd);
+		struct epoll_event				addServerSocketEpoll(int sockfd);
 		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							closeDelete(int fd);

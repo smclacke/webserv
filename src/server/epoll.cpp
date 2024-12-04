@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 22:58:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 14:49:11 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,6 +62,12 @@ void	Epoll::handleFile()
 	char	buffer[MAX_FILE_READ];
 	int		n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
 
+	if (n < 0)
+	{
+		/** @todo check, close pipe here?*/
+		std::cerr << "Read() failed\n";
+		return ;	
+	}
 	if (n > 0)
 	{
 		buffer[n] = '\0';
@@ -69,9 +75,6 @@ void	Epoll::handleFile()
 	}
 }
 
-/** 
- *  @todo handling bad fd to recv, not necessarily a throw or exit server situ
- */
 void		Epoll::handleRead(t_clients &client)
 {
 	char		buffer[READ_BUFFER_SIZE];
@@ -149,27 +152,6 @@ void		Epoll::handleWrite(t_clients &client)
 		}
 		client._connectionClose = false;
 	}
-}
-
-void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
-{
-	static int clientId = 0;
-
-	t_clients	newClient;
-
-	newClient._fd = sock;
-	newClient._addr = addr;
-	newClient._addLen = len;
-	newClient._clientState = clientState::BEGIN;
-	newClient._clientTime[sock] = std::chrono::steady_clock::now();
-	newClient._connectionClose = false;
-	newClient._write_offset = 0;
-	newClient._bytesWritten = 0;
-	newClient._clientId = clientId++;
-	
-	_clients.push_back(newClient);
-
-	std::cout << "New client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
 }
 
 /** @todo this: CONNECT (?) - this is not necessary right?

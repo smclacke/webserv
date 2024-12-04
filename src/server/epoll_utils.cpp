@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 22:56:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 14:58:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,23 +28,11 @@ std::string Epoll::generateHttpResponse(const std::string &message)
 	return response.str();
 }
 
-struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
-{
-	struct epoll_event event;
-	event.data.fd = sockfd;
-	event.events = EPOLLIN;
-
-	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
-	{
-		protectedClose(sockfd);
-		std::cerr << "Error adding socket to epoll\n";
-	}
-	return event;
-}
-
 /** 
  * 	pipefd[0] - read
  * 	pipefd[1] - write
+ * 
+ * @todo check, pipe fail is fatal error? and epoll_ctl fail?
  */
 void	Epoll::addFile()
 {
@@ -79,6 +67,21 @@ void		Epoll::addToEpoll(int fd)
 		return ;
 	}
 	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
+}
+
+struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
+{
+	struct epoll_event event;
+	event.data.fd = sockfd;
+	event.events = EPOLLIN;
+
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
+	{
+		protectedClose(sockfd);
+		std::cerr << "Error adding socket to epoll\n";
+	}
+	std::cout << "New server socket added to epoll: " << event.data.fd << "\n";
+	return event;
 }
 
 void		Epoll::modifyEvent(int fd, uint32_t events)
@@ -131,26 +134,8 @@ void		Epoll::clientTimeCheck(t_clients &client)
 	}
 }
 
-void		s_serverData::removeClient(t_clients &client)
-{
-	auto it = std::find_if(_clients.begin(), _clients.end(), [&client](const t_clients &c)
-	{
-		return &c == &client;	
-	});
-
-	if (it != _clients.end())
-	{
-		_clients.erase(it);
-		std::cout << "Client successfully removed from deque\n";
-	}
-	else
-		std::cerr << "Error: Client not found in _clients deque\n";
-}
-
 void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 {
-    //bool closeSuccess = true;
-
 	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr) == -1)
 		std::cerr << "Failed to remove fd from epoll\n";
 
@@ -163,6 +148,7 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 	server.removeClient(client);
 }
 
+/** @todo is this necessary? */
 // cleanup EVERYTHING at end of monitoring loop
 // what - how - etc.. need to check this
 void		Epoll::cleanUp()

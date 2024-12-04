@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/12/03 23:03:46 by smclacke      ########   odam.nl          #
+#    Updated: 2024/12/04 14:56:31 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -39,6 +39,7 @@ SRC_FILES := main.cpp					\
 			server/epoll.cpp			\
 			server/epoll_utils.cpp		\
 			server/server.cpp			\
+			server/serverData.cpp		\
 			server/socket.cpp			\
 			server/webserv.cpp			\
 			utils.cpp					\

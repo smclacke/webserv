@@ -3,46 +3,40 @@
 **TODOTODOTODO**
 
 1) 
-	cleanUp function for monitoring fail or end - anything that should be deleted from epoll...
-		not in destructors (epoll destructor delete anything that was added to the epoll here?)
+	cleanUp function? necessary, anything left behind after success? (i dont think so)
 
 2) 
-	add some descriptions/briefs
-
-3) 
-	stuff im not sure about:
-		- when close connections: once whole request/response received and handled: fix this in code
+	add descriptions/briefs
 
 5) 
-	everywhere good error handling + closing + handling of fds/sockets etc
+	error handling + closing + handling of fds/sockets etc
+	run through full code to check im not missing a close etc
 
 6) 
 	handling CHUNK information streams..
 	the current chunk will have size of next chunk etc.. need to chunkHandle
 
 7) 
-	adding files to epoll
+	adding files to epoll (still can't make sense of this...)
 
+
+
+**13)** 
+	CHECK - why am i making connections when i have only typed the address in
+		and not entered in browser?
 8) 
 	TEST the current monitoring - something that will take a few loops to be read etc..
 
-9) 
-	some exit / throws not necessary
-	some things should give error, be handled and server continues
+16) CHECK - server/client for loops in monitoring logic sound?
 
-10) 
-	im reusing the same client info... need to make sure im creating new instances each time
 
+**JULIUS**
 11) 
 	ASK julius - if server - server socket creation fails in openServerSocket, just give error
 	message and continuing creating the others if there are any? + if only one then what? 
 
-12) 
-	CHECK - close connection after each read and write or only after the write?
-
-13) 
-	CHECK - why am i making connections when i have only typed the address in
-		and not entered in browser?
-
 14) 
-	CHECK - JULIUS: openserver socket erroring handling?
+	CHECK - JULIUS: openserver socket erroring handling
+
+14) CHECK - not handling invalid fd in recv... no one else does?
+	e only call recv() if fd (epoll events) == client.fd so that already verifies that client.fd is valid

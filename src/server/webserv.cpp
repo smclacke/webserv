@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/03 22:34:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 14:55:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,17 +76,14 @@ void Webserv::addServersToEpoll()
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
 		std::shared_ptr<Server>		currentServer = getServer(i);
-		t_serverData				thisServer;
+		//t_serverData				thisServer;
 		//thisServer._server = currentServer; // was this ever doing anything?
-
 		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
 		struct epoll_event 	event;
 
 		event.data.fd = serverSockfd;
 		_epoll.addServerSocketEpoll(serverSockfd);
 		_epoll.setEvent(event);
-
-		std::cout << "Added server socket to epoll\n";
 		_epoll.setServer(currentServer);
 	}
 	std::cout << "--------------------------\n";
@@ -149,13 +146,13 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
 	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
 						   {
-							   return server->getServerName() == name; // Assuming you have a method to get the server name
+							   return server->getServerName() == name;
 						   });
 	if (it != _servers.end())
 	{
-		return *it; // Return the found server
+		return *it;
 	}
-	throw std::runtime_error("Server not found"); // Handle the case where the server is not found
+	throw std::runtime_error("Server not found");
 }
 
 Epoll &Webserv::getEpoll()
