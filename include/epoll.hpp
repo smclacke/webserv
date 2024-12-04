@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 17:10:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 18:29:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,9 +58,10 @@ typedef struct s_clients
 	std::string										_requestClient;
 	
 	// write
-	std::string										_responseClient;
+	s_httpSend										_responseClient;
 	size_t											_write_offset;
 	ssize_t											_bytesWritten;
+	bool											_readingFile;
 
 }				t_clients;
 
@@ -95,7 +96,7 @@ class Epoll
 		void							initEpoll();
 		void							handleFile();
 		void							handleRead(t_clients &client);
-		void							handleWrite(t_clients &client);
+		void							handleWrite(t_serverData &server, t_clients &client);
 		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);
 
@@ -116,7 +117,7 @@ class Epoll
 
 		/* utils -> epoll_utils.cpp */
 		std::string						generateHttpResponse(const std::stringstream &message);
-		void							addFile();
+		//void							addFile(int fd);
 		void							addToEpoll(int fd);
 		struct epoll_event				addServerSocketEpoll(int sockfd);
 		void							modifyEvent(int fd, uint32_t events);

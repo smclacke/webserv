@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 14:37:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 20:55:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,7 +84,6 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-/** @note, julius - don't need to set port in init list */
 Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("./server_files")
 {
 	std::string line;
@@ -129,10 +128,11 @@ Server::~Server()
 /**
  * @note might make epoll inheret http so might not need this :D
  */
-s_httpSend Server::handleRequest(std::stringstream &request)
+s_httpSend Server::handleRequest(std::string &request)
 {
+	std::stringstream stream(request);
 	httpHandler parser(*this);
-	parser.parseRequest(request);
+	parser.parseRequest(stream);
 	return (parser.generateResponse());
 }
 

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:44:58 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/04 21:21:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void httpHandler::stdGet(void)
 	auto AcceptedH = findHeaderValue(_request, eRequestHeader::Accept);
 	if (AcceptedH.has_value())
 	{
-		if (AcceptedH.value() != type)
+		if (AcceptedH.value().find(type) == std::string::npos)
 		{
 			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesnt match the requested Accept header");
 		}
@@ -91,6 +91,7 @@ void httpHandler::stdGet(void)
  */
 void httpHandler::getUriEncoded(void)
 {
+	std::cout << "URI encoded" << std::endl;
 	if (_request.path.find(".") != std::string::npos)
 	{
 		if (_request.path.substr(_request.path.find_last_of(".") + 1) != ".csv")
@@ -193,40 +194,54 @@ void httpHandler::readFile(void)
 		return;
 	}
 
-	pid_t pid = fork();
-	if (pid == -1)
+	//pid_t pid = fork();
+	//if (pid == -1)
+	//{
+	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to fork process");
+	//	close(pipefd[0]);
+	//	close(pipefd[1]);
+	//	return;
+	//}
+	//if (pid == 0)
+	//{					  // Child process
+	//	close(pipefd[0]); // Close unused read end
+	//	int fileFd = open(_request.path.c_str(), O_RDONLY);
+	//	if (fileFd == -1)
+	//	{
+	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
+	//		close(pipefd[1]);
+	//		exit(EXIT_FAILURE);
+	//	}
+	//	exit(EXIT_FAILURE);			   // If execlp fails
+	//}
+	//else
+	//{								  // Parent process
+	//	close(pipefd[1]);			  // Close unused write end
+	//	_response.readFd = pipefd[0]; // Set the read end of the pipe for epoll
+	//	_response.pid = pid;
+	//	_response.readFile = true;
+	//}
+	//int out = open(_request.path.c_str(), O_RDONLY);
+	//if (out == -1)
+	//{
+	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
+	//	return;
+	//}
+	std::ifstream is(_request.path);
+	if (!is.is_open())
 	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to fork process");
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return;
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
+		return;	
 	}
-
-	if (pid == 0)
-	{					  // Child process
-		close(pipefd[0]); // Close unused read end
-		int fileFd = open(_request.path.c_str(), O_RDONLY);
-		if (fileFd == -1)
-		{
-			setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-			close(pipefd[1]);
-			exit(EXIT_FAILURE);
-		}
-
-		dup2(fileFd, STDIN_FILENO); // Redirect file to stdin
-		close(fileFd);
-
-		dup2(pipefd[1], STDOUT_FILENO); // Redirect stdout to pipe
-		close(pipefd[1]);
-
-		execlp("cat", "cat", nullptr); // Use 'cat' to send file content to pipe
-		exit(EXIT_FAILURE);			   // If execlp fails
+	std::string line;
+	std::getline(is, line); // if end of file returns false
+	if (is.fail())
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "getline error");
+		return;	
 	}
-	else
-	{								  // Parent process
-		close(pipefd[1]);			  // Close unused write end
-		_response.readFd = pipefd[0]; // Set the read end of the pipe for epoll
-		_response.pid = pid;
-		_response.readFile = true;
-	}
+	std::cout << "Read with getline =" << line << std::endl;
+	//std::cout << "readfd in GET:" << out << std::endl;
+	//_response.readFd = out;
+	_response.readFile = true;
 }

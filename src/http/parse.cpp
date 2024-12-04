@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:18:13 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/04 20:55:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -170,13 +170,16 @@ void httpHandler::parseHeaders(std::stringstream &ss)
 		eRequestHeader headerType = toEHeader(key);
 		if (headerType == eRequestHeader::Invalid)
 		{
-			std::cerr << "Invalid header key: " << key << std::endl;
-			return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid header key: " + key);
+			std::cerr << "unknown header key: " << key << std::endl;
 		}
 		if (headerType == eRequestHeader::Connection)
 		{
-			if (key != "keep-alive" && key != "close")
-				return setErrorResponse(eHttpStatusCode::NotImplemented, "Connection type not implemented: " + key);
+			if (value != "keep-alive" && value != "close")
+			{
+				_response.readFile = false;
+				_response.cgi = false;
+				return setErrorResponse(eHttpStatusCode::NotImplemented, "Connection type not implemented: " + value);
+			}
 		}
 		_request.headers[headerType] = value;
 	}

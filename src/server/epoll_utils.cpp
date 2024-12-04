@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 17:10:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 19:08:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,26 +34,27 @@ std::string Epoll::generateHttpResponse(const std::stringstream &message)
  * 
  * @todo check, pipe fail is fatal error? and epoll_ctl fail?
  */
-void	Epoll::addFile()
-{
-	if (pipe(_pipefd) == -1)
-	{
-		std::cerr << "pipe for file failed\n";
-		return ;
-	}
+//void	Epoll::addFile(int fd)
+//{
+	
+//	//if (pipe(_pipefd) == -1)
+//	//{
+//	//	std::cerr << "pipe for file failed\n";
+//	//	return ;
+//	//}
 
-	struct epoll_event	event;
-	event.events = EPOLLIN;
-	event.data.fd = _pipefd[0];
+//	//struct epoll_event	event;
+//	//event.events = EPOLLIN;
+//	//event.data.fd = _pipefd[0];
 
-	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _pipefd[0], &event) == -1)
-	{
-		std::cerr << "epoll_ctl file failed\n";
-		protectedClose(_pipefd[0]);
-		protectedClose(_pipefd[1]);
-		return ;
-	}
-}
+//	//if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _pipefd[0], &event) == -1)
+//	//{
+//	//	std::cerr << "epoll_ctl file failed\n";
+//	//	protectedClose(_pipefd[0]);
+//	//	protectedClose(_pipefd[1]);
+//	//	return ;
+//	//}
+//}
 
 void		Epoll::addToEpoll(int fd)
 {
@@ -142,7 +143,7 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 	protectedClose(client._fd);
     client._clientState = clientState::CLOSED;
     client._requestClient.clear();
-    client._responseClient.clear();
+    client._responseClient.msg.clear();
 	client._fd = -1;
 
 	server.removeClient(client);

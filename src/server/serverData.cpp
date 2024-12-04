@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/04 14:46:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 14:49:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 18:17:48 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,6 +28,7 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	newClient._write_offset = 0;
 	newClient._bytesWritten = 0;
 	newClient._clientId = clientId++;
+	newClient._readingFile = false;
 	
 	_clients.push_back(newClient);
 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 22:38:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 19:01:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@
 #include <sys/ioctl.h> // for nonblocking stuff..
 #include <arpa/inet.h>
 #include <sys/select.h> // for select()
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // C includes
 #include <unistd.h>
@@ -57,6 +59,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <csignal>
+
 
 
 /* forward declarations*/
