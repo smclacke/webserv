@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 20:44:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 21:49:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ httpHandler::httpHandler(Server &server) : _server(server)
 	_request.body.clear();
 	_request.uriEncoded = false;
 	_response.readFd = false;
+	_response.filepath.clear();
 	_response.cgi = false;
 	_response.pid = -1;
 	_response.readFd = -1;

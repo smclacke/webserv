@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:20:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 22:08:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -174,10 +174,10 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 	}
 	else
 	{
-		std::cout << "WE ARE READING\n";
 		//addToEpoll(client._responseClient.readFd);
+		ssize_t bytesSend;
 		char buffer[READ_BUFFER_SIZE];
-		ssize_t	bytesWritten = read(client._responseClient.readFd, buffer ,READ_BUFFER_SIZE);
+		ssize_t	bytesWritten = read(client._responseClient.readFd, buffer ,READ_BUFFER_SIZE -1);
 		std::cout << "BYTES WRITTEN IS " << bytesWritten << std::endl;
 		if (bytesWritten < 0) // error
 		{
@@ -204,10 +204,11 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 					client._connectionClose = true;	
 			return ;
 		}
-		else if (bytesWritten == READ_BUFFER_SIZE) // we are not done
+		buffer[READ_BUFFER_SIZE - 1] = '\0';
+		if (bytesWritten == READ_BUFFER_SIZE -1) // we are not done
 		{
 			std::cout << "WE READ:--" << buffer << std::endl;
-			bytesWritten = send(client._fd, buffer, bytesWritten, 0);
+			bytesSend = send(client._fd, buffer, bytesWritten, 0);
 			if (bytesWritten < 0)
 			{
 				if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -216,11 +217,12 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 				client._connectionClose = true;
 				return ;
 			}
+			std::cout << "BYTES SEND: " << bytesSend << std::endl;
 		}
 		else if (bytesWritten < READ_BUFFER_SIZE) // we need to send and then we are done
 		{
-			bytesWritten = send(client._fd, buffer, bytesWritten, 0);
-			if (bytesWritten < 0)
+			bytesSend = send(client._fd, buffer, bytesWritten, 0);
+			if (bytesSend < 0)
 			{
 				if (errno == EAGAIN || errno == EWOULDBLOCK)
 					return ;
@@ -245,7 +247,6 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 		}
 					
 	}
-	
 }
 
 /** @todo this: CONNECT (?) - this is not necessary right?

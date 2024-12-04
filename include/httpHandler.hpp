@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:43:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/04 21:46:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,6 +44,7 @@ struct s_response
 {
 	std::unordered_map<eResponseHeader, std::string> headers;
 	std::stringstream body;
+	std::string filepath;
 	bool readFile = false;
 	bool cgi = false;
 	int readFd = -1;

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 19:41:01 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 21:48:48 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 		{
 			responseStream << _response.body.str();
 		}
-		s_httpSend response = {responseStream.str(), keepalive, _response.readFd, _response.pid};
+		s_httpSend response = {responseStream.str(), keepalive, _response.filepath, _response.readFile, _response.readFd, _response.pid};
 		return (response);
 	}
 	else
@@ -88,7 +88,7 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 					   << "Connection: close\r\n"
 					   << "\r\n"
 					   << message;
-		s_httpSend response = {responseStream.str(), keepalive, -1, -1};
+		s_httpSend response = {responseStream.str(), keepalive, "", false, -1, -1};
 		return (response);
 	}
 }

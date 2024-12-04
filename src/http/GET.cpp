@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:21:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 22:04:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -187,12 +187,12 @@ void httpHandler::getUriEncoded(void)
  */
 void httpHandler::readFile(void)
 {
-	int pipefd[2];
-	if (pipe(pipefd) == -1)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to create pipe");
-		return;
-	}
+	//int pipefd[2];
+	//if (pipe(pipefd) == -1)
+	//{
+	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to create pipe");
+	//	return;
+	//}
 
 	//pid_t pid = fork();
 	//if (pid == -1)
@@ -221,27 +221,31 @@ void httpHandler::readFile(void)
 	//	_response.pid = pid;
 	//	_response.readFile = true;
 	//}
-	//int out = open(_request.path.c_str(), O_RDONLY);
-	//if (out == -1)
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-	//	return;
-	//}
-	std::ifstream is(_request.path);
-	if (!is.is_open())
+	int out = open(_request.path.c_str(), O_RDONLY);
+	if (out == -1)
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-		return;	
+		return;
 	}
-	std::string line;
-	std::getline(is, line); // if end of file returns false
-	if (is.fail())
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "getline error");
-		return;	
-	}
-	std::cout << "Read with getline =" << line << std::endl;
+	//std::cout << "path =====" << _request.path << std::endl;
+	//std::ifstream is(_request.path);
+	//if (!is.is_open())
+	//{
+	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
+	//	return;	
+	//}
+	//std::string line;
+	//std::getline(is, line); // if end of file returns false
+	//if (is.fail())
+	//{
+	//	perror("bruh:");
+	//	setErrorResponse(eHttpStatusCode::InternalServerError, "getline error");
+	//	return;	
+	//}
+	//std::cout << "Read with getline =" << line << std::endl;
 	//std::cout << "readfd in GET:" << out << std::endl;
 	//_response.readFd = out;
+	_response.filepath = _request.path;
+	_response.readFd = out;
 	_response.readFile = true;
 }

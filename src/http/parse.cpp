@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 20:55:30 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 21:42:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,12 +113,16 @@ std::string httpHandler::buildPath(void)
 {
 	std::string uri = _request.uri;
 	std::string path;
-	if (!_request.loc.path.empty() && _request.loc.path != "/")
-		uri.erase(0, _request.loc.path.length());
+	if (_request.loc.path == "/")
+		uri = "";
 	if (_request.loc.root.empty())
 		path = "." + _server.getRoot() + uri;
 	else
+	{		
+		if (!_request.loc.path.empty() && _request.loc.path != "/")
+			uri.erase(0, _request.loc.path.length());
 		path = "." + _request.loc.root + uri;
+	}
 	return (path);
 }
 
