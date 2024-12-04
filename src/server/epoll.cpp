@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 14:49:11 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 17:10:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -105,12 +105,13 @@ void		Epoll::handleRead(t_clients &client)
 			client._connectionClose = true;
 			return ;
 		}
-		client._request += buffer;
-		if (client._request.find("\r\n\r\n") != std::string::npos)
+		client._requestClient += buffer;
+		if (client._requestClient.find("\r\n\r\n") != std::string::npos)
 		{
-			std::cout << "request = " << client._request << "\n";
+			// give request to httpHandler
+			std::cout << "request = " << client._requestClient << "\n";
 			client._clientState = clientState::READY;
-			client._request.clear();
+			client._requestClient.clear();
 			return ;
 		}
 		client._connectionClose = false;
@@ -122,12 +123,13 @@ void		Epoll::handleRead(t_clients &client)
  */
 void		Epoll::handleWrite(t_clients &client)
 {
-	if (client._response.empty())
-		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
+	// get the http response + send that | cleint.httpSend.msg
+	if (client._responseClient.empty())
+		client._responseClient = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
 
 	while (true)
 	{
-		ssize_t	bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
+		ssize_t	bytesWritten = send(client._fd, client._responseClient.c_str() + client._write_offset, strlen(client._responseClient.c_str()) - client._write_offset, 0);
 		if (bytesWritten < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -143,10 +145,10 @@ void		Epoll::handleWrite(t_clients &client)
 			return ;
 		}
 		client._write_offset += bytesWritten;
-		if (client._write_offset >= client._response.length())
+		if (client._write_offset >= client._responseClient.length())
 		{
 			client._write_offset = 0;
-			client._response.clear();
+			client._responseClient.clear();
 			client._clientState = clientState::READY;
 			return ;
 		}
@@ -182,7 +184,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 }
 
 /** 
- * @todo file stuff
+ * @todo file stuff (??)
  */
 void	Epoll::processEvent(int fd, epoll_event &event)
 {
@@ -193,13 +195,8 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 			if (event.events & EPOLLIN)
 				makeNewConnection(fd, serverData);
 		}
-		//std::string file = 0;
-		//if (!file.empty())
-		//	addFile();
 		for (auto &client : serverData._clients)
 		{
-			//if (fd == _pipefd[0])
-			//	handleFile();
 			if (fd == client._fd)
 			{
 				if (event.events & EPOLLIN)

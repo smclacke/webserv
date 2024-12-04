@@ -20,10 +20,7 @@
 	adding files to epoll (still can't make sense of this...)
 
 
-
-**13)** 
-	CHECK - why am i making connections when i have only typed the address in
-		and not entered in browser?
+**CHECK**
 8) 
 	TEST the current monitoring - something that will take a few loops to be read etc..
 

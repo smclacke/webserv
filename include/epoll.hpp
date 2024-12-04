@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 14:52:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 17:10:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,6 +19,7 @@
 class Webserv;
 class Server;
 class Socket;
+class httpHandler;
 
 enum class eSocket;
 
@@ -54,12 +55,10 @@ typedef struct s_clients
 	int												_clientId;
 	
 	// read
-	/** @todo want request to be stringstream for speed | ostringstream */
-	//std::unique_ptr<std::stringstream>				_request;
-	std::string										_request;
+	std::string										_requestClient;
 	
 	// write
-	std::string										_response;
+	std::string										_responseClient;
 	size_t											_write_offset;
 	ssize_t											_bytesWritten;
 
@@ -75,6 +74,7 @@ typedef struct s_serverData
 	void								removeClient(t_clients &client);
 }				t_serverData;
 
+
 class Epoll
 {
 	private:
@@ -85,11 +85,11 @@ class Epoll
 		std::vector<epoll_event>		_events;
 		int								_pipefd[2]; // pipe[0] read | pipe[1] write
 
-public:
-	Epoll();
-	Epoll(const Epoll &copy);
-	Epoll &operator=(const Epoll &epoll);
-	~Epoll();
+	public:
+		Epoll();
+		Epoll(const Epoll &copy);
+		Epoll &operator=(const Epoll &epoll);
+		~Epoll();
 
 		/* methods */
 		void							initEpoll();
@@ -115,7 +115,7 @@ public:
 		void							setEvent(struct epoll_event &event);
 
 		/* utils -> epoll_utils.cpp */
-		std::string						generateHttpResponse(const std::string &message);
+		std::string						generateHttpResponse(const std::stringstream &message);
 		void							addFile();
 		void							addToEpoll(int fd);
 		struct epoll_event				addServerSocketEpoll(int sockfd);

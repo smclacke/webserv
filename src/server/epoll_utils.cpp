@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 14:58:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 17:10:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,16 +14,16 @@
 #include "../../include/epoll.hpp"
 
 /* Epoll utils */
-std::string Epoll::generateHttpResponse(const std::string &message)
+std::string Epoll::generateHttpResponse(const std::stringstream &message)
 {
-	size_t contentLength = message.size();
+	size_t contentLength = message.str().size();
 	std::ostringstream response;
 	response << "HTPP/1.1 200 OK\r\n"
 			 << "Content-Type: text/plain\r\n"
 			 << "Content-Length: " << contentLength << "\r\n"
 			 << "Connection : close\r\n"
 			 << "\r\n"
-			 << message;
+			 << message.str();
 
 	return response.str();
 }
@@ -141,8 +141,8 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 
 	protectedClose(client._fd);
     client._clientState = clientState::CLOSED;
-    client._request.clear();
-    client._response.clear();
+    client._requestClient.clear();
+    client._responseClient.clear();
 	client._fd = -1;
 
 	server.removeClient(client);
