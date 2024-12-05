@@ -3,44 +3,37 @@
 **TODOTODOTODO**
 
 1) 
-	recv vs read?
-	write vs send? both?
-	(photo on phone - add to notes and make decisions)
+	cleanUp function? necessary, anything left behind after success? (i dont think so)
 
 2) 
-	add some descriptions/briefs
-
-3) 
-	stuff im not sure about:
-		- when close connections
-
+	add descriptions/briefs
 
 5) 
-	everywhere good error handling + closing + handling of fds/sockets etc
+	error handling + closing + handling of fds/sockets etc
+	run through full code to check im not missing a close etc
 
 6) 
-	check print statements, simplify / comment some out
+	handling CHUNK information streams..
+	the current chunk will have size of next chunk etc.. need to chunkHandle
 
 7) 
-	add a close functionality so not only ctrl c-ing out everytime
+	adding files to epoll (still can't make sense of this...)
 
+
+**CHECK**
 8) 
-	leave any todos in files as todos
-		see what i can already/have already handled
+	TEST the current monitoring - something that will take a few loops to be read etc..
 
-9) 
-	adding files to epoll
+16) CHECK - server/client for loops in monitoring logic sound?
 
-10) 
-	client state stuff, reading writing till buffer, monitoring continues
-	everything handled correctly, no waiting unnecessarily
-	making use of the buffers etc
 
-	check this with buffer sizes of like 5 once implemented
-
+**JULIUS**
 11) 
-	some exit / throws not necessary
-	some things should give error, be handled and server continues
+	ASK julius - if server - server socket creation fails in openServerSocket, just give error
+	message and continuing creating the others if there are any? + if only one then what? 
 
-12) 
-	im reusing the same client info... need to make sure im creating new instances each time
+14) 
+	CHECK - JULIUS: openserver socket erroring handling
+
+14) CHECK - not handling invalid fd in recv... no one else does?
+	e only call recv() if fd (epoll events) == client.fd so that already verifies that client.fd is valid

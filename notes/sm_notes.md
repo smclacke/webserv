@@ -406,7 +406,8 @@ Example flow:
 recv() - reads data from socket, 0 if connection closed by peer, -1 error
 if EAGAIN or EWOULDBLOCK - no data is currently available to read
 
-
+read/write: used for file I/O streams
+send/recv: socket communication
 
 
 -------------------------------------------------------------------------------------------------------------------------------------------

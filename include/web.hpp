@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:00:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/04 21:46:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@
 #include <sys/ioctl.h> // for nonblocking stuff..
 #include <arpa/inet.h>
 #include <sys/select.h> // for select()
+#include <sys/types.h>
+#include <sys/wait.h>
 
 // C includes
 #include <unistd.h>
@@ -57,6 +59,7 @@
 #include <limits.h>
 #include <errno.h>
 #include <csignal>
+
 
 
 /* forward declarations*/
@@ -76,8 +79,10 @@ struct s_httpSend
 {
 	std::string msg;
 	bool keepAlive;
-	int readFd;
-	pid_t pid;
+	std::string filepath; // get
+	bool readfile; // get
+	int readFd; // cgi
+	pid_t pid; // cgi
 };
 
 /* parser */
@@ -89,6 +94,6 @@ s_location addDefaultLoc(size_t servermaxsize);
 /* server */
 
 /* utils */
-bool	protectedClose(int fd);
+void	protectedClose(int fd);
 
 #endif /* WEB_HPP */

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/03 16:18:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 16:31:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ public:
 	~Server(void);
 
 	/* Member functions */
-	s_httpSend handleRequest(std::stringstream &request);
+	s_httpSend handleRequest(std::string &request);
 	eHttpMethod allowedHttpMethod(std::string &str);
 	void printServer(void);
 

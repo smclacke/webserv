@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:03:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 14:51:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,14 +30,14 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 	_epoll.initEpoll();
 	if (config.empty())
 	{
-		std::cout << "default configuration\n";
-		auto default_server = std::make_shared<Server>(8080);
+		std::cout << "Default configuration\n\n";
+		auto default_server = std::make_shared<Server>();
 		_servers.push_back(default_server);
 		auto default_server2 = std::make_shared<Server>(9999);
 		_servers.push_back(default_server2);
 		return;
 	}
-	std::cout << "config: " << config << std::endl;
+	std::cout << "config: " << config << std::endl << "\n";
 	std::ifstream file(config);
 	if (!file.is_open())
 		throw std::runtime_error("unable to open file: \"" + config + "\"");
@@ -73,21 +73,17 @@ Webserv::~Webserv(void)
 /* member functions */
 void Webserv::addServersToEpoll()
 {
-	std::cout << "Adding servers to Epoll...\n";
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
 		std::shared_ptr<Server>		currentServer = getServer(i);
-		t_serverData				thisServer;
-		
-		thisServer._server = currentServer;
-
+		//t_serverData				thisServer;
+		//thisServer._server = currentServer; // was this ever doing anything?
 		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
 		struct epoll_event 	event;
+
 		event.data.fd = serverSockfd;
 		_epoll.addServerSocketEpoll(serverSockfd);
 		_epoll.setEvent(event);
-
-		std::cout << "Added server socket to epoll\n";
 		_epoll.setServer(currentServer);
 	}
 	std::cout << "--------------------------\n";
@@ -101,13 +97,11 @@ void		Webserv::monitorServers()
 
 	while (_keepRunning)
 	{
-		// check for client timeouts
 		for (auto &servers : _epoll.getAllServers())
 		{
 			for (auto &client : servers._clients)
 				_epoll.clientTimeCheck(client);
 		}
-		// wait for events
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1)
 		{
@@ -117,7 +111,6 @@ void		Webserv::monitorServers()
 		}
 		else if (numEvents == 0)
 			continue ;
-		// handle incoming events
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
@@ -153,13 +146,13 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
 	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
 						   {
-							   return server->getServerName() == name; // Assuming you have a method to get the server name
+							   return server->getServerName() == name;
 						   });
 	if (it != _servers.end())
 	{
-		return *it; // Return the found server
+		return *it;
 	}
-	throw std::runtime_error("Server not found"); // Handle the case where the server is not found
+	throw std::runtime_error("Server not found");
 }
 
 Epoll &Webserv::getEpoll()

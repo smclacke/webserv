@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/01 11:52:21 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/12/05 16:27:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,16 +38,7 @@ Epoll::~Epoll()
 {
 	std::cout << "Epoll destructor called\n";
 	if (_epfd > 0)
-	{
-		if (!protectedClose(_epfd))
-			std::cerr << "Failed to close epfd\n";
-	}
-	/** @todo if the pipe moves, move the close
-	 * @todo if closeDelete fails? or pipe not added to epoll? */
-	// if (_pipefd[0])
-	//	closeDelete(_pipefd[0]);
-	// if (_pipefd[1])
-	//	closeDelete(_pipefd[1]);
+		protectedClose(_epfd);
 }
 
 /* methods */
@@ -64,6 +55,11 @@ void Epoll::handleFile()
 	char buffer[MAX_FILE_READ];
 	int n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
 
+	if (n < 0)
+	{
+		std::cerr << "Read() failed\n";
+		return;
+	}
 	if (n > 0)
 	{
 		buffer[n] = '\0';
@@ -71,107 +67,179 @@ void Epoll::handleFile()
 	}
 }
 
-/**
- *  @todo handling bad fd to recv, not necessarily a throw or exit server situ
- */
 void Epoll::handleRead(t_clients &client)
 {
 	char buffer[READ_BUFFER_SIZE];
-	ssize_t bytesRead = 0; // should probably just be an integer since we will set buffer to 1000 right?
+	size_t bytesRead = 0;
 
-	while (true)
+	client._clientState = clientState::READING;
+	memset(buffer, 0, sizeof(buffer));
+	bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
+	if (bytesRead < 0)
 	{
-		memset(buffer, 0, sizeof(buffer));
-
-		bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
-		client._clientState = clientState::READING;
-		if (bytesRead < 0)
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
 		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-			{
-				std::cout << "no data available right now\n";
-				client._clientState = clientState::BEGIN;
-				return;
-			}
-			handleClientClose(client);
-			throw std::runtime_error("Reading from client connection failed\n");
-		}
-		else if (bytesRead == 0)
-		{
-			std::cout << "Client disconnected\n";
-			handleClientClose(client);
+			std::cout << "No data available right now\n";
+			client._clientState = clientState::BEGIN;
 			return;
 		}
-		client._request += buffer;
 
-		if (client._request.find("\r\n\r\n") != std::string::npos)
-		{
-			std::cout << "request = " << client._request << "\n";
-			client._clientState = clientState::READY;
-			client._connectionClose = true;
-			client._request.clear();
-			return;
-		}
-		client._connectionClose = false;
+		std::cerr << "Reading from client connection failed\n";
+		client._connectionClose = true;
+		return;
 	}
+	else if (bytesRead == 0)
+	{
+		std::cout << "Client disconnected\n";
+		client._connectionClose = true;
+		return;
+	}
+	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	std::string buf = buffer;
+	// std::cout << "recv BUFF ON EACH READ = " << buf << "\n";
+	client._requestClient.append(buf);
+	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
+	{
+		client._clientState = clientState::READY;
+		return;
+	}
+	client._connectionClose = false;
 }
 
 /**
- * @todo ensure generaterequest is not being called everytime for the same client when just filling buffer
- * @todo get actual response message
+ * @todo get actual response message || error page
  */
-void Epoll::handleWrite(t_clients &client)
+void Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
-	if (client._response.empty())
-		client._response = "HTTP/1.1 200 OK\r\nContent-Length: 35\r\n\r\nHello, World!1234567890123456789012";
-
-	while (true)
+	// get the http response + send that | cleint.httpSend.msg
+	if (client._responseClient.msg.empty() && client._readingFile == false)
 	{
-		ssize_t bytesWritten = send(client._fd, client._response.c_str() + client._write_offset, strlen(client._response.c_str()) - client._write_offset, 0);
+		client._clientState = clientState::WRITING;
+		client._responseClient = server._server->handleRequest(client._requestClient);
+		std::cout << "response = " << client._responseClient.msg << std::endl;
+		std::cout << "readFD =" << client._responseClient.readFd << std::endl;
+		client._requestClient.clear();
+	}
+	if (client._readingFile == false)
+	{
+		ssize_t leftover;
+		ssize_t sendlen = WRITE_BUFFER_SIZE;
+		leftover = client._responseClient.msg.size() - client._write_offset;
+		if (leftover < WRITE_BUFFER_SIZE)
+		{
+			sendlen = leftover;
+		}
+		ssize_t bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, leftover, 0);
 		if (bytesWritten < 0)
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return;
 			std::cerr << "Write to client failed\n";
-			handleClientClose(client);
+			client._connectionClose = true;
+			return;
+		}
+		else if (bytesWritten == 0)
+		{
+			std::cout << "Client disconnected\n";
+			client._connectionClose = true;
 			return;
 		}
 		client._write_offset += bytesWritten;
-		if (client._write_offset >= client._response.length())
+		if (client._write_offset >= client._responseClient.msg.length())
 		{
+			std::cout << "finished sending message\n";
+			if (client._responseClient.readFd != -1)
+				client._readingFile = true;
+			else
+			{
+				client._clientState = clientState::READY;
+				if (client._responseClient.keepAlive == false)
+					client._connectionClose = true;
+			}
 			client._write_offset = 0;
-			client._clientState = clientState::READY;
-			client._connectionClose = true;
+			client._responseClient.msg.clear();
 			return;
 		}
 		client._connectionClose = false;
 	}
+	else
+	{
+		// addToEpoll(client._responseClient.readFd);
+		ssize_t bytesSend;
+		char buffer[READ_BUFFER_SIZE];
+		ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
+		std::cout << "BYTES read from file: " << bytesRead << std::endl;
+		if (bytesRead < 0) // error
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return;
+			std::cerr << "Reading from pipe failed\n";
+			client._connectionClose = true;
+			return;
+		}
+		else if (bytesRead == 0) // nothing to read anymore -> we are done
+		{
+			client._readingFile = false;
+			client._clientState = clientState::READY;
+			close(client._responseClient.readFd);
+			if (client._responseClient.pid != -1)
+			{
+				int status;
+				waitpid(client._responseClient.pid, &status, 0);
+			}
+			client._responseClient.readFd = -1;
+			client._responseClient.pid = -1;
+			if (client._responseClient.keepAlive == false)
+				client._connectionClose = true;
+			return;
+		}
+		buffer[READ_BUFFER_SIZE - 1] = '\0';
+		if (bytesRead == READ_BUFFER_SIZE - 1) // we are not done
+		{
+			std::cout << "WE READ:--" << buffer << std::endl;
+			bytesSend = send(client._fd, buffer, bytesRead, 0);
+			if (bytesSend < 0)
+			{
+				if (errno == EAGAIN || errno == EWOULDBLOCK)
+					return;
+				std::cerr << "Write to client failed\n";
+				client._connectionClose = true;
+				return;
+			}
+			std::cout << "BYTES SEND: " << bytesSend << std::endl;
+		}
+		else if (bytesRead < READ_BUFFER_SIZE) // we need to send and then we are done
+		{
+			bytesSend = send(client._fd, buffer, bytesRead, 0);
+			if (bytesSend < 0)
+			{
+				if (errno == EAGAIN || errno == EWOULDBLOCK)
+					return;
+				std::cerr << "Write to client failed\n";
+				client._connectionClose = true;
+				return;
+			}
+			client._readingFile = false;
+			client._clientState = clientState::READY;
+			close(client._responseClient.readFd);
+			if (client._responseClient.pid != -1)
+			{
+				int status;
+				waitpid(client._responseClient.pid, &status, 0);
+			}
+			client._responseClient.readFd = -1;
+			client._responseClient.pid = -1;
+			if (client._responseClient.keepAlive == false)
+				client._connectionClose = true;
+			return;
+		}
+	}
 }
 
-void s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
-{
-	static int clientId = 0;
-
-	t_clients newClient;
-
-	newClient._fd = sock;
-	newClient._addr = addr;
-	newClient._addLen = len;
-	newClient._clientState = clientState::BEGIN;
-	newClient._clientTime[sock] = std::chrono::steady_clock::now();
-	newClient._connectionClose = false;
-	newClient._write_offset = 0;
-	newClient._bytesWritten = 0;
-	newClient._clientId = clientId++;
-
-	_clients.push_back(newClient);
-
-	std::cout << "new client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
-}
-
-/** @todo this: CONNECT (?) -
+/** @todo this: CONNECT (?) - this is not necessary right?
  *		When Do You Use connect()?
-		Client side: If your server is also acting as a client (for example, connecting to an external service), you would use connect() in that case to connect to another server.
+		Client side: If your server is also acting as a client (for example, connecting to an external service),
+		you would use connect() in that case to connect to another server.
 		Example: A client program connecting to a remote server (via connect()).
 		Another example: A server acting as a proxy or a backend service connecting to a database.
  */
@@ -196,8 +264,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 }
 
 /**
- * @todo file stuff
- * @todo connection bool handling/send somewhere so it is actually being used
+ * @todo file stuff (??)
  */
 void Epoll::processEvent(int fd, epoll_event &event)
 {
@@ -206,18 +273,10 @@ void Epoll::processEvent(int fd, epoll_event &event)
 		if (fd == serverData._server->getServerSocket()->getSockfd())
 		{
 			if (event.events & EPOLLIN)
-			{
-				std::cout << "handling new connection for server socket\n";
 				makeNewConnection(fd, serverData);
-			}
 		}
-		// std::string file = 0;
-		// if (!file.empty())
-		//	addFile();
 		for (auto &client : serverData._clients)
 		{
-			// if (fd == _pipefd[0])
-			//	handleFile();
 			if (fd == client._fd)
 			{
 				if (event.events & EPOLLIN)
@@ -231,7 +290,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				}
 				else if (event.events & EPOLLOUT)
 				{
-					handleWrite(client);
+					handleWrite(serverData, client);
 					if (client._clientState == clientState::READY)
 					{
 						modifyEvent(client._fd, EPOLLIN);
@@ -240,9 +299,21 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				}
 				else if (event.events & EPOLLHUP)
 				{
-					std::cout << "EPOLLHUP\n";
-					handleClientClose(client);
+					std::cout << "Epoll: EPOLLHUP\n";
+					client._connectionClose = true;
 				}
+				else if (event.events & EPOLLRDHUP)
+				{
+					std::cout << "Epoll: EPOLLRDHUP\n";
+					client._connectionClose = true;
+				}
+				else if (event.events & EPOLLERR)
+				{
+					std::cout << "EPoll: EPOLLERR\n";
+					client._connectionClose = true;
+				}
+				if (client._connectionClose == true)
+					handleClientClose(serverData, client);
 			}
 		}
 	}

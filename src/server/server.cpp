@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/03 16:33:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 16:32:18 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@ enum class SizeUnit
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this))
+Server::Server(void) : _port(8080)
 {
 	_serverName = "default_server";
-	setHost("127.0.0.01");
+	_host = "127.0.0.1";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
@@ -42,16 +42,17 @@ Server::Server(void) : _port(8080), _serverSocket(std::make_shared<Socket>(*this
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
+	_serverSocket = std::make_shared<Socket>(*this);
 }
 
 /**
  * @brief	data filler for testing
  * @note	to be removed.
  */
-Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Socket>(*this))
+Server::Server(int portnum) : _port(portnum)
 {
 	_serverName = "default_server";
-	_host = htonl(INADDR_ANY);
+	_host = "127.0.0.1";
 	_root = "./server_files";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 8192;
@@ -65,6 +66,7 @@ Server::Server(int portnum) : _port(portnum), _serverSocket(std::make_shared<Soc
 	loc.cgi_ext = ".php";
 	loc.cgi_path = "/usr/bin/php-cgi";
 	_location.push_back(loc);
+	_serverSocket = std::make_shared<Socket>(*this);
 }
 
 Server &Server::operator=(const Server &rhs)
@@ -82,7 +84,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _port(9999), _root("./server_files"), _serverSocket(nullptr)
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("./server_files")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -97,8 +99,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 				throw eConf("Unexpected text with closing }", line_n);
 			if (_location.size() == 0)
 				addLocation(addDefaultLoc(_clientMaxBodySize));
-			std::shared_ptr<Socket> nsock = std::make_shared<Socket>(*this);
-			_serverSocket = nsock;
+			_serverSocket = std::make_shared<Socket>(*this);
 			return;
 		}
 		size_t pos = line.find("location");
@@ -119,6 +120,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 
 Server::~Server()
 {
+	/** @todo remove all/any server stuff */
 }
 
 /* member functions */
@@ -126,10 +128,13 @@ Server::~Server()
 /**
  * @note might make epoll inheret http so might not need this :D
  */
-s_httpSend Server::handleRequest(std::stringstream &request)
+s_httpSend Server::handleRequest(std::string &request)
 {
+	std::cout << "Request ==== \n"
+			  << request << "====\n";
+	std::stringstream stream(request);
 	httpHandler parser(*this);
-	parser.parseRequest(request);
+	parser.parseRequest(stream);
 	return (parser.generateResponse());
 }
 
@@ -219,7 +224,6 @@ void Server::parseServerName(std::stringstream &ss, int line_n)
 
 void Server::parseListen(std::stringstream &ss, int line_n)
 {
-	std::cout << "HEEEEEEEEEEERE " << std::endl;
 	std::string value;
 	std::string unexpected;
 	if (!(ss >> value))
@@ -366,7 +370,6 @@ void Server::setHost(std::string host)
 
 void Server::setPort(int port)
 {
-	std::cout << "setPort(): " << port << std::endl;
 	_port = port;
 }
 

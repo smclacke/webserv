@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:43:35 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/25 15:29:53 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 15:10:02 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,6 +219,7 @@ enum class eResponseHeader
 	ContentType,	 // the media type of the resource.
 	ContentLength,	 // The size of the response body in bytes.
 	ContentEncoding, // Compression encoding for the body.
+	Connection,
 	// implemented till here
 	SetCookie,				  // Used to send cookies from the server to the client.
 	CacheControl,			  // for caching mechanisms in both requests and responses.

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:20:15 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 15:11:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,8 +20,13 @@ httpHandler::httpHandler(Server &server) : _server(server)
 	_request.method = eHttpMethod::INVALID;
 	_request.uri = "";
 	_request.path = "";
-	_request.body.str() = "";
+	_request.body.clear();
 	_request.uriEncoded = false;
+	_response.readFd = false;
+	_response.filepath.clear();
+	_response.cgi = false;
+	_response.pid = -1;
+	_response.readFd = -1;
 }
 
 httpHandler::~httpHandler(void)
@@ -106,6 +111,7 @@ std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
 		{eResponseHeader::ContentType, "Content-Type: "},
 		{eResponseHeader::ContentLength, "Content-Length: "},
 		{eResponseHeader::ContentEncoding, "Content-Encoding: "},
+		{eResponseHeader::Connection, "Connection: "},
 		{eResponseHeader::SetCookie, "Set-Cookie: "},
 		{eResponseHeader::CacheControl, "Cache-Control: "},
 		{eResponseHeader::Expires, "Expires: "},
@@ -126,6 +132,7 @@ std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
 void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
 {
 	_statusCode = code;
-	_response.body.str() = msg;
+	_response.body.clear();
+	_response.body << msg;
 	_response.headers[eResponseHeader::ContentLength] = std::to_string(msg.size());
 }

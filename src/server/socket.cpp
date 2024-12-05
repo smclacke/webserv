@@ -6,16 +6,11 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/03 16:23:31 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 16:27:52 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/socket.hpp"
-
-/**
- * @todo correct destruction + clean up
- * @todo addrs get from parser
- */
 
 /* constructors */
 Socket::Socket() {}
@@ -23,13 +18,13 @@ Socket::Socket() {}
 Socket::Socket(const Server &servInstance) : _maxConnections(10), _reuseaddr(1), _flags(0)
 {
 	openServerSocket(servInstance);
-	std::cout << "Server socket setup successful\n";
+	std::cout << "Server socket setup successful\n\n";
 }
 
-// Socket::Socket(const Socket &copy)
-//{
-//	*this = copy;
-// }
+Socket::Socket(const Socket &copy)
+{
+	*this = copy;
+}
 
 Socket &Socket::operator=(const Socket &socket)
 {
@@ -45,19 +40,16 @@ Socket &Socket::operator=(const Socket &socket)
 	return *this;
 }
 
-/**
- * @brief Destroy the Socket:: Socket object
- * @note check if the close works correctly
- */
 Socket::~Socket()
 {
-	std::cout << "Socket deconstr" << std::endl;
-	// freeaddrinfo
-	// protectedClose(_sockfd);
+	std::cout << "Socket destructor called" << std::endl;
+	protectedClose(_sockfd);
 }
 
 /* methods */
-/** @todo if this server fails, continue and make the rest? */
+/** @todo if this server fails, continue and make the rest? if second(...) server fails, need to clean up rest
+ * if we throw since failure to set up server is pretty bad, need to clean up already made server stuff?
+ */
 void Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
@@ -75,8 +67,6 @@ void Socket::openServerSocket(const Server &servInstance)
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
-	//_sockaddr.sin_addr.s_addr = htonl(INADDR_ANY);
-	std::cout << "AAGRIHTEAEA Host = " << servInstance.getHost().c_str() << std::endl;
 	if (inet_pton(AF_INET, servInstance.getHost().c_str(), &_sockaddr.sin_addr) <= 0)
 	{
 		protectedClose(_sockfd);
@@ -96,9 +86,11 @@ void Socket::openServerSocket(const Server &servInstance)
 		protectedClose(_sockfd);
 		throw std::runtime_error("Error listening for connections\n");
 	}
-	std::cout << "Listening on port - " << servInstance.getPort() << " \n\n";
 	setSockaddr(_sockaddr);
 	setAddrlen(_addrlen);
+
+	std::cout << "Listening on port - " << servInstance.getPort() << "\n";
+	std::cout << "Host address - " << servInstance.getHost().c_str() << " \n";
 }
 
 /* getters */
