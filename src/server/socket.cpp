@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 14:22:46 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:40:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,9 +47,6 @@ Socket::~Socket()
 }
 
 /* methods */
-/** @todo if this server fails, continue and make the rest? if second(...) server fails, need to clean up rest
- * if we throw since failure to set up server is pretty bad, need to clean up already made server stuff?
- */
 void		Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:21:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:37:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,47 +14,6 @@
 #include "../../include/epoll.hpp"
 
 /* Epoll utils */
-std::string Epoll::generateHttpResponse(const std::stringstream &message)
-{
-	size_t contentLength = message.str().size();
-	std::ostringstream response;
-	response << "HTPP/1.1 200 OK\r\n"
-			 << "Content-Type: text/plain\r\n"
-			 << "Content-Length: " << contentLength << "\r\n"
-			 << "Connection : close\r\n"
-			 << "\r\n"
-			 << message.str();
-
-	return response.str();
-}
-
-/** 
- * 	pipefd[0] - read
- * 	pipefd[1] - write
- * 
- * @todo check, pipe fail is fatal error? and epoll_ctl fail?
- */
-//void	Epoll::addFile(int fd)
-//{
-	
-//	//if (pipe(_pipefd) == -1)
-//	//{
-//	//	std::cerr << "pipe for file failed\n";
-//	//	return ;
-//	//}
-
-//	//struct epoll_event	event;
-//	//event.events = EPOLLIN;
-//	//event.data.fd = _pipefd[0];
-
-//	//if (epoll_ctl(_epfd, EPOLL_CTL_ADD, _pipefd[0], &event) == -1)
-//	//{
-//	//	std::cerr << "epoll_ctl file failed\n";
-//	//	protectedClose(_pipefd[0]);
-//	//	protectedClose(_pipefd[1]);
-//	//	return ;
-//	//}
-//}
 
 void		Epoll::addToEpoll(int fd)
 {
@@ -104,12 +63,6 @@ void		Epoll::setNonBlocking(int connection)
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-void		Epoll::closeDelete(int fd)
-{
-	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
-	protectedClose(fd);
-}
-
 void		Epoll::updateClientClock(t_clients &client)
 {
 	client._clientTime[client._fd] = std::chrono::steady_clock::now();
@@ -133,6 +86,12 @@ void		Epoll::clientTimeCheck(t_clients &client)
 		else
 			it++;
 	}
+}
+
+void		Epoll::closeDelete(int fd)
+{
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
+	protectedClose(fd);
 }
 
 void		Epoll::handleClientClose(t_serverData &server, t_clients &client)

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:19:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:42:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,26 +50,6 @@ void Epoll::initEpoll()
 	std::cout << "Successfully created Epoll instance\n";
 }
 
-/** @todo, check regular files are indeed being added to and executed via epoll */
-
-// not using you
-//void Epoll::handleFile()
-//{
-//	char buffer[MAX_FILE_READ];
-//	int n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
-
-//	if (n < 0)
-//	{
-//		std::cerr << "Read() failed\n";
-//		return;
-//	}
-//	if (n > 0)
-//	{
-//		buffer[n] = '\0';
-//		std::cout << "file read = " << buffer << "\n";
-//	}
-//}
-
 void Epoll::handleRead(t_clients &client)
 {
 	char buffer[READ_BUFFER_SIZE];
@@ -99,7 +79,6 @@ void Epoll::handleRead(t_clients &client)
 	
 	buffer[READ_BUFFER_SIZE - 1] = '\0';
 	std::string buf = buffer;
-	std::cout << "recv -------------\n" << buf << "\n-------------\n";
 	client._requestClient.append(buf);
 
 	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
@@ -326,6 +305,11 @@ int Epoll::getEpfd() const
 	return this->_epfd;
 }
 
+int Epoll::getNumEvents() const
+{
+	return this->_numEvents;
+}
+
 std::vector<t_serverData> &Epoll::getAllServers()
 {
 	return this->_serverData;
@@ -334,11 +318,6 @@ std::vector<t_serverData> &Epoll::getAllServers()
 std::shared_ptr<Server> Epoll::getServer(size_t i)
 {
 	return this->_serverData[i]._server;
-}
-
-int Epoll::getNumEvents() const
-{
-	return this->_numEvents;
 }
 
 std::vector<epoll_event> &Epoll::getAllEvents()
@@ -357,14 +336,6 @@ void Epoll::setEpfd(int fd)
 	this->_epfd = fd;
 }
 
-void Epoll::setServer(std::shared_ptr<Server> server)
-{
-	t_serverData newServerData;
-	newServerData._server = server;
-
-	this->_serverData.push_back(newServerData);
-}
-
 void Epoll::setNumEvents(int numEvents)
 {
 	this->_numEvents = numEvents;
@@ -378,4 +349,12 @@ void Epoll::setEventMax()
 void Epoll::setEvent(struct epoll_event &event)
 {
 	this->_event = event;
+}
+
+void Epoll::setServer(std::shared_ptr<Server> server)
+{
+	t_serverData newServerData;
+	newServerData._server = server;
+
+	this->_serverData.push_back(newServerData);
 }

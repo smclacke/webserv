@@ -2,31 +2,23 @@
 
 **TODOTODOTODO**
 
-1) 
-	cleanUp function? necessary, anything left behind after success? (i dont think so)
 
 2) 
 	add descriptions/briefs
 
 5) 
 	error handling + closing + handling of fds/sockets etc
-	run through full code to check im not missing a close etc
+	!!run through full code to check im not missing a close etc
+	can then make decsion about this:
+		cleanUp function? necessary, anything left behind after success? (i dont think so)
 
-6) julius has donethis?
-	handling CHUNK information streams..
-	the current chunk will have size of next chunk etc.. need to chunkHandle
+7) 
+	check if i need to do any chunky stuff
 
+8) 	
+	serious clean up of handleWrite function + any more from epoll.cpp
+		+ get rid of unnecessary print statements
 
-**CHECK**
+9) 
+**restart server if fatal error occurs wooooooooo**
 
-
-**JULIUS** - can also continue testing and if we exit server when shouldnt, change it.. mwhaha
-11) 
-	ASK julius - if server - server socket creation fails in openServerSocket, just give error
-	message and continuing creating the others if there are any? + if only one then what? 
-
-14) 
-	CHECK - JULIUS: openserver socket erroring handling
-
-14) CHECK - not handling invalid fd in recv... no one else does?
-	e only call recv() if fd (epoll events) == client.fd so that already verifies that client.fd is valid
