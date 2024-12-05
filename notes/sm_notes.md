@@ -24,6 +24,28 @@ and if no PID but can't run, probably not being patient enough
 
 #########################################################################
 
+**weird ass server port/name/host shizzle**
+Server name + host can be the same
+	PORTS can never be reused
+
+- server socket only created per port
+BUT we will always have different ports and therefore, for us
+	server = server socket everytime
+
+
+*from eval sheet*
+
+    In the configuration file setup multiple ports and use different websites. Use the browser to ensure that the configuration works as expected and shows the right website.
+    In the configuration, try to setup the same port multiple times. It should not work.
+    Launch multiple servers at the same time with different configurations but with common ports. Does it work? If it does, ask why the server should work if one of the configurations isn't functional. Keep going.
+
+
+JanTheMan) NVM, JAN NOT RIGHT
+	- servers can have same host and port IF different server_name
+	- not all three host, port and name can be the same
+
+#########################################################################
+
 
 **GENERAL**
 

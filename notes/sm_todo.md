@@ -12,22 +12,15 @@
 	error handling + closing + handling of fds/sockets etc
 	run through full code to check im not missing a close etc
 
-6) 
+6) julius has donethis?
 	handling CHUNK information streams..
 	the current chunk will have size of next chunk etc.. need to chunkHandle
 
-7) 
-	adding files to epoll (still can't make sense of this...)
-
 
 **CHECK**
-8) 
-	TEST the current monitoring - something that will take a few loops to be read etc..
-
-16) CHECK - server/client for loops in monitoring logic sound?
 
 
-**JULIUS**
+**JULIUS** - can also continue testing and if we exit server when shouldnt, change it.. mwhaha
 11) 
 	ASK julius - if server - server socket creation fails in openServerSocket, just give error
 	message and continuing creating the others if there are any? + if only one then what? 

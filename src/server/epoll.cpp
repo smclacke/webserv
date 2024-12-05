@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 15:17:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 15:39:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -96,7 +96,7 @@ void Epoll::handleRead(t_clients &client)
 	}
 	buffer[READ_BUFFER_SIZE - 1] = '\0';
 	std::string buf = buffer;
-	// std::cout << "recv BUFF ON EACH READ = " << buf << "\n";
+	std::cout << "recv -------------\n" << buf << "\n-------------\n";
 	client._requestClient.append(buf);
 	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
 	{
@@ -200,6 +200,7 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 			bytesSend = send(client._fd, buffer, bytesRead, 0);
 			if (bytesSend < 0)
 			{
+				std::cout << "HELPP\n";
 				if (errno == EAGAIN || errno == EWOULDBLOCK)
 					return;
 				std::cerr << "Write to client failed\n";
