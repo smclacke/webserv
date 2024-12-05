@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 15:28:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:13:15 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -95,6 +95,7 @@ void		Webserv::monitorServers()
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
+	sleep(3);
 	while (_keepRunning)
 	{
 		for (auto &servers : _epoll.getAllServers())
@@ -116,9 +117,8 @@ void		Webserv::monitorServers()
 			int fd = _epoll.getAllEvents()[i].data.fd;
 			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
-		
 	}
-	_epoll.cleanUp();
+	_epoll.cleanUp(); // will maybe make you, maybe not...
 }
 
 /* setters */

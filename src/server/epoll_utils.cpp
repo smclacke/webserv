@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 19:08:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:21:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ std::string Epoll::generateHttpResponse(const std::stringstream &message)
 void		Epoll::addToEpoll(int fd)
 {
 	struct epoll_event event;
-	event.events = EPOLLIN | EPOLLOUT;
+	event.events = EPOLLIN;
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
@@ -98,7 +98,7 @@ void		Epoll::modifyEvent(int fd, uint32_t events)
 	}
 }
 
-void Epoll::setNonBlocking(int connection)
+void		Epoll::setNonBlocking(int connection)
 {
 	int flag = fcntl(connection, F_GETFL, 0);
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);

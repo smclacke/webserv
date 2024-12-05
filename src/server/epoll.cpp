@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 15:39:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:19:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,31 +50,34 @@ void Epoll::initEpoll()
 	std::cout << "Successfully created Epoll instance\n";
 }
 
-void Epoll::handleFile()
-{
-	char buffer[MAX_FILE_READ];
-	int n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
+/** @todo, check regular files are indeed being added to and executed via epoll */
 
-	if (n < 0)
-	{
-		std::cerr << "Read() failed\n";
-		return;
-	}
-	if (n > 0)
-	{
-		buffer[n] = '\0';
-		std::cout << "file read = " << buffer << "\n";
-	}
-}
+// not using you
+//void Epoll::handleFile()
+//{
+//	char buffer[MAX_FILE_READ];
+//	int n = read(_pipefd[0], buffer, sizeof(buffer) - 1);
+
+//	if (n < 0)
+//	{
+//		std::cerr << "Read() failed\n";
+//		return;
+//	}
+//	if (n > 0)
+//	{
+//		buffer[n] = '\0';
+//		std::cout << "file read = " << buffer << "\n";
+//	}
+//}
 
 void Epoll::handleRead(t_clients &client)
 {
 	char buffer[READ_BUFFER_SIZE];
 	size_t bytesRead = 0;
 
-	client._clientState = clientState::READING;
 	memset(buffer, 0, sizeof(buffer));
 	bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
+	client._clientState = clientState::READING;
 	if (bytesRead < 0)
 	{
 		if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -83,10 +86,9 @@ void Epoll::handleRead(t_clients &client)
 			client._clientState = clientState::BEGIN;
 			return;
 		}
-
 		std::cerr << "Reading from client connection failed\n";
 		client._connectionClose = true;
-		return;
+		return ;
 	}
 	else if (bytesRead == 0)
 	{
@@ -94,32 +96,31 @@ void Epoll::handleRead(t_clients &client)
 		client._connectionClose = true;
 		return;
 	}
+	
 	buffer[READ_BUFFER_SIZE - 1] = '\0';
 	std::string buf = buffer;
 	std::cout << "recv -------------\n" << buf << "\n-------------\n";
 	client._requestClient.append(buf);
+
 	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
 	{
 		client._clientState = clientState::READY;
-		return;
+		return ;
 	}
 	client._connectionClose = false;
 }
 
-/**
- * @todo get actual response message || error page
- */
 void Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
-	// get the http response + send that | cleint.httpSend.msg
 	if (client._responseClient.msg.empty() && client._readingFile == false)
 	{
-		client._clientState = clientState::WRITING;
 		client._responseClient = server._server->handleRequest(client._requestClient);
+		client._clientState = clientState::WRITING;
 		std::cout << "response = " << client._responseClient.msg << std::endl;
 		std::cout << "readFD =" << client._responseClient.readFd << std::endl;
 		client._requestClient.clear();
 	}
+	// not handling file
 	if (client._readingFile == false)
 	{
 		ssize_t leftover;
@@ -149,7 +150,11 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 		{
 			std::cout << "finished sending message\n";
 			if (client._responseClient.readFd != -1)
+			{
 				client._readingFile = true;
+				client._connectionClose = false;
+				return ;
+			}
 			else
 			{
 				client._clientState = clientState::READY;
@@ -158,13 +163,16 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 			}
 			client._write_offset = 0;
 			client._responseClient.msg.clear();
-			return;
+			return ;
 		}
 		client._connectionClose = false;
 	}
-	else
+	else // handling file
 	{
-		// addToEpoll(client._responseClient.readFd);
+		/** @todo this.. */
+		// to handle file, need to add to epoll right?? this doesnt work... :)
+		//addToEpoll(client._responseClient.readFd);
+		
 		ssize_t bytesSend;
 		char buffer[READ_BUFFER_SIZE];
 		ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
@@ -237,13 +245,6 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 	}
 }
 
-/** @todo this: CONNECT (?) - this is not necessary right?
- *		When Do You Use connect()?
-		Client side: If your server is also acting as a client (for example, connecting to an external service),
-		you would use connect() in that case to connect to another server.
-		Example: A client program connecting to a remote server (via connect()).
-		Another example: A server acting as a proxy or a backend service connecting to a database.
- */
 void Epoll::makeNewConnection(int fd, t_serverData &server)
 {
 	struct sockaddr_in clientAddr;
@@ -264,9 +265,6 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 }
 
-/**
- * @todo file stuff (??)
- */
 void Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
@@ -285,30 +283,32 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					handleRead(client);
 					if (client._clientState == clientState::READY)
 					{
+						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLOUT);
 						updateClientClock(client);
 					}
 				}
-				else if (event.events & EPOLLOUT)
+				if (event.events & EPOLLOUT)
 				{
 					handleWrite(serverData, client);
 					if (client._clientState == clientState::READY)
 					{
+						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
 						updateClientClock(client);
 					}
 				}
-				else if (event.events & EPOLLHUP)
+				if (event.events & EPOLLHUP)
 				{
 					std::cout << "Epoll: EPOLLHUP\n";
 					client._connectionClose = true;
 				}
-				else if (event.events & EPOLLRDHUP)
+				if (event.events & EPOLLRDHUP)
 				{
 					std::cout << "Epoll: EPOLLRDHUP\n";
 					client._connectionClose = true;
 				}
-				else if (event.events & EPOLLERR)
+				if (event.events & EPOLLERR)
 				{
 					std::cout << "EPoll: EPOLLERR\n";
 					client._connectionClose = true;

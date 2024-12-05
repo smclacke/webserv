@@ -24,6 +24,25 @@ and if no PID but can't run, probably not being patient enough
 
 #########################################################################
 
+**definitely unnecessary**
+
+/** @todo this: CONNECT (?) - this is not necessary right?
+ *		When Do You Use connect()?
+		Client side: If your server is also acting as a client (for example, connecting to an external service),
+		you would use connect() in that case to connect to another server.
+		Example: A client program connecting to a remote server (via connect()).
+		Another example: A server acting as a proxy or a backend service connecting to a database.
+ */
+
+#########################################################################
+
+**preemptive connections in browser**
+
+The behavior you're observing is likely related to DNS prefetching or connection pre-establishment performed by modern browsers. When you type a URL into the address bar, the browser often preemptively establishes a connection to the server to speed up page loading. This can result in connections to your server even before you've hit "Enter."
+
+
+#########################################################################
+
 **weird ass server port/name/host shizzle**
 Server name + host can be the same
 	PORTS can never be reused
@@ -36,7 +55,9 @@ BUT we will always have different ports and therefore, for us
 *from eval sheet*
 
     In the configuration file setup multiple ports and use different websites. Use the browser to ensure that the configuration works as expected and shows the right website.
+
     In the configuration, try to setup the same port multiple times. It should not work.
+	
     Launch multiple servers at the same time with different configurations but with common ports. Does it work? If it does, ask why the server should work if one of the configurations isn't functional. Keep going.
 
 
