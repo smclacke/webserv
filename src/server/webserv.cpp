@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 16:38:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:31:58 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,7 +173,7 @@ void Webserv::checkDoublePorts()
 		std::string host = serv->getHost();
 		if (hostSet.find(host) != hostSet.end())
 		{
-			throw std::runtime_error("Duplicate server host found: " + host);
+			throw eConf("Duplicate server host found: " + host, 0);
 		}
 		hostSet.insert(host);
 	}
