@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:45:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/05 18:43:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
+#include "../../include/epoll.hpp"
 
 /**
  * @note needs to be tested
@@ -187,65 +188,111 @@ void httpHandler::getUriEncoded(void)
  */
 void httpHandler::readFile(void)
 {
-	// int pipefd[2];
-	// if (pipe(pipefd) == -1)
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to create pipe");
-	//	return;
-	// }
 
-	// pid_t pid = fork();
-	// if (pid == -1)
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to fork process");
-	//	close(pipefd[0]);
-	//	close(pipefd[1]);
-	//	return;
-	// }
-	// if (pid == 0)
-	//{					  // Child process
-	//	close(pipefd[0]); // Close unused read end
-	//	int fileFd = open(_request.path.c_str(), O_RDONLY);
-	//	if (fileFd == -1)
-	//	{
-	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-	//		close(pipefd[1]);
-	//		exit(EXIT_FAILURE);
-	//	}
-	//	exit(EXIT_FAILURE);			   // If execlp fails
-	// }
-	// else
-	//{								  // Parent process
-	//	close(pipefd[1]);			  // Close unused write end
-	//	_response.readFd = pipefd[0]; // Set the read end of the pipe for epoll
-	//	_response.pid = pid;
-	//	_response.readFile = true;
-	// }
-	int out = open(_request.path.c_str(), O_RDONLY);
-	if (out == -1)
+	int fileFd = open(_request.path.c_str(), O_RDONLY | O_NONBLOCK);
+	if (fileFd == -1)
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 		return;
 	}
-	// std::cout << "path =====" << _request.path << std::endl;
-	// std::ifstream is(_request.path);
-	// if (!is.is_open())
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-	//	return;
-	// }
-	// std::string line;
-	// std::getline(is, line); // if end of file returns false
-	// if (is.fail())
-	//{
-	//	perror("bruh:");
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "getline error");
-	//	return;
-	// }
-	// std::cout << "Read with getline =" << line << std::endl;
-	// std::cout << "readfd in GET:" << out << std::endl;
-	//_response.readFd = out;
-	_response.filepath = _request.path;
-	_response.readFd = out;
+
+	// Add the file descriptor to epoll
+	addToEpoll(fileFd);
+
+	_response.readFd = fileFd;
 	_response.readFile = true;
 }
+
+/*
+void Epoll::processEvent(int fd, epoll_event &event)
+{
+	for (auto &serverData : _serverData)
+	{
+		if (fd == serverData._server->getServerSocket()->getSockfd())
+		{
+			if (event.events & EPOLLIN)
+				makeNewConnection(fd, serverData);
+		}
+		for (auto &client : serverData._clients)
+		{
+			if (fd == client._fd)
+			{
+				if (event.events & EPOLLIN)
+				{
+					handleRead(client);
+					if (client._clientState == clientState::READY)
+					{
+						modifyEvent(client._fd, EPOLLOUT);
+						updateClientClock(client);
+					}
+				}
+				else if (event.events & EPOLLOUT)
+				{
+					handleWrite(serverData, client);
+					if (client._clientState == clientState::READY)
+					{
+						modifyEvent(client._fd, EPOLLIN);
+						updateClientClock(client);
+					}
+				}
+				else if (event.events & EPOLLHUP)
+				{
+					std::cout << "Epoll: EPOLLHUP\n";
+					client._connectionClose = true;
+				}
+				else if (event.events & EPOLLRDHUP)
+				{
+					std::cout << "Epoll: EPOLLRDHUP\n";
+					client._connectionClose = true;
+				}
+				else if (event.events & EPOLLERR)
+				{
+					std::cout << "EPoll: EPOLLERR\n";
+					client._connectionClose = true;
+				}
+				if (client._connectionClose == true)
+					handleClientClose(serverData, client);
+			}
+			else if (fd == client._responseClient.readFd)
+			{
+				// Handle file reading
+				handleFileRead(client);
+			}
+		}
+	}
+}
+
+void Epoll::handleFileRead(t_clients &client)
+{
+	char buffer[READ_BUFFER_SIZE];
+	ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
+	if (bytesRead < 0)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return;
+		std::cerr << "Reading from file failed\n";
+		client._connectionClose = true;
+		return;
+	}
+	else if (bytesRead == 0)
+	{
+		client._readingFile = false;
+		client._clientState = clientState::READY;
+		close(client._responseClient.readFd);
+		client._responseClient.readFd = -1;
+		if (client._responseClient.keepAlive == false)
+			client._connectionClose = true;
+		return;
+	}
+	buffer[bytesRead] = '\0';
+	ssize_t bytesSend = send(client._fd, buffer, bytesRead, 0);
+	if (bytesSend < 0)
+	{
+		if (errno == EAGAIN || errno == EWOULDBLOCK)
+			return;
+		std::cerr << "Write to client failed\n";
+		client._connectionClose = true;
+		return;
+	}
+}
+*/
