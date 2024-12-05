@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:49:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 15:11:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,6 +111,7 @@ std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
 		{eResponseHeader::ContentType, "Content-Type: "},
 		{eResponseHeader::ContentLength, "Content-Length: "},
 		{eResponseHeader::ContentEncoding, "Content-Encoding: "},
+		{eResponseHeader::Connection, "Connection: "},
 		{eResponseHeader::SetCookie, "Set-Cookie: "},
 		{eResponseHeader::CacheControl, "Cache-Control: "},
 		{eResponseHeader::Expires, "Expires: "},

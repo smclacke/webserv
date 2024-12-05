@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 20:55:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 15:01:36 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -130,6 +130,8 @@ Server::~Server()
  */
 s_httpSend Server::handleRequest(std::string &request)
 {
+	std::cout << "Request ==== \n"
+			  << request << "====\n";
 	std::stringstream stream(request);
 	httpHandler parser(*this);
 	parser.parseRequest(stream);

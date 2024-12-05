@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:48:48 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 15:14:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,16 +19,16 @@
 s_httpSend httpHandler::generateResponse(void)
 {
 	/* printing to be removed later */
-	//std::cout << "By generateResponse(), incoming request is as follows:\n";
-	//std::cout << "Status code: " << static_cast<int>(_statusCode) << std::endl;
-	//std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
-	//std::cout << "URI: " << _request.uri << std::endl;
-	//if (!_request.path.empty())
+	// std::cout << "By generateResponse(), incoming request is as follows:\n";
+	// std::cout << "Status code: " << static_cast<int>(_statusCode) << std::endl;
+	// std::cout << "Method: " << HttpMethodToString.at(_request.method) << std::endl;
+	// std::cout << "URI: " << _request.uri << std::endl;
+	// if (!_request.path.empty())
 	//	std::cout << "Location: " << _request.loc.path << std::endl;
-	//std::cout << "Path: " << _request.path << std::endl;
-	//for (const auto &header : _request.headers)
+	// std::cout << "Path: " << _request.path << std::endl;
+	// for (const auto &header : _request.headers)
 	//	std::cout << "Header: " << EheaderToString(header.first) << " - " << header.second << std::endl;
-	//std::cout << "Body: " << _request.body.str() << std::endl;
+	// std::cout << "Body: " << _request.body.str() << std::endl;
 
 	bool keepalive = true;
 	auto it = _request.headers.find(eRequestHeader::Connection);
@@ -57,12 +57,20 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 		// status line
 		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " "
 					   << statusMessages.at(_statusCode) << "\r\n";
-		if (!_response.body.str().empty())
+		if (_response.readFile)
+		{
+			_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(_response.filepath));
+		}
+		else if (!_response.body.str().empty())
 		{
 			if (_response.headers.find(eResponseHeader::ContentLength) == _response.headers.end())
 				_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 		}
 		// headers
+		if (keepalive)
+			_response.headers[eResponseHeader::Connection] = "keep-alive";
+		else
+			_response.headers[eResponseHeader::Connection] = "close";
 		for (const auto &header : _response.headers)
 		{
 			responseStream << responseHeaderToString(header.first) << header.second << "\r\n";
