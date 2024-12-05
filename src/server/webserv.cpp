@@ -6,18 +6,19 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 14:51:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 16:38:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/webserv.hpp"
 #include "../../include/error.hpp"
+#include <unordered_set>
 
 /* constructors */
 /**
  * @brief default constructor in case no config file was provided.
  */
-Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
+Webserv::Webserv(std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
 	auto default_server = std::make_shared<Server>();
@@ -37,7 +38,8 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 		_servers.push_back(default_server2);
 		return;
 	}
-	std::cout << "config: " << config << std::endl << "\n";
+	std::cout << "config: " << config << std::endl
+			  << "\n";
 	std::ifstream file(config);
 	if (!file.is_open())
 		throw std::runtime_error("unable to open file: \"" + config + "\"");
@@ -56,6 +58,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 			if (_servers.size() == 10)
 			{
 				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
+				checkDoublePorts();
 				return;
 			}
 			continue;
@@ -63,6 +66,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 		else
 			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
+	checkDoublePorts();
 }
 
 Webserv::~Webserv(void)
@@ -75,11 +79,11 @@ void Webserv::addServersToEpoll()
 {
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		std::shared_ptr<Server>		currentServer = getServer(i);
-		//t_serverData				thisServer;
-		//thisServer._server = currentServer; // was this ever doing anything?
-		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
-		struct epoll_event 	event;
+		std::shared_ptr<Server> currentServer = getServer(i);
+		// t_serverData				thisServer;
+		// thisServer._server = currentServer; // was this ever doing anything?
+		int serverSockfd = currentServer->getServerSocket()->getSockfd();
+		struct epoll_event event;
 
 		event.data.fd = serverSockfd;
 		_epoll.addServerSocketEpoll(serverSockfd);
@@ -89,7 +93,7 @@ void Webserv::addServersToEpoll()
 	std::cout << "--------------------------\n";
 }
 
-void		Webserv::monitorServers()
+void Webserv::monitorServers()
 {
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
@@ -106,11 +110,11 @@ void		Webserv::monitorServers()
 		if (numEvents == -1)
 		{
 			if (_keepRunning == false)
-				return ;
+				return;
 			throw std::runtime_error("epoll_wait() failed\n");
 		}
 		else if (numEvents == 0)
-			continue ;
+			continue;
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
@@ -145,9 +149,7 @@ size_t Webserv::getServerCount(void) const
 std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
 	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
-						   {
-							   return server->getServerName() == name;
-						   });
+						   { return server->getServerName() == name; });
 	if (it != _servers.end())
 	{
 		return *it;
@@ -158,4 +160,21 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 Epoll &Webserv::getEpoll()
 {
 	return this->_epoll;
+}
+
+/**
+ * @brief verifies that there are no two ports the same in Webserv
+ */
+void Webserv::checkDoublePorts()
+{
+	std::unordered_set<std::string> hostSet;
+	for (const auto &serv : _servers)
+	{
+		std::string host = serv->getHost();
+		if (hostSet.find(host) != hostSet.end())
+		{
+			throw std::runtime_error("Duplicate server host found: " + host);
+		}
+		hostSet.insert(host);
+	}
 }

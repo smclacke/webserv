@@ -1,9 +1,8 @@
-1. After creating a server, check if port, host, and name arent all equal -> return bad config
-2. Servers with hte same port&host but different name read from the same Server Socket
-3. The difference between server_name should be established in the parser.
-
+-update check for the host to somehow use econf
 
 ----
-1. Write the CGI PART
-2. check with Sarah if Host needs to be int[8] ?? --> update parseListen function and class
-3. do something with the redirect;
+0. implement the redirect if location has redirect to return a HTTPS respond.
+1. TEST the file piping
+2. Write the CGI PART
+3. check how to make img loading work
+4. check if char BUFFER is good or it should be void BUFFER

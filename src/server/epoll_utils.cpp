@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 19:08:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 17:23:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,15 +28,15 @@ std::string Epoll::generateHttpResponse(const std::stringstream &message)
 	return response.str();
 }
 
-/** 
+/**
  * 	pipefd[0] - read
  * 	pipefd[1] - write
- * 
+ *
  * @todo check, pipe fail is fatal error? and epoll_ctl fail?
  */
-//void	Epoll::addFile(int fd)
+// void	Epoll::addFile(int fd)
 //{
-	
+
 //	//if (pipe(_pipefd) == -1)
 //	//{
 //	//	std::cerr << "pipe for file failed\n";
@@ -56,16 +56,16 @@ std::string Epoll::generateHttpResponse(const std::stringstream &message)
 //	//}
 //}
 
-void		Epoll::addToEpoll(int fd)
+void Epoll::addToEpoll(int fd)
 {
 	struct epoll_event event;
-	event.events = EPOLLIN | EPOLLOUT;
+	event.events = EPOLLIN;
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
 		std::cerr << "Error adding fd to epoll\n";
-		return ;
+		return;
 	}
 	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
 }
@@ -85,7 +85,7 @@ struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
 	return event;
 }
 
-void		Epoll::modifyEvent(int fd, uint32_t events)
+void Epoll::modifyEvent(int fd, uint32_t events)
 {
 	struct epoll_event event;
 
@@ -104,20 +104,20 @@ void Epoll::setNonBlocking(int connection)
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-void		Epoll::closeDelete(int fd)
+void Epoll::closeDelete(int fd)
 {
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
 	protectedClose(fd);
 }
 
-void		Epoll::updateClientClock(t_clients &client)
+void Epoll::updateClientClock(t_clients &client)
 {
 	client._clientTime[client._fd] = std::chrono::steady_clock::now();
 }
 
-void		Epoll::clientTimeCheck(t_clients &client)
+void Epoll::clientTimeCheck(t_clients &client)
 {
-	auto	now = std::chrono::steady_clock::now();
+	auto now = std::chrono::steady_clock::now();
 
 	for (auto it = client._clientTime.begin(); it != client._clientTime.end();)
 	{
@@ -128,22 +128,22 @@ void		Epoll::clientTimeCheck(t_clients &client)
 		{
 			std::cerr << "Client timed out\n";
 			closeDelete(client_fd);
-			it = client._clientTime.erase(it);	
+			it = client._clientTime.erase(it);
 		}
 		else
 			it++;
 	}
 }
 
-void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
+void Epoll::handleClientClose(t_serverData &server, t_clients &client)
 {
 	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr) == -1)
 		std::cerr << "Failed to remove fd from epoll\n";
 
 	protectedClose(client._fd);
-    client._clientState = clientState::CLOSED;
-    client._requestClient.clear();
-    client._responseClient.msg.clear();
+	client._clientState = clientState::CLOSED;
+	client._requestClient.clear();
+	client._responseClient.msg.clear();
 	client._fd = -1;
 
 	server.removeClient(client);
@@ -152,7 +152,6 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 /** @todo is this necessary? */
 // cleanup EVERYTHING at end of monitoring loop
 // what - how - etc.. need to check this
-void		Epoll::cleanUp()
+void Epoll::cleanUp()
 {
-	
 }

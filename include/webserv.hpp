@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 19:00:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 16:35:26 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,20 +21,21 @@ class Epoll;
 
 class Webserv
 {
-	private:
-		std::vector<std::shared_ptr<Server>>	_servers;
-		Epoll 									_epoll;
-		std::atomic<bool> 						&_keepRunning;
+private:
+	std::vector<std::shared_ptr<Server>> _servers;
+	Epoll _epoll;
+	std::atomic<bool> &_keepRunning;
 
-	public:
-		/* constructors */
-		Webserv(std::atomic<bool>  &keepRunning);
-		Webserv(std::string config, std::atomic<bool>  &keepRunning);
-		~Webserv(void);
+public:
+	/* constructors */
+	Webserv(std::atomic<bool> &keepRunning);
+	Webserv(std::string config, std::atomic<bool> &keepRunning);
+	~Webserv(void);
 
-		/* member functions */
-		void				addServersToEpoll();
-		void				monitorServers();
+	/* member functions */
+	void checkDoublePorts();
+	void addServersToEpoll();
+	void monitorServers();
 
 	/* Setters */
 	void addServer(std::shared_ptr<Server> server);
