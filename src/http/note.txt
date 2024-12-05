@@ -6,3 +6,16 @@
 2. Write the CGI PART
 3. check how to make img loading work
 4. check if char BUFFER is good or it should be void BUFFER
+
+
+
+
+-------
+/**
+ * @brief opens a pipe for the file and sets the outfile descriptor to _response.outFd
+ * @todo
+ * 1. change epoll to only read from the pipe, not the message first.
+ * 2. The childprocess will both generate the message and send the file, this way the child process can also send a bad HTTPrespones
+ * 3. epoll is changed to if ReadFile or some sort of ReadFromPipe is true, only read from pipe, else only read from http_send.msg();
+ * 4. epoll needs to close the read FD after reading and needs to waitpid after process finishes
+ */
