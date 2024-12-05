@@ -26,6 +26,8 @@
 
 
 
+111) 
+	remove bigWrite when everything gooci
 
 
 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:25:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 18:39:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -122,6 +122,7 @@ class Epoll
 		void							closeDelete(int fd);
 		void							handleClientClose(t_serverData &server, t_clients &client);
 		void							cleanUp();
+		void							handleBigWrite(t_serverData &server, t_clients &client);
 };
 
 #endif /* EPOLL_HPP */

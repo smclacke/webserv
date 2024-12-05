@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:34:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 18:41:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -277,7 +277,9 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					//if (client._readingFile == false)
 					//	handleWrite(serverData, client);
 					//if (client._readingFile == true)
-						handleFile(client);
+						//handleFile(client);
+						
+					handleBigWrite(serverData, client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
