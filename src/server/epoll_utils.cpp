@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:37:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 18:25:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -100,11 +100,11 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 		std::cerr << "Failed to remove fd from epoll\n";
 
 	protectedClose(client._fd);
-    client._clientState = clientState::CLOSED;
     client._requestClient.clear();
     client._responseClient.msg.clear();
 	client._fd = -1;
 
+    client._clientState = clientState::CLOSED;
 	server.removeClient(client);
 }
 

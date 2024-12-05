@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:39:56 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 18:25:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ enum class clientState
 	WRITING = 2, 			 // currently writing
 	ERROR = 3,	 			 // something wrong - dont actually use since client gets closed
 	READY = 4,	 			 // finished reading/writing job
-	CLOSED = 5,	 			 // connection closed // some what arbitary since client gets removed after close
+	CLOSE = 5,	 			 // connection can be closed
+	CLOSED = 6	 			 // has been closed, should also be removed, if not, removal failed
 };
 
 #define MAX_EVENTS 10
@@ -92,6 +93,7 @@ class Epoll
 		void							initEpoll();
 		void							handleRead(t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
+		void							handleFile(t_clients &client);
 		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);
 

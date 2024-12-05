@@ -22,3 +22,28 @@
 9) 
 **restart server if fatal error occurs wooooooooo**
 
+
+
+
+
+
+
+
+
+10) 
+	**AT THE END, ADD ERRNO CHECKING BACK IN**
+	// READ
+	//if (errno == EAGAIN || errno == EWOULDBLOCK)
+	//{
+	//	std::cout << "No data available right now\n";
+	//	client._clientState = clientState::BEGIN;
+	//	client._connectionClose = false;
+	//	return ;
+	//}
+	// WRITE
+	//if (errno == EAGAIN || errno == EWOULDBLOCK)
+	//{		
+	//	client._clientState = clientState::BEGIN;
+	//	client._connectionClose = false;
+	//	return ;
+	//}

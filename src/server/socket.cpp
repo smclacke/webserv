@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:40:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 18:00:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,7 +26,7 @@ Socket::Socket(const Socket &copy)
 	*this = copy;
 }
 
-Socket &Socket::operator=(const Socket &socket)
+Socket	&Socket::operator=(const Socket &socket)
 {
 	if (this != &socket)
 	{
@@ -91,33 +91,33 @@ void		Socket::openServerSocket(const Server &servInstance)
 }
 
 /* getters */
-int Socket::getSockfd() const
+int	Socket::getSockfd() const
 {
 	return this->_sockfd;
 }
 
-struct sockaddr_in Socket::getSockaddr() const
+struct	sockaddr_in Socket::getSockaddr() const
 {
 	return this->_sockaddr;
 }
 
-socklen_t Socket::getAddrlen() const
+socklen_t	Socket::getAddrlen() const
 {
 	return this->_addrlen;
 }
 
 /* setters */
-void Socket::setSockfd(int fd)
+void	Socket::setSockfd(int fd)
 {
 	this->_sockfd = fd;
 }
 
-void Socket::setSockaddr(struct sockaddr_in &sockaddr)
+void	Socket::setSockaddr(struct sockaddr_in &sockaddr)
 {
 	this->_sockaddr = sockaddr;
 }
 
-void Socket::setAddrlen(socklen_t &addrlen)
+void	Socket::setAddrlen(socklen_t &addrlen)
 {
 	this->_addrlen = addrlen;
 }
