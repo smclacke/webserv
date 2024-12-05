@@ -1,3 +1,7 @@
+1. After creating a server, check if port, host, and name arent all equal -> return bad config
+2. Servers with hte same port&host but different name read from the same Server Socket
+3. The difference between server_name should be established in the parser.
+
 
 ----
 1. Write the CGI PART
