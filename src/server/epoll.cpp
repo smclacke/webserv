@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 22:08:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/05 14:47:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,13 +39,6 @@ Epoll::~Epoll()
 	std::cout << "Epoll destructor called\n";
 	if (_epfd > 0)
 		protectedClose(_epfd);
-
-	/** @todo if the pipe moves, move the close
-	 * @todo if closeDelete fails? or pipe not added to epoll? */ 
-	//if (_pipefd[0])
-	//	closeDelete(_pipefd[0]);
-	//if (_pipefd[1])
-	//	closeDelete(_pipefd[1]);
 }
 
 /* methods */
@@ -177,9 +170,9 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 		//addToEpoll(client._responseClient.readFd);
 		ssize_t bytesSend;
 		char buffer[READ_BUFFER_SIZE];
-		ssize_t	bytesWritten = read(client._responseClient.readFd, buffer ,READ_BUFFER_SIZE -1);
-		std::cout << "BYTES WRITTEN IS " << bytesWritten << std::endl;
-		if (bytesWritten < 0) // error
+		ssize_t	bytesRead = read(client._responseClient.readFd, buffer ,READ_BUFFER_SIZE -1);
+		std::cout << "BYTES read from file: " << bytesRead << std::endl;
+		if (bytesRead < 0) // error
 		{
 			if (errno == EAGAIN || errno == EWOULDBLOCK)
 				return ;
@@ -187,9 +180,17 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 			client._connectionClose = true;
 			return ;
 		}
-		else if (bytesWritten == 0) // nothing to read anymore -> we are done
+		else if (bytesRead == 0) // nothing to read anymore -> we are done
 		{
-			send(client._fd, "\r\n\r\n", 4, 0);
+			bytesSend = send(client._fd, "\r\n\r\n", 4, 0);
+			if (bytesSend < 0)
+			{
+				if (errno == EAGAIN || errno == EWOULDBLOCK)
+					return ;
+				std::cerr << "Write to client failed\n";
+				client._connectionClose = true;
+				return ;
+			}
 			client._readingFile = false;
 			client._clientState = clientState::READY;
 			close(client._responseClient.readFd);
@@ -205,11 +206,11 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 			return ;
 		}
 		buffer[READ_BUFFER_SIZE - 1] = '\0';
-		if (bytesWritten == READ_BUFFER_SIZE -1) // we are not done
+		if (bytesRead == READ_BUFFER_SIZE -1) // we are not done
 		{
 			std::cout << "WE READ:--" << buffer << std::endl;
-			bytesSend = send(client._fd, buffer, bytesWritten, 0);
-			if (bytesWritten < 0)
+			bytesSend = send(client._fd, buffer, bytesRead, 0);
+			if (bytesSend < 0)
 			{
 				if (errno == EAGAIN || errno == EWOULDBLOCK)
 					return ;
@@ -219,9 +220,9 @@ void		Epoll::handleWrite(t_serverData &server, t_clients &client)
 			}
 			std::cout << "BYTES SEND: " << bytesSend << std::endl;
 		}
-		else if (bytesWritten < READ_BUFFER_SIZE) // we need to send and then we are done
+		else if (bytesRead < READ_BUFFER_SIZE) // we need to send and then we are done
 		{
-			bytesSend = send(client._fd, buffer, bytesWritten, 0);
+			bytesSend = send(client._fd, buffer, bytesRead, 0);
 			if (bytesSend < 0)
 			{
 				if (errno == EAGAIN || errno == EWOULDBLOCK)
