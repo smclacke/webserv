@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 13:54:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 16:50:49 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -121,6 +121,9 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 	}
 }
 
+/**
+ * @note just change it to passing it to CGI as well
+ */
 void httpHandler::wwwFormEncoded(void)
 {
 	std::string filePath;
