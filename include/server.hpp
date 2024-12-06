@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 18:10:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 13:31:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -85,30 +85,29 @@ class Server
 		std::vector<s_location> _location;
 		std::shared_ptr<Socket> _serverSocket;
 
-	/* Location Parsing */
-	void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
-	void findLocationDirective(std::string &line, int &line_n, s_location &loc);
-	s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
-	void parseRoot(std::stringstream &ss, int line_n);
+		/* Location Parsing */
+		void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
+		void findLocationDirective(std::string &line, int &line_n, s_location &loc);
+		s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
+		void parseRoot(std::stringstream &ss, int line_n);
 
-	/* Server parsing*/
-	void findServerDirective(Server &serv, std::string &line, int line_n);
-	void parseServerName(std::stringstream &ss, int line_n);
-	void parseListen(std::stringstream &ss, int line_n);
-	void parseErrorPage(std::stringstream &ss, int line_n);
-	void parseClientMaxBody(std::stringstream &ss, int line_n);
+		/* Server parsing*/
+		void findServerDirective(Server &serv, std::string &line, int line_n);
+		void parseServerName(std::stringstream &ss, int line_n);
+		void parseListen(std::stringstream &ss, int line_n);
+		void parseErrorPage(std::stringstream &ss, int line_n);
+		void parseClientMaxBody(std::stringstream &ss, int line_n);
 
-public:
-	Server(void);
-	Server &operator=(const Server &rhs);
-	Server(std::ifstream &file, int &line_n);
-	Server(int portnum);
-	~Server(void);
+	public:
+		Server(void);
+		Server &operator=(const Server &rhs);
+		Server(std::ifstream &file, int &line_n);
+		~Server(void);
 
-	/* Member functions */
-	s_httpSend handleRequest(std::string &request);
-	eHttpMethod allowedHttpMethod(std::string &str);
-	void printServer(void);
+		/* Member functions */
+		s_httpSend handleRequest(std::string &request);
+		eHttpMethod allowedHttpMethod(std::string &str);
+		void printServer(void);
 
 		/* add */
 		void addLocation(s_location route);

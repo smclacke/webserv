@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:08:27 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/28 18:46:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:05:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void httpHandler::stdDelete(void)
 {
-	std::cout << "Handling DELETE request" << std::endl;
+	//std::cout << "Handling DELETE request" << std::endl;
 	// Add logic to handle DELETE request
 	if (_request.uriEncoded == true)
 	{

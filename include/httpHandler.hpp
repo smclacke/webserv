@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:46:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 13:43:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -55,59 +55,59 @@ struct s_httpSend;
 
 class httpHandler
 {
-private:
-	Server &_server;
-	eHttpStatusCode _statusCode;
-	s_request _request;
-	s_response _response;
+	private:
+		Server &_server;
+		eHttpStatusCode _statusCode;
+		s_request _request;
+		s_response _response;
 
-	// headers to strings and back
-	eRequestHeader toEHeader(const std::string &header);
-	std::string EheaderToString(const eRequestHeader &header);
-	std::string responseHeaderToString(const eResponseHeader &header);
-	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
-	// utils
-	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	void readFile(void);
-	std::string contentType(const std::string &filePath);
-	void setErrorResponse(eHttpStatusCode code, std::string msg);
-	std::string buildPath(void);
-	// parse
-	void parseRequestLine(std::stringstream &ss);
-	void parseHeaders(std::stringstream &ss);
-	void parseBody(std::stringstream &ss);
-	void checkUriPath(void);
-	// parse body
-	void parseChunkedBody(std::stringstream &ss);
-	void parseFixedLengthBody(std::stringstream &ss, size_t length);
-	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
-	void parseMultipartBody(const std::string &contentType);
-	std::string extractBoundary(const std::string &contentType);
-	std::string extractHeaderValue(const std::string &headers, const std::string &key);
-	std::string extractFilename(const std::string &contentDisposition);
-	std::string getTempFilePath(const std::string &filename);
-	// response
-	s_httpSend writeResponse(bool keepalive);
-	void generateDirectoryListing(void);
-	// std Response
-	void callMethod(void);
-	void stdGet(void);
-	void getUriEncoded(void);
-	void stdPost(void);
-	void wwwFormEncoded(void);
-	void stdDelete(void);
-	void deleteFromCSV();
-	// cgi Response
-	void cgiResponse(void);
+		// headers to strings and back
+		eRequestHeader toEHeader(const std::string &header);
+		std::string EheaderToString(const eRequestHeader &header);
+		std::string responseHeaderToString(const eResponseHeader &header);
+		std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
+		// utils
+		std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
+		void readFile(void);
+		std::string contentType(const std::string &filePath);
+		void setErrorResponse(eHttpStatusCode code, std::string msg);
+		std::string buildPath(void);
+		// parse
+		void parseRequestLine(std::stringstream &ss);
+		void parseHeaders(std::stringstream &ss);
+		void parseBody(std::stringstream &ss);
+		void checkUriPath(void);
+		// parse body
+		void parseChunkedBody(std::stringstream &ss);
+		void parseFixedLengthBody(std::stringstream &ss, size_t length);
+		void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
+		void parseMultipartBody(const std::string &contentType);
+		std::string extractBoundary(const std::string &contentType);
+		std::string extractHeaderValue(const std::string &headers, const std::string &key);
+		std::string extractFilename(const std::string &contentDisposition);
+		std::string getTempFilePath(const std::string &filename);
+		// response
+		s_httpSend writeResponse(bool keepalive);
+		void generateDirectoryListing(void);
+		// std Response
+		void callMethod(void);
+		void stdGet(void);
+		void getUriEncoded(void);
+		void stdPost(void);
+		void wwwFormEncoded(void);
+		void stdDelete(void);
+		void deleteFromCSV();
+		// cgi Response
+		void cgiResponse(void);
 
-public:
-	/* constructor and deconstructor */
-	httpHandler(Server &server);
-	~httpHandler(void);
+	public:
+		/* constructor and deconstructor */
+		httpHandler(Server &server);
+		~httpHandler(void);
 
-	/* member functions */
-	void parseRequest(std::stringstream &response);
-	s_httpSend generateResponse(void);
+		/* member functions */
+		void parseRequest(std::stringstream &response);
+		s_httpSend generateResponse(void);
 };
 
 #endif /* HTTP_HANDLER_HPP */

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/04 14:46:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 18:17:48 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:04:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,8 +15,6 @@
 
 void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 {
-	static int clientId = 0;
-
 	t_clients	newClient;
 
 	newClient._fd = sock;
@@ -27,12 +25,9 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len)
 	newClient._connectionClose = false;
 	newClient._write_offset = 0;
 	newClient._bytesWritten = 0;
-	newClient._clientId = clientId++;
 	newClient._readingFile = false;
 	
 	_clients.push_back(newClient);
-
-	std::cout << "New client connected with ID: " << newClient._clientId << " from " << inet_ntoa(newClient._addr.sin_addr) << "\n";
 }
 
 void		s_serverData::removeClient(t_clients &client)
@@ -43,10 +38,7 @@ void		s_serverData::removeClient(t_clients &client)
 	});
 
 	if (it != _clients.end())
-	{
 		_clients.erase(it);
-		std::cout << "Client successfully removed from deque\n";
-	}
 	else
 		std::cerr << "Error: Client not found in _clients deque\n";
 }

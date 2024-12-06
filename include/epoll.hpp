@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 11:29:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 13:41:32 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,7 +50,6 @@ typedef struct s_clients
 	enum clientState						_clientState;
 	std::unordered_map<int, timePoint>		_clientTime;
 	bool									_connectionClose;
-	int										_clientId;
 
 	/** Read */
 	std::string								_requestClient;

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 11:30:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:12:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,17 +27,14 @@ Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
 Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
-	_epoll.initEpoll();
 	if (config.empty())
 	{
 		std::cout << "Default configuration\n\n";
 		auto default_server = std::make_shared<Server>();
 		_servers.push_back(default_server);
-		auto default_server2 = std::make_shared<Server>(9999);
-		_servers.push_back(default_server2);
-		return;
+		return ;
 	}
-	std::cout << "config: " << config << std::endl << "\n";
+	std::cout << "Config: " << config << std::endl << "\n";
 	std::ifstream file(config);
 	if (!file.is_open())
 		throw std::runtime_error("unable to open file: \"" + config + "\"");
@@ -76,24 +73,32 @@ void Webserv::addServersToEpoll()
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
 		std::shared_ptr<Server>		currentServer = getServer(i);
-		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
-		struct epoll_event 	event;
+		int							serverSockfd = currentServer->getServerSocket()->getSockfd();
+		struct epoll_event 			event;
 
 		event.data.fd = serverSockfd;
 		_epoll.addToEpoll(serverSockfd);
 		_epoll.setEvent(event);
 		_epoll.setServer(currentServer);
 	}
-	std::cout << "--------------------------\n";
+}
+
+void Webserv::removeServersFromEpoll()
+{
+	for (size_t i = 0; i < getServerCount(); ++i)
+	{
+		std::shared_ptr<Server>		currentServer = getServer(i);
+		int							serverSockfd = currentServer->getServerSocket()->getSockfd();
+		
+		if (epoll_ctl(_epoll.getEpfd(), EPOLL_CTL_DEL, serverSockfd, nullptr) == -1)
+			std::cerr << "Failed to remove fd from epoll\n";
+	}
 }
 
 void		Webserv::monitorServers()
 {
+	_epoll.initEpoll();
 	addServersToEpoll();
-
-	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
-	std::cout << "Entering monitoring loop\n";
-	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
 	while (_keepRunning)
 	{
@@ -107,7 +112,7 @@ void		Webserv::monitorServers()
 		{
 			if (_keepRunning == false)
 				return ;
-			throw std::runtime_error("epoll_wait() failed\n");
+			throw std::runtime_error("epoll_wait()\n");
 		}
 		else if (numEvents == 0)
 			continue ;
@@ -117,7 +122,7 @@ void		Webserv::monitorServers()
 			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
 		}
 	}
-	_epoll.cleanUp(); // will maybe make you, maybe not...
+	removeServersFromEpoll();
 }
 
 /* setters */

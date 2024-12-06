@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 18:21:36 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:05:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 
 void httpHandler::stdPost(void)
 {
-	std::cout << "Handling POST request" << std::endl;
+	//std::cout << "Handling POST request" << std::endl;
 	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
 	if (contentTypeIt == _request.headers.end() || contentTypeIt->second.empty())
 	{

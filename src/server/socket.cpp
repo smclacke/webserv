@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:00:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:13:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,6 @@ Socket	&Socket::operator=(const Socket &socket)
 
 Socket::~Socket()
 {
-	std::cout << "Socket destructor called" << std::endl;
 	protectedClose(_sockfd);
 }
 
@@ -50,17 +49,17 @@ Socket::~Socket()
 void		Socket::openServerSocket(const Server &servInstance)
 {
 	if ((_sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0)
-		throw std::runtime_error("Error socketing sock\n");
+		throw std::runtime_error("socket()\n");
 
 	_flags = fcntl(_sockfd, F_GETFL, 0);
 	if (_flags == -1 || fcntl(_sockfd, F_SETFL, _flags | O_NONBLOCK) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error setting nonblocking\n");
+		throw std::runtime_error("setting socket to nonblocking\n");
 	}
 
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
-		throw std::runtime_error("Error setsockopt sock\n");
+		throw std::runtime_error("setsockopt()\n");
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
 	_sockaddr.sin_family = AF_INET;
@@ -75,19 +74,20 @@ void		Socket::openServerSocket(const Server &servInstance)
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error binding sock\n");
+		throw std::runtime_error("bind()\n");
 	}
 
 	if (listen(_sockfd, _maxConnections) < 0)
 	{
 		protectedClose(_sockfd);
-		throw std::runtime_error("Error listening for connections\n");
+		throw std::runtime_error("listen()\n");
 	}
 	setSockaddr(_sockaddr);
 	setAddrlen(_addrlen);
 
-	std::cout << "Listening on port - " << servInstance.getPort() << "\n";
-	std::cout << "Host address - " << servInstance.getHost().c_str() << " \n";
+	std::cout << "Server: " << servInstance.getServerName() << "\n";
+	std::cout << "Port: " << servInstance.getPort() << "\n";
+	std::cout << "Host: " << servInstance.getHost().c_str() << " \n";
 }
 
 /* getters */

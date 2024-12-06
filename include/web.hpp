@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:46:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 13:43:58 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,8 +90,6 @@ void lineStrip(std::string &line);
 void verifyInput(int ac, char **av);
 s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
 s_location addDefaultLoc(size_t servermaxsize);
-
-/* server */
 
 /* utils */
 void	protectedClose(int fd);

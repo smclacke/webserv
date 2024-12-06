@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:42:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:03:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -173,9 +173,7 @@ void httpHandler::parseHeaders(std::stringstream &ss)
 		getline(split >> std::ws, value);
 		eRequestHeader headerType = toEHeader(key);
 		if (headerType == eRequestHeader::Invalid)
-		{
-			std::cerr << "unknown header key: " << key << std::endl;
-		}
+			continue ;
 		if (headerType == eRequestHeader::Connection)
 		{
 			if (value != "keep-alive" && value != "close")

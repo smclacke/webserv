@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 11:29:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:07:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,6 @@
 #include "../../include/epoll.hpp"
 
 /* Epoll utils */
-
 void		Epoll::addToEpoll(int fd)
 {
 	struct epoll_event event;
@@ -26,7 +25,6 @@ void		Epoll::addToEpoll(int fd)
 		std::cerr << "Error adding fd to epoll\n";
 		return ;
 	}
-	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
 }
 
 void		Epoll::modifyEvent(int fd, uint32_t events)
@@ -75,7 +73,8 @@ void		Epoll::clientTimeCheck(t_clients &client)
 
 void		Epoll::closeDelete(int fd)
 {
-	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
+	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr) < 0)
+		std::cerr << "Failed to remove fd from epoll\n";
 	protectedClose(fd);
 }
 
@@ -91,14 +90,6 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 
     client._clientState = clientState::CLOSED;
 	server.removeClient(client);
-}
-
-/** @todo is this necessary? */
-// cleanup EVERYTHING at end of monitoring loop
-// what - how - etc.. need to check this
-void		Epoll::cleanUp()
-{
-	
 }
 
 
@@ -125,22 +116,19 @@ void	Epoll::handleBigWrite(t_serverData &server, t_clients &client)
 		ssize_t bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, leftover, 0);
 		if (bytesWritten < 0)
 		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return;
 			std::cerr << "Write to client failed\n";
 			client._connectionClose = true;
 			return;
 		}
 		else if (bytesWritten == 0)
 		{
-			std::cout << "Client disconnected\n";
+			//std::cout << "Client disconnected\n";
 			client._connectionClose = true;
 			return;
 		}
 		client._write_offset += bytesWritten;
 		if (client._write_offset >= client._responseClient.msg.length())
 		{
-			std::cout << "Finished sending message, hora!\n";
 			if (client._responseClient.readFd != -1)
 			{
 				client._readingFile = true;
@@ -169,8 +157,6 @@ void	Epoll::handleBigWrite(t_serverData &server, t_clients &client)
 		ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
 		if (bytesRead < 0) // error
 		{
-			if (errno == EAGAIN || errno == EWOULDBLOCK)
-				return;
 			std::cerr << "Reading from pipe failed\n";
 			client._connectionClose = true;
 			return;
@@ -197,8 +183,6 @@ void	Epoll::handleBigWrite(t_serverData &server, t_clients &client)
 			bytesSend = send(client._fd, buffer, bytesRead, 0);
 			if (bytesSend < 0)
 			{
-				if (errno == EAGAIN || errno == EWOULDBLOCK)
-					return;
 				std::cerr << "Write to client failed\n";
 				client._connectionClose = true;
 				return;
@@ -209,8 +193,6 @@ void	Epoll::handleBigWrite(t_serverData &server, t_clients &client)
 			bytesSend = send(client._fd, buffer, bytesRead, 0);
 			if (bytesSend < 0)
 			{
-				if (errno == EAGAIN || errno == EWOULDBLOCK)
-					return;
 				std::cerr << "Write to client failed\n";
 				client._connectionClose = true;
 				return;

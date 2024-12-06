@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 15:01:36 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 13:30:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,7 @@ enum class SizeUnit
 };
 
 /**
- * @brief	data filler for testing
- * @note	to be removed.
+ * @brief	default constructor if no config file given
  */
 Server::Server(void) : _port(8080)
 {
@@ -32,30 +31,6 @@ Server::Server(void) : _port(8080)
 	_host = "127.0.0.1";
 	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
-	s_location loc;
-	loc.allowed_methods.push_back(eHttpMethod::GET);
-	loc.allowed_methods.push_back(eHttpMethod::POST);
-	loc.allowed_methods.push_back(eHttpMethod::DELETE);
-	loc.index_files.push_back("index.html");
-	loc.index_files.push_back("index.htm");
-	loc.index = "index.html";
-	loc.cgi_ext = ".php";
-	loc.cgi_path = "/usr/bin/php-cgi";
-	_location.push_back(loc);
-	_serverSocket = std::make_shared<Socket>(*this);
-}
-
-/**
- * @brief	data filler for testing
- * @note	to be removed.
- */
-Server::Server(int portnum) : _port(portnum)
-{
-	_serverName = "default_server";
-	_host = "127.0.0.1";
-	_root = "./server_files";
-	_errorPage.push_back({"/404.html", 404});
-	_clientMaxBodySize = 8192;
 	s_location loc;
 	loc.allowed_methods.push_back(eHttpMethod::GET);
 	loc.allowed_methods.push_back(eHttpMethod::POST);
@@ -92,7 +67,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		++line_n;
 		lineStrip(line);
 		if (line.empty())
-			continue;
+			continue ;
 		if (line.find('}') != std::string::npos)
 		{
 			if (line.size() != 1)
@@ -100,7 +75,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 			if (_location.size() == 0)
 				addLocation(addDefaultLoc(_clientMaxBodySize));
 			_serverSocket = std::make_shared<Socket>(*this);
-			return;
+			return ;
 		}
 		size_t pos = line.find("location");
 		if (pos != std::string::npos)
@@ -115,13 +90,13 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		findServerDirective(*this, line, line_n);
 	}
 	throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
-	return;
+	return ;
 }
 
-Server::~Server()
-{
-	/** @todo remove all/any server stuff */
-}
+// destructor
+
+Server::~Server() {}
+
 
 /* member functions */
 
@@ -130,8 +105,6 @@ Server::~Server()
  */
 s_httpSend Server::handleRequest(std::string &request)
 {
-	std::cout << "Request ==== \n"
-			  << request << "====\n";
 	std::stringstream stream(request);
 	httpHandler parser(*this);
 	parser.parseRequest(stream);

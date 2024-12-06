@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:41:05 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:13:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,6 @@ Epoll	&Epoll::operator=(const Epoll &epoll)
 
 Epoll::~Epoll()
 {
-	std::cout << "Epoll destructor called\n";
 	if (_epfd > 0)
 		protectedClose(_epfd);
 }
@@ -47,7 +46,6 @@ void	Epoll::initEpoll()
 	_epfd = epoll_create(10);
 	if (_epfd < 0)
 		throw std::runtime_error("Error creating Epoll instance\n");
-	std::cout << "Successfully created Epoll instance\n";
 }
 
 void	Epoll::handleRead(t_clients &client)
@@ -71,7 +69,7 @@ void	Epoll::handleRead(t_clients &client)
 	// Disconnected
 	else if (bytesRead == 0)
 	{
-		std::cout << "Client disconnected\n";
+		//std::cout << "Client disconnected\n";
 		client._clientState = clientState::CLOSE;
 		client._connectionClose = true;
 		return ;
@@ -121,7 +119,7 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 	// Disconnected
 	else if (bytesWritten == 0)
 	{
-		std::cout << "Client disconnected\n";
+		//std::cout << "Client disconnected\n";
 		client._clientState = clientState::CLOSE;
 		client._connectionClose = true;
 		return ;
@@ -242,7 +240,6 @@ void	Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 	else
 	{
-		std::cout << "\nNew connection made from " << inet_ntoa(clientAddr.sin_addr) << "\n";
 		setNonBlocking(clientfd);
 		server.addClient(clientfd, clientAddr, addrLen);
 		addToEpoll(clientfd);
@@ -307,6 +304,7 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 			}
 		}
 	}
+	
 }
 
 /* getters */

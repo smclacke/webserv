@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 15:14:17 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:04:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,6 @@ s_httpSend httpHandler::writeResponse(bool keepalive)
 	auto it = statusMessages.find(_statusCode);
 	if (it != statusMessages.end())
 	{
-		std::cout << "BODY = " << _response.body.str() << std::endl;
 		std::stringstream responseStream;
 		// status line
 		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " "

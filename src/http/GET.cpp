@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:28:48 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:05:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
  */
 void httpHandler::stdGet(void)
 {
-	std::cout << "Handling GET request" << std::endl;
+	//std::cout << "Handling GET request" << std::endl;
 	if (_request.uriEncoded == true)
 	{
 		return getUriEncoded();
