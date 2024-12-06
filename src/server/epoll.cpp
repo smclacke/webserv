@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:13:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 16:05:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -275,8 +275,17 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					//	handleWrite(serverData, client);
 					//if (client._readingFile == true)
 						//handleFile(client);
-						
-					handleBigWrite(serverData, client);
+					if (client._responseClient.readFd != -1)
+					{
+						struct epoll_event event;
+						event.events = EPOLLIN;
+						event.data.fd = client._responseClient.readFd;
+						epoll_ctl(_epfd, EPOLL_CTL_ADD, client._responseClient.readFd, &event);
+						handleFile(client);
+					}
+					else
+						handleWrite(serverData, client);
+					//handleBigWrite(serverData, client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;

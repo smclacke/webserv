@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:05:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 16:01:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,6 +227,7 @@ void httpHandler::readFile(void)
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 		return;
 	}
+	std::cout << "opened file\n";
 	//std::cout << "path =====" << _request.path << std::endl;
 	//std::ifstream is(_request.path);
 	//if (!is.is_open())
