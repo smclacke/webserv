@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 17:12:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 18:02:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -146,9 +146,12 @@ void	Epoll::handleWrite( t_clients &client)
 
 void	Epoll::handleFile(t_clients &client)
 {
+	client._clientState = clientState::WRITING;
 	ssize_t		bytesSend;
 	char		buffer[READ_BUFFER_SIZE];
+	memset(buffer, 0, sizeof(buffer));
 	// i guess im not reading here anymore?
+	
 	ssize_t		bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
 	// Error
 	if (bytesRead < 0)
@@ -164,13 +167,11 @@ void	Epoll::handleFile(t_clients &client)
 	{
 		client._readingFile = false;
 		client._clientState = clientState::READY;
-		protectedClose(client._responseClient.readFd);
 		if (client._responseClient.pid != -1)
 		{
 			int status;
 			waitpid(client._responseClient.pid, &status, 0);
 		}
-		client._responseClient.readFd = -1;
 		client._responseClient.pid = -1;
 		if (client._responseClient.keepAlive == false)
 		{
@@ -180,6 +181,7 @@ void	Epoll::handleFile(t_clients &client)
 		return ;
 	}
 	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	std::cout << "Read from pipe: " << buffer << std::endl;
 	if (bytesRead == READ_BUFFER_SIZE - 1) // we are not done
 	{
 		bytesSend = send(client._fd, buffer, bytesRead, 0);
@@ -206,13 +208,12 @@ void	Epoll::handleFile(t_clients &client)
 		}
 		client._readingFile = false;
 		client._clientState = clientState::READY;
-		close(client._responseClient.readFd);
+
 		if (client._responseClient.pid != -1)
 		{
 			int status;
 			waitpid(client._responseClient.pid, &status, 0);
 		}
-		client._responseClient.readFd = -1;
 		client._responseClient.pid = -1;
 		if (client._responseClient.keepAlive == false)
 			client._connectionClose = true;
@@ -268,8 +269,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					//handleBigWrite(serverData, client);
 					if (client._responseClient.readfile == false)
 						handleWrite(client);
-					else
-						handleFile(client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
@@ -295,9 +294,16 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				if (client._connectionClose == true)
 					handleClientClose(serverData, client);
 			}
+			if (fd == client._responseClient.readFd)
+			{
+				handleFile(client);
+				if (client._clientState == clientState::READY)
+				{
+					closeDelete(client._responseClient.readFd);
+				}
+			}	
 		}
 	}
-	
 }
 
 /* getters */

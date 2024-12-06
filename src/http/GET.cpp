@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 17:30:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 17:53:58 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -226,7 +226,7 @@ void httpHandler::setFile(void)
 		}
 		s_httpSend intro = writeResponse(false);
 		std::cout << "\n-------\n" << intro.msg << "\n-------\n" << std::endl;
-
+		
 		char buffer[READ_BUFFER_SIZE];
 		ssize_t bytesRead;
 		size_t totalBytesWritten = 0;
@@ -249,7 +249,7 @@ void httpHandler::setFile(void)
 			std::cout << "READ FROM BUFFER: " << buffer << std::endl;
 			if (write(pipefd[1], buffer, bytesRead) == -1)
 			{
-				std::cout << "WRITING FAILED" << std::endl;
+				//std::cout << "WRITING FAILED" << std::endl;
 				setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
 				close(fileFd);
 				close(pipefd[1]);
