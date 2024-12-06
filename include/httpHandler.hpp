@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/04 21:46:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:53:54 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,7 @@ struct s_response
 {
 	std::unordered_map<eResponseHeader, std::string> headers;
 	std::stringstream body;
-	std::string filepath;
+	bool keepalive = true;
 	bool readFile = false;
 	bool cgi = false;
 	int readFd = -1;
@@ -55,6 +55,15 @@ struct s_httpSend;
 
 class httpHandler
 {
+public:
+	/* constructor and deconstructor */
+	httpHandler(Server &server);
+	~httpHandler(void);
+
+	/* member functions */
+	void parseRequest(std::stringstream &response);
+	s_httpSend generateResponse(void);
+
 private:
 	Server &_server;
 	eHttpStatusCode _statusCode;
@@ -68,7 +77,7 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	void readFile(void);
+	void setFile(void);
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);
@@ -87,7 +96,7 @@ private:
 	std::string extractFilename(const std::string &contentDisposition);
 	std::string getTempFilePath(const std::string &filename);
 	// response
-	s_httpSend writeResponse(bool keepalive);
+	s_httpSend writeResponse(void);
 	void generateDirectoryListing(void);
 	// std Response
 	void callMethod(void);
@@ -99,15 +108,6 @@ private:
 	void deleteFromCSV();
 	// cgi Response
 	void cgiResponse(void);
-
-public:
-	/* constructor and deconstructor */
-	httpHandler(Server &server);
-	~httpHandler(void);
-
-	/* member functions */
-	void parseRequest(std::stringstream &response);
-	s_httpSend generateResponse(void);
 };
 
 #endif /* HTTP_HANDLER_HPP */

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   cgiResponse.cpp                                    :+:    :+:            */
+/*   cgi.cpp                                            :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 14:51:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/26 11:57:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 14:53:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 void httpHandler::cgiResponse(void)
 {
 	std::cout << "It is a CGI request" << std::endl;
+	s_httpSend response = {_response.body.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
 	return;
 }
 
