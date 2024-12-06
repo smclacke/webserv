@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 16:05:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 16:55:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 
 	client._write_offset += bytesWritten;
 	
-	// FInished
+	// Finished
 	if (client._write_offset >= client._responseClient.msg.length())
 	{
 		if (client._responseClient.keepAlive == false)
@@ -144,87 +144,86 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 	client._connectionClose = false;
 }
 
-/** @todo this needs to be cleaned up + ensure it works with J new stuff */
 void	Epoll::handleFile(t_clients &client)
 {
-		/** @todo this.. OR add it in readFile GET.cpp */
-		//addToEpoll(client._responseClient.readFd);
-		
-		ssize_t		bytesSend;
-		char		buffer[READ_BUFFER_SIZE];
-		// i guess im not reading here anymore?
-		ssize_t		bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
+	// addToEpoll(client._responseClient.pipe[0])
 
-		// Error
-		if (bytesRead < 0)
+	// all client._responseClient.readFd become ->
+	// client._responseClient.pipe[0]
+	
+	ssize_t		bytesSend;
+	char		buffer[READ_BUFFER_SIZE];
+	// i guess im not reading here anymore?
+	ssize_t		bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
+
+	// Error
+	if (bytesRead < 0)
+	{
+		std::cerr << "Reading from pipe failed\n";
+		client._clientState = clientState::ERROR;
+		client._connectionClose = true;
+		return ;
+	}
+
+	// Nothing to read -> we are done
+	else if (bytesRead == 0)
+	{
+		client._readingFile = false;
+		client._clientState = clientState::READY;
+		protectedClose(client._responseClient.readFd);
+		if (client._responseClient.pid != -1)
 		{
-			std::cerr << "Reading from pipe failed\n";
-			client._clientState = clientState::ERROR;
+			int status;
+			waitpid(client._responseClient.pid, &status, 0);
+		}
+		client._responseClient.readFd = -1;
+		client._responseClient.pid = -1;
+		if (client._responseClient.keepAlive == false)
+		{
+			client._clientState = clientState::CLOSE;
+			client._connectionClose = true;
+		}
+		return ;
+	}
+	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	if (bytesRead == READ_BUFFER_SIZE - 1) // we are not done
+	{
+		bytesSend = send(client._fd, buffer, bytesRead, 0);
+		if (bytesSend < 0)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return;
+			std::cerr << "Write to client failed\n";
+			client._connectionClose = true;
+			return;
+		}
+		std::cout << "BYTES SEND: " << bytesSend << std::endl;
+	}
+	else if (bytesRead < READ_BUFFER_SIZE) // we need to send and then we are done
+	{
+		bytesSend = send(client._fd, buffer, bytesRead, 0);
+		if (bytesSend < 0)
+		{
+			if (errno == EAGAIN || errno == EWOULDBLOCK)
+				return ;
+			std::cerr << "Write to client failed\n";
 			client._connectionClose = true;
 			return ;
 		}
-
-		// Nothing to read -> we are done
-		else if (bytesRead == 0)
+		client._readingFile = false;
+		client._clientState = clientState::READY;
+		close(client._responseClient.readFd);
+		if (client._responseClient.pid != -1)
 		{
-			client._readingFile = false;
-			client._clientState = clientState::READY;
-			protectedClose(client._responseClient.readFd);
-			if (client._responseClient.pid != -1)
-			{
-				int status;
-				waitpid(client._responseClient.pid, &status, 0);
-			}
-			client._responseClient.readFd = -1;
-			client._responseClient.pid = -1;
-			if (client._responseClient.keepAlive == false)
-			{
-				client._clientState = clientState::CLOSE;
-				client._connectionClose = true;
-			}
-			return ;
+			int status;
+			waitpid(client._responseClient.pid, &status, 0);
 		}
-		buffer[READ_BUFFER_SIZE - 1] = '\0';
-		if (bytesRead == READ_BUFFER_SIZE - 1) // we are not done
-		{
-			std::cout << "WE READ:--" << buffer << std::endl;
-			bytesSend = send(client._fd, buffer, bytesRead, 0);
-			if (bytesSend < 0)
-			{
-				std::cout << "HELPP\n";
-				if (errno == EAGAIN || errno == EWOULDBLOCK)
-					return;
-				std::cerr << "Write to client failed\n";
-				client._connectionClose = true;
-				return;
-			}
-			std::cout << "BYTES SEND: " << bytesSend << std::endl;
-		}
-		else if (bytesRead < READ_BUFFER_SIZE) // we need to send and then we are done
-		{
-			bytesSend = send(client._fd, buffer, bytesRead, 0);
-			if (bytesSend < 0)
-			{
-				if (errno == EAGAIN || errno == EWOULDBLOCK)
-					return ;
-				std::cerr << "Write to client failed\n";
-				client._connectionClose = true;
-				return ;
-			}
-			client._readingFile = false;
-			client._clientState = clientState::READY;
-			close(client._responseClient.readFd);
-			if (client._responseClient.pid != -1)
-			{
-				int status;
-				waitpid(client._responseClient.pid, &status, 0);
-			}
-			client._responseClient.readFd = -1;
-			client._responseClient.pid = -1;
-			if (client._responseClient.keepAlive == false)
-				client._connectionClose = true;
-			return ;
-		}
+		client._responseClient.readFd = -1;
+		client._responseClient.pid = -1;
+		if (client._responseClient.keepAlive == false)
+			client._connectionClose = true;
+		return ;
+	}
 }
 
 void	Epoll::makeNewConnection(int fd, t_serverData &server)
@@ -271,21 +270,11 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				}
 				if (event.events & EPOLLOUT)
 				{
-					//if (client._readingFile == false)
-					//	handleWrite(serverData, client);
-					//if (client._readingFile == true)
-						//handleFile(client);
-					if (client._responseClient.readFd != -1)
-					{
-						struct epoll_event event;
-						event.events = EPOLLIN;
-						event.data.fd = client._responseClient.readFd;
-						epoll_ctl(_epfd, EPOLL_CTL_ADD, client._responseClient.readFd, &event);
-						handleFile(client);
-					}
-					else
-						handleWrite(serverData, client);
 					//handleBigWrite(serverData, client);
+					if (client._readingFile == false)
+						handleWrite(serverData, client);
+					if (client._readingFile == true)
+						handleFile(client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
