@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:48:19 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/06 16:55:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -223,15 +223,15 @@ void httpHandler::setFile(void)
 			close(pipefd[1]);
 			exit(EXIT_FAILURE);
 		}
-		s_httpSend blah = writeResponse();
+		s_httpSend intro = writeResponse();
 
 		char buffer[READ_BUFFER_SIZE];
 		ssize_t bytesRead;
 		size_t totalBytesWritten = 0;
-		size_t messageLength = blah.msg.size();
+		size_t messageLength = intro.msg.size();
 		while (totalBytesWritten < messageLength)
 		{
-			ssize_t bytesWritten = write(pipefd[1], blah.msg.c_str() + totalBytesWritten, messageLength - totalBytesWritten);
+			ssize_t bytesWritten = write(pipefd[1], intro.msg.c_str() + totalBytesWritten, messageLength - totalBytesWritten);
 			if (bytesWritten <= 0)
 			{
 				setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
@@ -264,97 +264,3 @@ void httpHandler::setFile(void)
 		_response.readFile = true;
 	}
 }
-
-/*
-void Epoll::processEvent(int fd, epoll_event &event)
-{
-	for (auto &serverData : _serverData)
-	{
-		if (fd == serverData._server->getServerSocket()->getSockfd())
-		{
-			if (event.events & EPOLLIN)
-				makeNewConnection(fd, serverData);
-		}
-		for (auto &client : serverData._clients)
-		{
-			if (fd == client._fd)
-			{
-				if (event.events & EPOLLIN)
-				{
-					handleRead(client);
-					if (client._clientState == clientState::READY)
-					{
-						modifyEvent(client._fd, EPOLLOUT);
-						updateClientClock(client);
-					}
-				}
-				else if (event.events & EPOLLOUT)
-				{
-					handleWrite(serverData, client);
-					if (client._clientState == clientState::READY)
-					{
-						modifyEvent(client._fd, EPOLLIN);
-						updateClientClock(client);
-					}
-				}
-				else if (event.events & EPOLLHUP)
-				{
-					std::cout << "Epoll: EPOLLHUP\n";
-					client._connectionClose = true;
-				}
-				else if (event.events & EPOLLRDHUP)
-				{
-					std::cout << "Epoll: EPOLLRDHUP\n";
-					client._connectionClose = true;
-				}
-				else if (event.events & EPOLLERR)
-				{
-					std::cout << "EPoll: EPOLLERR\n";
-					client._connectionClose = true;
-				}
-				if (client._connectionClose == true)
-					handleClientClose(serverData, client);
-			}
-			else if (fd == client._responseClient.readFd)
-			{
-				// Handle file reading
-				handleFileRead(client);
-			}
-		}
-	}
-}
-
-void Epoll::handleFileRead(t_clients &client)
-{
-	char buffer[READ_BUFFER_SIZE];
-	ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
-	if (bytesRead < 0)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		std::cerr << "Reading from file failed\n";
-		client._connectionClose = true;
-		return;
-	}
-	else if (bytesRead == 0)
-	{
-		client._readingFile = false;
-		client._clientState = clientState::READY;
-		close(client._responseClient.readFd);
-		client._responseClient.readFd = -1;
-		if (client._responseClient.keepAlive == false)
-			client._connectionClose = true;
-		return;
-	}
-	buffer[bytesRead] = '\0';
-	ssize_t bytesSend = send(client._fd, buffer, bytesRead, 0);
-	if (bytesSend < 0)
-	{
-		if (errno == EAGAIN || errno == EWOULDBLOCK)
-			return;
-		std::cerr << "Write to client failed\n";
-		client._connectionClose = true;
-		return;
-	}
-}
-*/
