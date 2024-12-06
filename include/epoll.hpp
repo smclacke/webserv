@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:39:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 11:29:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,7 +114,6 @@ class Epoll
 
 		/* utils -> epoll_utils.cpp */
 		void							addToEpoll(int fd);
-		struct epoll_event				addServerSocketEpoll(int sockfd);
 		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							updateClientClock(t_clients &client);

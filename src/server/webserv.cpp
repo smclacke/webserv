@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 17:13:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 11:30:06 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,13 +76,11 @@ void Webserv::addServersToEpoll()
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
 		std::shared_ptr<Server>		currentServer = getServer(i);
-		//t_serverData				thisServer;
-		//thisServer._server = currentServer; // was this ever doing anything?
 		int					serverSockfd = currentServer->getServerSocket()->getSockfd();
 		struct epoll_event 	event;
 
 		event.data.fd = serverSockfd;
-		_epoll.addServerSocketEpoll(serverSockfd);
+		_epoll.addToEpoll(serverSockfd);
 		_epoll.setEvent(event);
 		_epoll.setServer(currentServer);
 	}
@@ -91,11 +89,12 @@ void Webserv::addServersToEpoll()
 
 void		Webserv::monitorServers()
 {
+	addServersToEpoll();
+
 	std::cout << "\n~~~~~~~~~~~~~~~~~~~~~~~\n";
 	std::cout << "Entering monitoring loop\n";
 	std::cout << "~~~~~~~~~~~~~~~~~~~~~~~\n";
 
-	sleep(3);
 	while (_keepRunning)
 	{
 		for (auto &servers : _epoll.getAllServers())

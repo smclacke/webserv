@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/05 18:43:11 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 11:29:47 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,21 +27,6 @@ void		Epoll::addToEpoll(int fd)
 		return ;
 	}
 	std::cout << "New fd added to epoll: " << event.data.fd << "\n";
-}
-
-struct epoll_event Epoll::addServerSocketEpoll(int sockfd)
-{
-	struct epoll_event event;
-	event.data.fd = sockfd;
-	event.events = EPOLLIN;
-
-	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, sockfd, &event) < 0)
-	{
-		protectedClose(sockfd);
-		std::cerr << "Error adding socket to epoll\n";
-	}
-	std::cout << "New server socket added to epoll: " << event.data.fd << "\n";
-	return event;
 }
 
 void		Epoll::modifyEvent(int fd, uint32_t events)
