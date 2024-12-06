@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:05:14 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 17:01:12 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ void httpHandler::stdPost(void)
 		if (_response.cgi == false)
 			return setErrorResponse(eHttpStatusCode::Forbidden, "Cgi not allowed for this location");
 		std::cout << "Received app data: " << _request.body.str() << std::endl;
-		return cgiResponse();
+		return;
 	}
 	else
 	{
@@ -121,6 +121,9 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 	}
 }
 
+/**
+ * @note just change it to passing it to CGI as well
+ */
 void httpHandler::wwwFormEncoded(void)
 {
 	std::string filePath;

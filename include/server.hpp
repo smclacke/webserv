@@ -3,10 +3,10 @@
 /*                                                        ::::::::            */
 /*   server.hpp                                         :+:    :+:            */
 /*                                                     +:+                    */
-/*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
+/*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 13:31:53 by smclacke      ########   odam.nl         */
+/*   Created: 2024/12/06 16:59:07 by smclacke      #+#    #+#                 */
+/*   Updated: 2024/12/06 16:59:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 

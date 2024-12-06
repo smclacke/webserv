@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 15:56:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 17:11:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,6 +26,21 @@ void		Epoll::addToEpoll(int fd)
 		return ;
 	}
 }
+
+void		Epoll::addToEpollFile(int fd)
+{
+	struct epoll_event event;
+	event.events = EPOLLIN | EPOLLET; // Edge-triggered
+	event.data.fd = fd;
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) == -1)
+	{
+		perror("epoll_ctl");
+		std::cerr << "epoll_ctl error: add fd: " << fd << std::endl;
+		protectedClose(fd);
+	}
+	return ;
+}
+
 
 void		Epoll::modifyEvent(int fd, uint32_t events)
 {

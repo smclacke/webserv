@@ -6,18 +6,19 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:17:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 17:18:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/webserv.hpp"
 #include "../../include/error.hpp"
+#include <unordered_set>
 
 /* constructors */
 /**
  * @brief default constructor in case no config file was provided.
  */
-Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
+Webserv::Webserv(std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
 	auto default_server = std::make_shared<Server>();
@@ -53,6 +54,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 			if (_servers.size() == 10)
 			{
 				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
+				checkDoublePorts();
 				return;
 			}
 			continue;
@@ -60,6 +62,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 		else
 			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
+	checkDoublePorts();
 }
 
 Webserv::~Webserv(void)
@@ -95,7 +98,7 @@ void Webserv::removeServersFromEpoll()
 	}
 }
 
-void		Webserv::monitorServers()
+void Webserv::monitorServers()
 {
 	_epoll.initEpoll();
 	addServersToEpoll();
@@ -115,7 +118,7 @@ void		Webserv::monitorServers()
 			throw std::runtime_error("epoll_wait()\n");
 		}
 		else if (numEvents == 0)
-			continue ;
+			continue;
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
@@ -150,9 +153,7 @@ size_t Webserv::getServerCount(void) const
 std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
 	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
-						   {
-							   return server->getServerName() == name;
-						   });
+						   { return server->getServerName() == name; });
 	if (it != _servers.end())
 	{
 		return *it;
@@ -163,4 +164,21 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 Epoll &Webserv::getEpoll()
 {
 	return this->_epoll;
+}
+
+/**
+ * @brief verifies that there are no two ports the same in Webserv
+ */
+void Webserv::checkDoublePorts()
+{
+	std::unordered_set<int> portSet;
+	for (const auto &serv : _servers)
+	{
+		int Port = serv->getPort();
+		if (portSet.find(Port) != portSet.end())
+		{
+			throw eConf("Duplicate server port found: " + std::to_string(Port), 0);
+		}
+		portSet.insert(Port);
+	}
 }

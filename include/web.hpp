@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 13:43:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 16:59:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,10 +79,10 @@ struct s_httpSend
 {
 	std::string msg;
 	bool keepAlive;
-	std::string filepath; // get
-	bool readfile; // get
-	int readFd; // cgi
-	pid_t pid; // cgi
+	bool readfile;
+	int readFd;
+	bool cgi;
+	pid_t pid;
 };
 
 /* parser */

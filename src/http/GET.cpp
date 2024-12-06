@@ -5,8 +5,8 @@
 /*                                                     +:+                    */
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/12/06 16:56:07 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 16:56:10 by smclacke      ########   odam.nl         */
+/*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
+/*   Updated: 2024/12/06 17:30:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -219,11 +219,13 @@ void httpHandler::setFile(void)
 		int fileFd = open(_request.path.c_str(), O_RDONLY);
 		if (fileFd == -1)
 		{
+			std::cerr << "Opening file failed" << std::endl;
 			setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 			close(pipefd[1]);
 			exit(EXIT_FAILURE);
 		}
-		s_httpSend intro = writeResponse();
+		s_httpSend intro = writeResponse(false);
+		std::cout << "\n-------\n" << intro.msg << "\n-------\n" << std::endl;
 
 		char buffer[READ_BUFFER_SIZE];
 		ssize_t bytesRead;
@@ -241,10 +243,13 @@ void httpHandler::setFile(void)
 			}
 			totalBytesWritten += bytesWritten;
 		}
-		while ((bytesRead = read(fileFd, buffer, sizeof(buffer))) > 0)
+		while ((bytesRead = read(fileFd, buffer, sizeof(buffer) - 1)) > 0)
 		{
+			buffer[READ_BUFFER_SIZE - 1] = '\0';
+			std::cout << "READ FROM BUFFER: " << buffer << std::endl;
 			if (write(pipefd[1], buffer, bytesRead) == -1)
 			{
+				std::cout << "WRITING FAILED" << std::endl;
 				setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
 				close(fileFd);
 				close(pipefd[1]);

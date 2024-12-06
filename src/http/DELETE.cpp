@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:08:27 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:05:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/06 17:00:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,9 @@ void httpHandler::stdDelete(void)
 	return;
 }
 
+/**
+ * @note pass to CGI
+ */
 void httpHandler::deleteFromCSV()
 {
 	std::cout << "Deleting thing from database bruh" << std::endl;
