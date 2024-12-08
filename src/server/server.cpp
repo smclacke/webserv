@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 13:30:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 18:21:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 				throw eConf("Unexpected text with closing }", line_n);
 			if (_location.size() == 0)
 				addLocation(addDefaultLoc(_clientMaxBodySize));
-			_serverSocket = std::make_shared<Socket>(*this);
+			_serverSocket = std::make_shared<Socket>(*this); // double ports will already fail here since bind() throws if port already in use
 			return ;
 		}
 		size_t pos = line.find("location");

@@ -10,23 +10,25 @@
 	check if i need to do any chunky stuff
 
 8) 	
-	serious clean up of handleWrite function + any more from epoll.cpp
-		+ get rid of unnecessary print statements
+	clean up readFile bools - think theres like 3 on the go...
 
 9) 
-**restart server if fatal error occurs wooooooooo**
-
-
-
-
-
-111) 
-	remove bigWrite when everything gooci
-
-
-
+	**restart server if fatal error occurs wooooooooo**
 
 10) 
+	portchecking logic needs to change, before it is checked, server sockets are created and bind() is called, and fails
+
+11) 
+	default server:
+---- File extension doesnt match the requested Accept header
+	default 8080 throws this error
+
+
+
+
+
+
+100) 
 	**AT THE END, ADD ERRNO CHECKING BACK IN**
 	// READ
 	//if (errno == EAGAIN || errno == EWOULDBLOCK)
@@ -45,13 +47,3 @@
 	//}
 
 
-
-
-STATE:
-
-- add back (probably) missing portchecking
-- finally use bigwrite, clean everything up
-- merge this into server and remove this branch
-
----- File extension doesnt match the requested Accept header
-	default 8080 throws this error

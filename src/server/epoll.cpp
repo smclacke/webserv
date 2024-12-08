@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/08 17:32:42 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 18:32:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ void	Epoll::handleRead(t_clients &client)
 
 void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
+	// Handle Client Request
 	if (client._responseClient.msg.empty() && client._readingFile == false)
 	{
 		client._responseClient = server._server->handleRequest(client._requestClient);
@@ -131,7 +132,6 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 			if (client._responseClient.readFd != -1)
 			{
 				client._readingFile = true;
-				client._responseClient.readfile = true;
 				client._connectionClose = false;
 				return ;
 			}
@@ -166,10 +166,7 @@ void	Epoll::handleFile(t_clients &client)
 	if (bytesRead < 0)
 	{
 		std::cerr << "Reading from file failed\n";
-		client._readingFile = false;
-		client._responseClient.readfile = false; /** @todo tidy up these bools */
-		client._clientState = clientState::ERROR;
-		client._connectionClose = true;
+		operationFailed(client);
 		return ;
 	}
 
@@ -194,19 +191,16 @@ void	Epoll::handleFile(t_clients &client)
 		}
 		return ;
 	}
-	buffer[READ_BUFFER_SIZE - 1] = '\0';
 	
 	// Not finished reading, send what we have read and cont. loop
+	buffer[READ_BUFFER_SIZE - 1] = '\0';
 	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
 		bytesSend = send(client._fd, buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
 			std::cerr << "Write to client failed\n";
-			client._readingFile = false;
-			client._responseClient.readfile = false;
-			client._clientState = clientState::ERROR;
-			client._connectionClose = true;
+			operationFailed(client);
 			return ;
 		}
 	}
@@ -218,10 +212,7 @@ void	Epoll::handleFile(t_clients &client)
 		if (bytesSend < 0)
 		{
 			std::cerr << "Write to client failed\n";
-			client._readingFile = false;
-			client._responseClient.readfile = false;
-			client._clientState = clientState::ERROR;
-			client._connectionClose = true;
+			operationFailed(client);
 			return ;
 		}
 		client._readingFile = false;
@@ -286,7 +277,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				if (event.events & EPOLLOUT)
 				{
 					handleWrite(serverData, client);
-					//handleBigWrite(serverData, client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
