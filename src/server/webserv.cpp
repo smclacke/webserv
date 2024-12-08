@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:12:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 16:45:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -112,6 +112,7 @@ void		Webserv::monitorServers()
 		{
 			if (_keepRunning == false)
 				return ;
+			removeServersFromEpoll();
 			throw std::runtime_error("epoll_wait()\n");
 		}
 		else if (numEvents == 0)
@@ -163,4 +164,21 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 Epoll &Webserv::getEpoll()
 {
 	return this->_epoll;
+}
+
+/**
+ * @brief verifies that there are no two ports the same in Webserv
+ */
+void Webserv::checkDoublePorts()
+{
+	std::unordered_set<int> portSet;
+	for (const auto &serv : _servers)
+	{
+		int Port = serv->getPort();
+		if (portSet.find(Port) != portSet.end())
+		{
+			throw eConf("Duplicate server port found: " + std::to_string(Port), 0);
+		}
+		portSet.insert(Port);
+	}
 }

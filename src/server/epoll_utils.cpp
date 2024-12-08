@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:07:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:27:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -93,7 +93,7 @@ void		Epoll::handleClientClose(t_serverData &server, t_clients &client)
 }
 
 
-/** @todo remove when handleWrite and handleFile all good */
+///** @todo remove when handleWrite and handleFile all good */
 void	Epoll::handleBigWrite(t_serverData &server, t_clients &client)
 {
 	if (client._responseClient.msg.empty() && client._readingFile == false)

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 13:43:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:09:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,7 +68,7 @@ class httpHandler
 		std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 		// utils
 		std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-		void readFile(void);
+		void openFile(void);
 		std::string contentType(const std::string &filePath);
 		void setErrorResponse(eHttpStatusCode code, std::string msg);
 		std::string buildPath(void);

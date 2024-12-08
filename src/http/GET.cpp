@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:05:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 16:55:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,7 @@ void httpHandler::stdGet(void)
 	}
 	// Read the file content
 	_response.headers[eResponseHeader::ContentType] = type;
-	readFile();
+	openFile();
 	return;
 }
 
@@ -183,69 +183,18 @@ void httpHandler::getUriEncoded(void)
 }
 
 /**
- * @brief opens a pipe for the file and sets the outfile descriptor to _response.outFd
+ * @brief opens the regular file, stores the fd in _response struct, gives this to handleWrite function
+ * 	in epoll monitoring loop
  */
-void httpHandler::readFile(void)
+void httpHandler::openFile(void)
 {
-	//int pipefd[2];
-	//if (pipe(pipefd) == -1)
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to create pipe");
-	//	return;
-	//}
-
-	//pid_t pid = fork();
-	//if (pid == -1)
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to fork process");
-	//	close(pipefd[0]);
-	//	close(pipefd[1]);
-	//	return;
-	//}
-	//if (pid == 0)
-	//{					  // Child process
-	//	close(pipefd[0]); // Close unused read end
-	//	int fileFd = open(_request.path.c_str(), O_RDONLY);
-	//	if (fileFd == -1)
-	//	{
-	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-	//		close(pipefd[1]);
-	//		exit(EXIT_FAILURE);
-	//	}
-	//	exit(EXIT_FAILURE);			   // If execlp fails
-	//}
-	//else
-	//{								  // Parent process
-	//	close(pipefd[1]);			  // Close unused write end
-	//	_response.readFd = pipefd[0]; // Set the read end of the pipe for epoll
-	//	_response.pid = pid;
-	//	_response.readFile = true;
-	//}
-	int out = open(_request.path.c_str(), O_RDONLY);
-	if (out == -1)
+	int fileFd = open(_request.path.c_str(), O_RDONLY);
+	if (fileFd == -1)
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 		return;
 	}
-	//std::cout << "path =====" << _request.path << std::endl;
-	//std::ifstream is(_request.path);
-	//if (!is.is_open())
-	//{
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-	//	return;	
-	//}
-	//std::string line;
-	//std::getline(is, line); // if end of file returns false
-	//if (is.fail())
-	//{
-	//	perror("bruh:");
-	//	setErrorResponse(eHttpStatusCode::InternalServerError, "getline error");
-	//	return;	
-	//}
-	//std::cout << "Read with getline =" << line << std::endl;
-	//std::cout << "readfd in GET:" << out << std::endl;
-	//_response.readFd = out;
 	_response.filepath = _request.path;
-	_response.readFd = out;
+	_response.readFd = fileFd;
 	_response.readFile = true;
 }

@@ -51,5 +51,7 @@ STATE:
 
 - add back (probably) missing portchecking
 - finally use bigwrite, clean everything up
-- can merge with main atm - check this later
-- this version actually works
+- merge this into server and remove this branch
+
+---- File extension doesnt match the requested Accept header
+	default 8080 throws this error

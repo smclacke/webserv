@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 13:41:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:27:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ typedef struct s_clients
 	s_httpSend								_responseClient;
 	size_t									_write_offset;
 	ssize_t									_bytesWritten;
-	bool									_readingFile;
+	bool									_readingFile; /** @todo using you? */
 
 } t_clients;
 
@@ -119,7 +119,6 @@ class Epoll
 		void							clientTimeCheck(t_clients &client);
 		void							closeDelete(int fd);
 		void							handleClientClose(t_serverData &server, t_clients &client);
-		void							cleanUp();
 		void							handleBigWrite(t_serverData &server, t_clients &client);
 };
 
