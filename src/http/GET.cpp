@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 17:53:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 14:11:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,88 +184,46 @@ void httpHandler::getUriEncoded(void)
 }
 
 /**
- * @brief opens a pipe for the file and sets the outfile descriptor to _response.outFd
+ * @brief opens the regular file and sets the outfile descriptor to _response.outFd
+ * do we need any pipes or pid stuff?
  */
 void httpHandler::setFile(void)
 {
-	try
+	int fileFd = open(_request.path.c_str(), O_RDONLY);
+	if (fileFd == -1)
 	{
-		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(_request.path));
+		std::cerr << "Opening file failed" << std::endl;
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 	}
-	catch (const std::filesystem::filesystem_error &e)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
-		return;
-	}
-
-	int pipefd[2];
-	if (pipe(pipefd) == -1)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to create pipe");
-		return;
-	}
-
-	pid_t pid = fork();
-	if (pid == -1)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to fork process");
-		close(pipefd[0]);
-		close(pipefd[1]);
-		return;
-	}
-	if (pid == 0)
-	{					  // Child process
-		close(pipefd[0]); // Close unused read end
-		int fileFd = open(_request.path.c_str(), O_RDONLY);
-		if (fileFd == -1)
-		{
-			std::cerr << "Opening file failed" << std::endl;
-			setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-			close(pipefd[1]);
-			exit(EXIT_FAILURE);
-		}
-		s_httpSend intro = writeResponse(false);
-		std::cout << "\n-------\n" << intro.msg << "\n-------\n" << std::endl;
-		
-		char buffer[READ_BUFFER_SIZE];
-		ssize_t bytesRead;
-		size_t totalBytesWritten = 0;
-		size_t messageLength = intro.msg.size();
-		while (totalBytesWritten < messageLength)
-		{
-			ssize_t bytesWritten = write(pipefd[1], intro.msg.c_str() + totalBytesWritten, messageLength - totalBytesWritten);
-			if (bytesWritten <= 0)
-			{
-				setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
-				close(fileFd);
-				close(pipefd[1]);
-				exit(EXIT_FAILURE);
-			}
-			totalBytesWritten += bytesWritten;
-		}
-		while ((bytesRead = read(fileFd, buffer, sizeof(buffer) - 1)) > 0)
-		{
-			buffer[READ_BUFFER_SIZE - 1] = '\0';
-			std::cout << "READ FROM BUFFER: " << buffer << std::endl;
-			if (write(pipefd[1], buffer, bytesRead) == -1)
-			{
-				//std::cout << "WRITING FAILED" << std::endl;
-				setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
-				close(fileFd);
-				close(pipefd[1]);
-				exit(EXIT_FAILURE);
-			}
-		}
-		close(fileFd);
-		close(pipefd[1]);
-		exit(EXIT_SUCCESS);
-	}
-	else
-	{
-		close(pipefd[1]);					   // Close unused write end
-		fcntl(pipefd[0], F_SETFL, O_NONBLOCK); // Set the read end to non-blocking
-		_response.readFd = pipefd[0];
-		_response.pid = pid;
-		_response.readFile = true;
-	}
+	
+	//s_httpSend intro = writeResponse(false);
+	//std::cout << "\n-------\n" << intro.msg << "\n-------\n" << std::endl;
+	
+	//char buffer[READ_BUFFER_SIZE];
+	//ssize_t bytesRead;
+	//size_t totalBytesWritten = 0;
+	//size_t messageLength = intro.msg.size();
+	//while (totalBytesWritten < messageLength)
+	//{
+	//	ssize_t bytesWritten = write(fileFd, intro.msg.c_str() + totalBytesWritten, messageLength - totalBytesWritten);
+	//	if (bytesWritten <= 0)
+	//	{
+	//		close(fileFd);
+	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
+	//	}
+	//	totalBytesWritten += bytesWritten;
+	//}
+	//while ((bytesRead = read(fileFd, buffer, sizeof(buffer) - 1)) > 0)
+	//{
+	//	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	//	std::cout << "READ FROM BUFFER: " << buffer << std::endl;
+	//	if (write(fileFd, buffer, bytesRead) == -1)
+	//	{
+	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
+	//		close(fileFd);
+	//	}
+	//}
+	fcntl(fileFd, F_SETFL, O_NONBLOCK);
+	_response.readFd = fileFd;
+	_response.readFile = true;
 }
