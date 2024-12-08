@@ -43,3 +43,13 @@
 	//	client._connectionClose = false;
 	//	return ;
 	//}
+
+
+
+
+STATE:
+
+- add back (probably) missing portchecking
+- finally use bigwrite, clean everything up
+- can merge with main atm - check this later
+- this version actually works
