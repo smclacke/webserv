@@ -229,3 +229,47 @@ void		Epoll::addToEpollFile(int fd)
 	}
 	return ;
 }
+
+
+// old handle read
+
+void	Epoll::handleRead(t_clients &client)
+{
+	char buffer[READ_BUFFER_SIZE];
+	size_t bytesRead = 0;
+	memset(buffer, 0, sizeof(buffer));
+
+	client._clientState = clientState::READING;
+	bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
+	
+	// Error
+	if (bytesRead < 0)
+	{
+		std::cerr << "Reading from client connection failed\n";
+		client._clientState = clientState::ERROR;
+		client._connectionClose = true;
+		return ;
+	}
+	
+	// Disconnected
+	else if (bytesRead == 0)
+	{
+		std::cout << "Client disconnected\n";
+		client._clientState = clientState::CLOSE;
+		client._connectionClose = true;
+		return ;
+	}
+
+	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	std::string buf = buffer;
+	client._requestClient.append(buf);
+
+	// FInished
+	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
+	{
+		client._clientState = clientState::READY;
+		client._connectionClose = false;
+		return ;
+	}
+	client._connectionClose = false;
+}

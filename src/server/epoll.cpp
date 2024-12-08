@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 18:02:30 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 14:48:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,6 +50,7 @@ void	Epoll::initEpoll()
 
 void	Epoll::handleRead(t_serverData &server, t_clients &client)
 {
+	(void) server;
 	char buffer[READ_BUFFER_SIZE];
 	size_t bytesRead = 0;
 	memset(buffer, 0, sizeof(buffer));
@@ -82,11 +83,11 @@ void	Epoll::handleRead(t_serverData &server, t_clients &client)
 	// FInished
 	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
 	{
-		client._responseClient = server._server->handleRequest(client._requestClient);
-		if (client._responseClient.readfile)
-		{
-			addToEpoll(client._responseClient.readFd);	
-		}
+		//client._responseClient = server._server->handleRequest(client._requestClient);
+		//if (client._responseClient.readfile)
+		//{
+		//	addToEpoll(client._responseClient.readFd);
+		//}
 		client._clientState = clientState::READY;
 		client._requestClient.clear();
 		client._connectionClose = false;
@@ -256,7 +257,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				if (event.events & EPOLLIN)
 				{
 					handleRead(serverData, client);
-					
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
@@ -266,9 +266,9 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				}
 				if (event.events & EPOLLOUT)
 				{
-					//handleBigWrite(serverData, client);
-					if (client._responseClient.readfile == false)
-						handleWrite(client);
+					handleBigWrite(serverData, client);
+					//if (client._responseClient.readfile == false)
+					//	handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
@@ -294,14 +294,14 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 				if (client._connectionClose == true)
 					handleClientClose(serverData, client);
 			}
-			if (fd == client._responseClient.readFd)
-			{
-				handleFile(client);
-				if (client._clientState == clientState::READY)
-				{
-					closeDelete(client._responseClient.readFd);
-				}
-			}	
+			//if (fd == client._responseClient.readFd)
+			//{
+			//	handleFile(client);
+			//	if (client._clientState == clientState::READY)
+			//	{
+			//		closeDelete(client._responseClient.readFd);
+			//	}
+			//}	
 		}
 	}
 }
