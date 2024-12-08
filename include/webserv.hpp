@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 17:14:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:50:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,11 +42,11 @@ public:
 		void						addServer(std::shared_ptr<Server> server);
 
 		/* getters */
-		std::shared_ptr<Server>		getServer(size_t index);
-		std::shared_ptr<Server>		getServer(std::string name);
-		std::vector<std::shared_ptr<Server>>	&getAllServers();
-		size_t						getServerCount(void) const;
-		Epoll						&getEpoll();
+		std::shared_ptr<Server>						getServer(size_t index);
+		std::shared_ptr<Server>						getServer(std::string name);
+		std::vector<std::shared_ptr<Server>>		&getAllServers();
+		size_t										getServerCount(void) const;
+		Epoll										&getEpoll();
 };
 
 #endif /* WEBSERV_HPP */

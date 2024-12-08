@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 14:11:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:51:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -82,7 +82,7 @@ void httpHandler::stdGet(void)
 	}
 	// Read the file content
 	_response.headers[eResponseHeader::ContentType] = type;
-	setFile();
+	openFile();
 	return;
 }
 
@@ -184,10 +184,10 @@ void httpHandler::getUriEncoded(void)
 }
 
 /**
- * @brief opens the regular file and sets the outfile descriptor to _response.outFd
- * do we need any pipes or pid stuff?
+ * @brief opens the regular file, stores the fd in _response struct, gives this to handleWrite function
+ * 	in epoll monitoring loop
  */
-void httpHandler::setFile(void)
+void httpHandler::openFile(void)
 {
 	int fileFd = open(_request.path.c_str(), O_RDONLY);
 	if (fileFd == -1)
@@ -195,35 +195,7 @@ void httpHandler::setFile(void)
 		std::cerr << "Opening file failed" << std::endl;
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 	}
-	
-	//s_httpSend intro = writeResponse(false);
-	//std::cout << "\n-------\n" << intro.msg << "\n-------\n" << std::endl;
-	
-	//char buffer[READ_BUFFER_SIZE];
-	//ssize_t bytesRead;
-	//size_t totalBytesWritten = 0;
-	//size_t messageLength = intro.msg.size();
-	//while (totalBytesWritten < messageLength)
-	//{
-	//	ssize_t bytesWritten = write(fileFd, intro.msg.c_str() + totalBytesWritten, messageLength - totalBytesWritten);
-	//	if (bytesWritten <= 0)
-	//	{
-	//		close(fileFd);
-	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
-	//	}
-	//	totalBytesWritten += bytesWritten;
-	//}
-	//while ((bytesRead = read(fileFd, buffer, sizeof(buffer) - 1)) > 0)
-	//{
-	//	buffer[READ_BUFFER_SIZE - 1] = '\0';
-	//	std::cout << "READ FROM BUFFER: " << buffer << std::endl;
-	//	if (write(fileFd, buffer, bytesRead) == -1)
-	//	{
-	//		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to pipe");
-	//		close(fileFd);
-	//	}
-	//}
-	fcntl(fileFd, F_SETFL, O_NONBLOCK);
+	_response.filepath = _request.path;
 	_response.readFd = fileFd;
 	_response.readFile = true;
 }

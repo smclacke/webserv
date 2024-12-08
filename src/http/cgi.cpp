@@ -6,19 +6,19 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 14:51:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:53:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:53:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 #include "../../include/web.hpp"
 
-void httpHandler::cgiResponse(void)
-{
-	std::cout << "It is a CGI request" << std::endl;
-	s_httpSend response = {_response.body.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
-	return;
-}
+//void httpHandler::cgiResponse(void)
+//{
+//	std::cout << "It is a CGI request" << std::endl;
+//	s_httpSend response = {_response.body.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
+//	return;
+//}
 
 // /**
 //  * CGI

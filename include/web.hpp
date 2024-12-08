@@ -6,13 +6,14 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 16:59:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 17:50:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEB_HPP
 #define WEB_HPP
 
+/** @todo check what of you we can get rid of */
 // CPP includes
 #include <iomanip>
 #include <sstream>
@@ -38,6 +39,7 @@
 #include <deque>
 #include <utility>
 #include <unordered_map>
+#include <unordered_set>
 
 // Network includes
 #include <netinet/in.h> // for sockaddr_in
@@ -59,8 +61,6 @@
 #include <limits.h>
 #include <errno.h>
 #include <csignal>
-
-
 
 /* forward declarations*/
 struct s_location;
@@ -86,12 +86,12 @@ struct s_httpSend
 };
 
 /* parser */
-void lineStrip(std::string &line);
-void verifyInput(int ac, char **av);
-s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
-s_location addDefaultLoc(size_t servermaxsize);
+void			lineStrip(std::string &line);
+void			verifyInput(int ac, char **av);
+s_location		parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
+s_location		addDefaultLoc(size_t servermaxsize);
 
 /* utils */
-void	protectedClose(int fd);
+void			protectedClose(int fd);
 
 #endif /* WEB_HPP */

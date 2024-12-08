@@ -43,3 +43,15 @@
 	//	client._connectionClose = false;
 	//	return ;
 	//}
+
+
+
+
+STATE:
+
+- add back (probably) missing portchecking
+- finally use bigwrite, clean everything up
+- merge this into server and remove this branch
+
+---- File extension doesnt match the requested Accept header
+	default 8080 throws this error

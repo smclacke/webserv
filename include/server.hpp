@@ -5,8 +5,8 @@
 /*                                                     +:+                    */
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
-/*   Created: 2024/12/06 16:59:07 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 16:59:17 by smclacke      ########   odam.nl         */
+/*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
+/*   Updated: 2024/12/08 17:53:57 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,14 +76,14 @@ class Socket;
 class Server
 {
 	private:
-		std::string _serverName;
-		std::string _host;
-		int _port;
-		std::string _root;
-		std::vector<s_ePage> _errorPage;
-		size_t _clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
-		std::vector<s_location> _location;
-		std::shared_ptr<Socket> _serverSocket;
+		std::string					_serverName;
+		std::string					_host;
+		int							_port;
+		std::string					_root;
+		std::vector<s_ePage>		_errorPage;
+		size_t						_clientMaxBodySize; // in Byes (k = * 1024, m = * 1024^2, g = * 1024^3)
+		std::vector<s_location>		_location;
+		std::shared_ptr<Socket>		_serverSocket;
 
 		/* Location Parsing */
 		void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
