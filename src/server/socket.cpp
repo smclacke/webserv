@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:13:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 18:46:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,6 +73,11 @@ void		Socket::openServerSocket(const Server &servInstance)
 
 	if (bind(_sockfd, (struct sockaddr *)&_sockaddr, _addrlen) < 0)
 	{
+		if (errno == EADDRINUSE)
+		{
+			protectedClose(_sockfd);
+			throw std::runtime_error("address already in use");
+		}
 		protectedClose(_sockfd);
 		throw std::runtime_error("bind()\n");
 	}

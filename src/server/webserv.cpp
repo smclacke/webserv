@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:18:01 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 18:47:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,7 +53,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 			if (_servers.size() == 10)
 			{
 				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
-				checkDoublePorts();
+				//checkDoublePorts();
 				return;
 			}
 			continue;
@@ -61,7 +61,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 		else
 			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
-	checkDoublePorts();
+	//checkDoublePorts();
 }
 
 Webserv::~Webserv(void)
@@ -170,17 +170,19 @@ Epoll &Webserv::getEpoll()
 
 /**
  * @brief verifies that there are no two ports the same in Webserv
+ * @note this is checked already in bind() since function will fail if trying to bind to
+ * 	an already in use address
  */
-void Webserv::checkDoublePorts()
-{
-	std::unordered_set<int> portSet;
-	for (const auto &serv : _servers)
-	{
-		int Port = serv->getPort();
-		if (portSet.find(Port) != portSet.end())
-		{
-			throw eConf("Duplicate server port found: " + std::to_string(Port), 0);
-		}
-		portSet.insert(Port);
-	}
-}
+//void Webserv::checkDoublePorts()
+//{
+//	std::unordered_set<int> portSet;
+//	for (const auto &serv : _servers)
+//	{
+//		int Port = serv->getPort();
+//		if (portSet.find(Port) != portSet.end())
+//		{
+//			throw eConf("Duplicate server port found: " + std::to_string(Port), 0);
+//		}
+//		portSet.insert(Port);
+//	}
+//}

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 16:36:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 18:47:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ class Webserv
 		void						addServersToEpoll();
 		void						removeServersFromEpoll();
 		void						monitorServers();
-		void 						checkDoublePorts();
+		//void 						checkDoublePorts();
 
 		/* Setters */
 		void						addServer(std::shared_ptr<Server> server);
