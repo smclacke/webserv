@@ -35,6 +35,8 @@
 	-> generate + GET.cpp check variables + if can compile, not sure what is latest
 		might have removed some stuff you need but should still be on the server branch
 
+	-> branches.. and getting it back working was messier than expected
+		but we working again :D
 
 
 100) 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:32:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/08 19:52:47 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -304,7 +304,6 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 			}
 		}
 	}
-	
 }
 
 /* getters */
