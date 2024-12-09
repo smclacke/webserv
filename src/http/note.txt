@@ -1,5 +1,7 @@
 
 ----
+-1 . check why its not getting the right path for a /error_pages/400.html
+
 0. do something with the redirect;
 if loc.path.reditect status != 0 return Red msg;
 
