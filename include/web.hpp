@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/08 17:10:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 16:42:23 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -75,23 +75,31 @@ enum class eSocket
 };
 
 /* http */
+/**
+ * @param msg the httpResponse message to be send to the client
+ * @param keepAlive true if connection should stay alive, false is it should close
+ * @param readFile true if there is a fileDescriptor that should be read
+ * @param readFd the FD to read from
+ * @param cgi true if its a cgi request. meaning the filedescriptor should be read and there should be a waitpid
+ * @param pid the pid to wait for in case of a cgi request
+ */
 struct s_httpSend
 {
-	std::string		msg;
-	bool			keepAlive;
-	std::string		filepath;
-	bool			readfile;
-	int				readFd;
-	pid_t			pid;
+	std::string msg;
+	bool keepAlive;
+	bool readfile;
+	int readFd;
+	bool cgi;
+	pid_t pid;
 };
 
 /* parser */
-void			lineStrip(std::string &line);
-void			verifyInput(int ac, char **av);
-s_location		parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
-s_location		addDefaultLoc(size_t servermaxsize);
+void lineStrip(std::string &line);
+void verifyInput(int ac, char **av);
+s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
+s_location addDefaultLoc(size_t servermaxsize);
 
 /* utils */
-void			protectedClose(int fd);
+void protectedClose(int fd);
 
 #endif /* WEB_HPP */

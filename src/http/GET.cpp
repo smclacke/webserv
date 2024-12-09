@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 16:55:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 17:25:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
  */
 void httpHandler::stdGet(void)
 {
-	//std::cout << "Handling GET request" << std::endl;
+	// std::cout << "Handling GET request" << std::endl;
 	if (_request.uriEncoded == true)
 	{
 		return getUriEncoded();
@@ -70,13 +70,14 @@ void httpHandler::stdGet(void)
 	{
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
 	}
+	std::cout << "REQUEST PATH = " << _request.path;
 	std::string type = contentType(_request.path);
-	auto AcceptedH = findHeaderValue(_request, eRequestHeader::Accept);
-	if (AcceptedH.has_value())
+	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
+	if (acceptedH.has_value())
 	{
-		if (AcceptedH.value().find(type) == std::string::npos)
+		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
 		{
-			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesnt match the requested Accept header");
+			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesn't match the requested Accept header");
 		}
 	}
 	// Read the file content
@@ -188,13 +189,21 @@ void httpHandler::getUriEncoded(void)
  */
 void httpHandler::openFile(void)
 {
+	try
+	{
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(_request.path));
+	}
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
+		return;
+	}
 	int fileFd = open(_request.path.c_str(), O_RDONLY);
 	if (fileFd == -1)
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 		return;
 	}
-	_response.filepath = _request.path;
-	_response.readFd = fileFd;
 	_response.readFile = true;
+	_response.readFd = fileFd;
 }

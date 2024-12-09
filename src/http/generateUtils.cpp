@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/28 17:54:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 17:26:49 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,11 @@ void httpHandler::generateDirectoryListing(void)
 		}
 		for (const auto &entry : std::filesystem::directory_iterator(_request.path))
 		{
-			_response.body << entry.path().filename().string() << "\n"; // List each file/directory name
+			_response.body << entry.path().filename().string();
+			if (html)
+				_response.body << "<br>\r\n";
+			else
+				_response.body << "\r\n";
 		}
 		if (html)
 		{
@@ -89,11 +93,10 @@ std::string httpHandler::contentType(const std::string &filePath)
 		{".png", "image/png"},
 		{".gif", "image/gif"},
 		{".svg", "image/svg+xml"},
-		{".ico", "image/x-icon"},
+		{".ico", "image/*"},
 		{".pdf", "application/pdf"},
 		{".zip", "application/zip"},
-		{".txt", "text/plain"},
-	};
+		{".txt", "text/plain"}};
 	// Find the last dot in the file path
 	size_t dotPos = filePath.find_last_of('.');
 	if (dotPos != std::string::npos)

@@ -6,13 +6,17 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/18 14:04:41 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/11/18 14:17:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 13:49:37 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/error.hpp"
 
 eConf::eConf(const std::string &msg, int line) : _msg(msg), _line(line)
+{
+}
+
+eConf::eConf(const std::string &msg) : _msg(msg), _line(-1)
 {
 }
 

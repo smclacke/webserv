@@ -1,5 +1,21 @@
+@todo 
+http://localhost:9999/images/
+
+http://localhost:9999/images
+
+
 
 ----
-1. Write the CGI PART
-2. check with Sarah if Host needs to be int[8] ?? --> update parseListen function and class
-3. do something with the redirect;
+-1 . check why its not getting the right path for a /error_pages/400.html
+
+0. do something with the redirect;
+if loc.path.reditect status != 0 return Red msg;
+
+1. declutter function - check if i should move the uri part to python or leave it functional in CPP
+
+
+
+2. make the Response return the appropiate error pages if they exist in the server
+
+
+3. Write the CGI PART

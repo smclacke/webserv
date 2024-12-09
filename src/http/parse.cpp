@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 15:44:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 18:05:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,9 +22,9 @@
  */
 void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
-	if (httpRequest.str().empty())
-		std::cout << "empty request *******************************\n";
-	std::cout << "\n-----------\n" << httpRequest.str() << "\n-------------\n";
+	std::cout << "\n======= REQUEST =======\n"
+			  << httpRequest.str() << "\n======= END REQ =======\n";
+
 	parseRequestLine(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
@@ -107,26 +107,41 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
 	_request.loc = optLoc.value();
+	std::cout << "LOCPATH = " << _request.loc.path << std::endl;
 }
 
 /**
- * @brief builds the path. Replaces the part of the uri that tags the location with the root of set location
+ * @brief builds the path.
+ * Replaces the part of the uri that tags the location with the root of said location
  */
 std::string httpHandler::buildPath(void)
 {
+	std::string buildpath;
 	std::string uri = _request.uri;
-	std::string path;
+	std::string locpath;
+
 	if (_request.loc.path == "/")
-		uri = "";
-	if (_request.loc.root.empty())
-		path = "." + _server.getRoot() + uri;
+		locpath = "";
 	else
-	{		
-		if (!_request.loc.path.empty() && _request.loc.path != "/")
-			uri.erase(0, _request.loc.path.length());
-		path = "." + _request.loc.root + uri;
+		locpath = _request.loc.path;
+	if (!_request.loc.root.empty())
+	{
+		if (locpath.size() <= uri.size())
+		{
+			uri.erase(0, locpath.length());
+			uri = _request.loc.root + uri;
+		}
 	}
-	return (path);
+	else if (!_server.getRoot().empty())
+	{
+		if (locpath.size() <= uri.size())
+		{
+			uri.erase(0, locpath.length());
+			uri = _server.getRoot() + uri;
+		}
+	}
+	buildpath = "." + uri;
+	return (buildpath);
 }
 
 /**
@@ -152,6 +167,7 @@ void httpHandler::checkUriPath(void)
 		else
 			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
 	}
+	std::cout << "URI is the following:_" << _request.uri << std::endl;
 	_request.path = buildPath();
 	if (!std::filesystem::exists(_request.path))
 	{
@@ -176,7 +192,7 @@ void httpHandler::parseHeaders(std::stringstream &ss)
 		getline(split >> std::ws, value);
 		eRequestHeader headerType = toEHeader(key);
 		if (headerType == eRequestHeader::Invalid)
-			continue ;
+			continue;
 		if (headerType == eRequestHeader::Connection)
 		{
 			if (value != "keep-alive" && value != "close")

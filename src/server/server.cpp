@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:21:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:24:09 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("./server_files")
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -67,15 +67,18 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		++line_n;
 		lineStrip(line);
 		if (line.empty())
-			continue ;
+			continue;
 		if (line.find('}') != std::string::npos)
 		{
 			if (line.size() != 1)
 				throw eConf("Unexpected text with closing }", line_n);
 			if (_location.size() == 0)
 				addLocation(addDefaultLoc(_clientMaxBodySize));
-			_serverSocket = std::make_shared<Socket>(*this); // double ports will already fail here since bind() throws if port already in use
-			return ;
+			checkErrorPages();
+			if (_host.empty())
+				throw eConf("No listen directive provided before end of Server", line_n);
+			_serverSocket = std::make_shared<Socket>(*this);
+			return;
 		}
 		size_t pos = line.find("location");
 		if (pos != std::string::npos)
@@ -90,13 +93,12 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		findServerDirective(*this, line, line_n);
 	}
 	throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
-	return ;
+	return;
 }
 
 // destructor
 
 Server::~Server() {}
-
 
 /* member functions */
 
@@ -233,34 +235,6 @@ void Server::parseListen(std::stringstream &ss, int line_n)
 	setPort(std::stoi(portStr));
 }
 
-/**
- * alternative for parseListen in case of data types change:
-
-void Server::parseListen(std::stringstream &ss, int line_n)
-{
-	std::string value;
-	std::string unexpected;
-	ss >> value;
-	if (ss >> unexpected)
-		throw eConf("Unexpected value found: " + unexpected, line_n);
-	size_t colonPos = value.find(':');
-	if (colonPos == std::string::npos)
-		throw eConf("Invalid listen directive: missing \':\'", line_n);
-	std::string host = value.substr(0, colonPos);
-	std::string portStr = value.substr(colonPos + 1);
-
-	// checking the host IP for validity
-	if (inet_pton(AF_INET, host.c_str(), &_host) <= 0) // Use inet_pton to convert IP
-		throw eConf("Invalid host format. Expected 0.0.0.0", line_n);
-
-	// checking the port number for validity
-	if (portStr.length() != 4 || !std::all_of(portStr.begin(), portStr.end(), ::isdigit))
-		throw eConf("Invalid port format. Expected 4 digits", line_n);
-	_port = ntohs(static_cast<in_port_t>(std::stoi(portStr))); // Convert to network byte order
-}
-
- */
-
 void Server::parseErrorPage(std::stringstream &ss, int line_n)
 {
 	std::string error_code;
@@ -280,6 +254,16 @@ void Server::parseErrorPage(std::stringstream &ss, int line_n)
 	nErrorPage.code = std::stoi(error_code);
 	nErrorPage.path = path;
 	this->addErrorPage(nErrorPage);
+}
+
+void Server::checkErrorPages(void)
+{
+	for (auto page : _errorPage)
+	{
+		std::string combinedPath = "." + _root + page.path;
+		if (!std::filesystem::exists(combinedPath))
+			throw eConf("error page directory does not exist: " + combinedPath, -1);
+	}
 }
 
 void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
@@ -315,7 +299,7 @@ void Server::parseRoot(std::stringstream &ss, int line_n)
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	rootpath = "." + root;
-	if (!std::filesystem::exists(rootpath)) // ignore the redline - compilation is fine
+	if (!std::filesystem::exists(rootpath))
 		throw eConf("Root directory \'" + root + "\'does not exist", line_n);
 	_root = root;
 }

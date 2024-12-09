@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/05 15:11:21 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 17:07:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,17 @@
 httpHandler::httpHandler(Server &server) : _server(server)
 {
 	_statusCode = eHttpStatusCode::OK;
+	// request
 	_request.method = eHttpMethod::INVALID;
 	_request.uri = "";
 	_request.path = "";
 	_request.body.clear();
 	_request.uriEncoded = false;
-	_response.readFd = false;
-	_response.filepath.clear();
+	//	response
+	_response.headers.clear();
+	_response.body.clear();
+	_response.keepalive = true;
+	_response.readFile = false;
 	_response.cgi = false;
 	_response.pid = -1;
 	_response.readFd = -1;
