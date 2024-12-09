@@ -26,17 +26,10 @@
 	-> portchecking logic needed to change, bind() throws so it's checked already
 		in server socket creation
 
-	-> default server:
-	---- File extension doesnt match the requested Accept header
-	default 8080 throws this error
+11) 
+	running siege causes "Fialed to read request line" error + EPOLLHUP + EPOLLERR
 
-	-> CATS + CALCULATORS
 
-	-> generate + GET.cpp check variables + if can compile, not sure what is latest
-		might have removed some stuff you need but should still be on the server branch
-
-	-> branches.. and getting it back working was messier than expected
-		but we working again :D
 
 
 100) 

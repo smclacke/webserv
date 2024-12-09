@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:47:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:19:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,9 +30,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 	if (config.empty())
 	{
 		std::cout << "Default configuration\n\n";
-		auto default_server = std::make_shared<Server>();
-		_servers.push_back(default_server);
-		return ;
+		config = "./config_files/test.conf";
 	}
 	std::cout << "Config: " << config << std::endl << "\n";
 	std::ifstream file(config);

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:30:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:05:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -58,7 +58,7 @@ typedef struct s_clients
 	s_httpSend								_responseClient;
 	size_t									_write_offset;
 	ssize_t									_bytesWritten;
-	bool									_readingFile; /** @todo using you? */
+	bool									_readingFile;
 
 } t_clients;
 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/08 19:52:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:39:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,6 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 		handleFile(client);
 }
 
-/** @todo tidy up the booleans when everything works */
 void	Epoll::handleFile(t_clients &client)
 {
 	ssize_t		bytesSend;
@@ -285,20 +284,11 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 					}
 				}
 				if (event.events & EPOLLHUP)
-				{
-					std::cout << "Epoll: EPOLLHUP\n";
 					client._connectionClose = true;
-				}
 				if (event.events & EPOLLRDHUP)
-				{
-					std::cout << "Epoll: EPOLLRDHUP\n";
 					client._connectionClose = true;
-				}
 				if (event.events & EPOLLERR)
-				{
-					std::cout << "EPoll: EPOLLERR\n";
 					client._connectionClose = true;
-				}
 				if (client._connectionClose == true)
 					handleClientClose(serverData, client);
 			}

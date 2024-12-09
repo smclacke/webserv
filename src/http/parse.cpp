@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:03:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:44:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
  */
 void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
+	if (httpRequest.str().empty())
+		std::cout << "empty request *******************************\n";
+	std::cout << "\n-----------\n" << httpRequest.str() << "\n-------------\n";
 	parseRequestLine(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
