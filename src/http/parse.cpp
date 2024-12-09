@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 14:24:58 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:39:38 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,6 +107,7 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
 	_request.loc = optLoc.value();
+	std::cout << "LOCPATH = " << _request.loc.path << std::endl;
 }
 
 /**
@@ -125,7 +126,7 @@ std::string httpHandler::buildPath(void)
 		locpath = _request.loc.path;
 	if (!_request.loc.root.empty())
 	{
-		if (locpath.size() < uri.size())
+		if (locpath.size() <= uri.size())
 		{
 			uri.erase(0, locpath.length());
 			uri = _request.loc.root + uri;
@@ -133,7 +134,7 @@ std::string httpHandler::buildPath(void)
 	}
 	else if (!_server.getRoot().empty())
 	{
-		if (locpath.size() < uri.size())
+		if (locpath.size() <= uri.size())
 		{
 			uri.erase(0, locpath.length());
 			uri = _server.getRoot() + uri;
@@ -166,6 +167,7 @@ void httpHandler::checkUriPath(void)
 		else
 			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
 	}
+	std::cout << "URI is the following:_" << _request.uri << std::endl;
 	_request.path = buildPath();
 	if (!std::filesystem::exists(_request.path))
 	{

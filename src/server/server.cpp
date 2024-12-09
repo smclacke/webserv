@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 13:00:31 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:24:09 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -235,34 +235,6 @@ void Server::parseListen(std::stringstream &ss, int line_n)
 	setPort(std::stoi(portStr));
 }
 
-/**
- * alternative for parseListen in case of data types change:
-
-void Server::parseListen(std::stringstream &ss, int line_n)
-{
-	std::string value;
-	std::string unexpected;
-	ss >> value;
-	if (ss >> unexpected)
-		throw eConf("Unexpected value found: " + unexpected, line_n);
-	size_t colonPos = value.find(':');
-	if (colonPos == std::string::npos)
-		throw eConf("Invalid listen directive: missing \':\'", line_n);
-	std::string host = value.substr(0, colonPos);
-	std::string portStr = value.substr(colonPos + 1);
-
-	// checking the host IP for validity
-	if (inet_pton(AF_INET, host.c_str(), &_host) <= 0) // Use inet_pton to convert IP
-		throw eConf("Invalid host format. Expected 0.0.0.0", line_n);
-
-	// checking the port number for validity
-	if (portStr.length() != 4 || !std::all_of(portStr.begin(), portStr.end(), ::isdigit))
-		throw eConf("Invalid port format. Expected 4 digits", line_n);
-	_port = ntohs(static_cast<in_port_t>(std::stoi(portStr))); // Convert to network byte order
-}
-
- */
-
 void Server::parseErrorPage(std::stringstream &ss, int line_n)
 {
 	std::string error_code;
@@ -327,7 +299,7 @@ void Server::parseRoot(std::stringstream &ss, int line_n)
 	if (ss >> unexpected)
 		throw eConf("Unexpected value found: " + unexpected, line_n);
 	rootpath = "." + root;
-	if (!std::filesystem::exists(rootpath)) // ignore the redline - compilation is fine
+	if (!std::filesystem::exists(rootpath))
 		throw eConf("Root directory \'" + root + "\'does not exist", line_n);
 	_root = root;
 }

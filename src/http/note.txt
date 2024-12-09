@@ -1,3 +1,9 @@
+@todo 
+http://localhost:9999/images/
+
+http://localhost:9999/images
+
+
 
 ----
 -1 . check why its not getting the right path for a /error_pages/400.html
@@ -6,7 +12,10 @@
 if loc.path.reditect status != 0 return Red msg;
 
 1. declutter function - check if i should move the uri part to python or leave it functional in CPP
-2. blah
 
 
-1. Write the CGI PART
+
+2. make the Response return the appropiate error pages if they exist in the server
+
+
+3. Write the CGI PART

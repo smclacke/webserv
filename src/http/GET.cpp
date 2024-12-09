@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 16:55:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:53:05 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
  */
 void httpHandler::stdGet(void)
 {
-	//std::cout << "Handling GET request" << std::endl;
+	// std::cout << "Handling GET request" << std::endl;
 	if (_request.uriEncoded == true)
 	{
 		return getUriEncoded();
@@ -71,12 +71,12 @@ void httpHandler::stdGet(void)
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
 	}
 	std::string type = contentType(_request.path);
-	auto AcceptedH = findHeaderValue(_request, eRequestHeader::Accept);
-	if (AcceptedH.has_value())
+	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
+	if (acceptedH.has_value())
 	{
-		if (AcceptedH.value().find(type) == std::string::npos)
+		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
 		{
-			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesnt match the requested Accept header");
+			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesn't match the requested Accept header");
 		}
 	}
 	// Read the file content

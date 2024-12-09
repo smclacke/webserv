@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:24:19 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 13:55:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 15:20:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,6 +34,10 @@ void lineStrip(std::string &line)
 void Server::checkLocationPaths(s_location &loc, std::string const root, int const line_n)
 {
 	// check root path
+	if (loc.redirect_status != 0)
+	{
+		return;
+	}
 	if (loc.root.empty() == false)
 	{
 		if (!std::filesystem::exists("." + loc.root)) // ignore the redline - compilation is fine
