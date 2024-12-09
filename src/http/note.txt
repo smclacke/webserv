@@ -1,8 +1,5 @@
-0. do something with the redirect;
-if loc.path.reditect status != 0 return Red msg;
+2. make the Response return the appropiate error pages if they exist in the server
 
 1. declutter function - check if i should move the uri part to python or leave it functional in CPP
-
-2. make the Response return the appropiate error pages if they exist in the server
 
 3. Write the CGI PART

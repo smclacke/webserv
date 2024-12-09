@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 17:25:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 20:50:52 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,25 +64,7 @@ void httpHandler::stdGet(void)
 			return;
 		}
 	}
-	// check if file permission is readable.
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
-	{
-		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
-	}
-	std::cout << "REQUEST PATH = " << _request.path;
-	std::string type = contentType(_request.path);
-	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
-	if (acceptedH.has_value())
-	{
-		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
-		{
-			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesn't match the requested Accept header");
-		}
-	}
-	// Read the file content
-	_response.headers[eResponseHeader::ContentType] = type;
-	openFile();
+	readFile();
 	return;
 }
 
@@ -183,27 +165,25 @@ void httpHandler::getUriEncoded(void)
 	return;
 }
 
-/**
- * @brief opens the regular file, stores the fd in _response struct, gives this to handleWrite function
- * 	in epoll monitoring loop
- */
-void httpHandler::openFile(void)
+void httpHandler::readFile()
 {
-	try
+	// check if file permission is readable.
+	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
+	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
 	{
-		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(_request.path));
+		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
 	}
-	catch (const std::filesystem::filesystem_error &e)
+	std::string type = contentType(_request.path);
+	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
+	if (acceptedH.has_value())
 	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
-		return;
+		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
+		{
+			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesn't match the requested Accept header");
+		}
 	}
-	int fileFd = open(_request.path.c_str(), O_RDONLY);
-	if (fileFd == -1)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-		return;
-	}
-	_response.readFile = true;
-	_response.readFd = fileFd;
+	// Read the file content
+	_response.headers[eResponseHeader::ContentType] = type;
+	openFile(_request.path);
+	return;
 }

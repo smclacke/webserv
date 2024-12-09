@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/09 17:26:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 21:01:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,4 +111,69 @@ std::string httpHandler::contentType(const std::string &filePath)
 
 	// Default MIME type if no match is found
 	return "application/octet-stream";
+}
+
+/**
+ * @brief opens the regular file, stores the fd in _response struct, gives this to handleWrite function
+ * 	in epoll monitoring loop
+ */
+void httpHandler::openFile(std::string &path)
+{
+	try
+	{
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(path));
+	}
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
+		return;
+	}
+	int fileFd = open(path.c_str(), O_RDONLY);
+	if (fileFd == -1)
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
+		return;
+	}
+	_response.readFile = true;
+	_response.readFd = fileFd;
+}
+
+void httpHandler::CallErrorPage(std::string &path)
+{
+	// check if file permission is readable.
+	std::filesystem::file_status fileStatus = std::filesystem::status(path);
+	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	{
+		std::cerr << "No permission to read error file" << path << std::endl;
+		return;
+	}
+	std::string type = contentType(path);
+	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
+	if (acceptedH.has_value())
+	{
+		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
+		{
+			std::cerr << "Error file does not match accepted return values http" << std::endl;
+		}
+	}
+	// Read the file content
+	_response.headers[eResponseHeader::ContentType] = type;
+	// open file
+	try
+	{
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(path));
+	}
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		std::cerr << "Getting size of error file didnt work: " << e.what() << std::endl;
+		return;
+	}
+	int fileFd = open(path.c_str(), O_RDONLY);
+	if (fileFd == -1)
+	{
+		std::cerr << "Failed to open error file for some reason" << std::endl;
+		return;
+	}
+	_response.readFile = true;
+	_response.readFd = fileFd;
 }

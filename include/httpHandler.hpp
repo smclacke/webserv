@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 18:24:56 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 20:54:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,10 +68,11 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	void openFile(void);
+	void openFile(std::string &path);
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);
+	void CallErrorPage(std::string &path);
 	// parse request+ headers
 	void parseRequestLine(std::stringstream &ss);
 	bool checkRedirect();
@@ -94,6 +95,7 @@ private:
 	void callMethod(void);
 	void stdGet(void);
 	void getUriEncoded(void);
+	void readFile();
 	void stdPost(void);
 	void wwwFormEncoded(void);
 	void stdDelete(void);

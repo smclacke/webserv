@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 18:45:53 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 20:47:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,7 +102,6 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
 	_request.loc = optLoc.value();
-	std::cout << "LOCPATH = " << _request.loc.path << std::endl;
 }
 
 /**
@@ -199,7 +198,6 @@ void httpHandler::checkPath(void)
 		else
 			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
 	}
-	std::cout << "URI is the following:_" << _request.uri << std::endl;
 	_request.path = buildPath();
 	if (!std::filesystem::exists(_request.path))
 	{
