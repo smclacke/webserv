@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/12/06 14:08:18 by smclacke      ########   odam.nl          #
+#    Updated: 2024/12/09 18:45:47 by jde-baai      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -52,12 +52,14 @@ OBJS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 all: $(NAME)
 
 $(NAME): $(OBJS) $(HEADER)
-	@printf "\033[1;34m---------\\n MAKE $(NAME) \n---------\\n\033[0m"
+	@printf "\033[1;34m\n---------\\n MAKE $(NAME) \n---------\\n\033[0m"
 	@$(CC) $(FLAGS) -o $(NAME) $(OBJS)
 
 $(OBJS): $(OBJDIR)/%.o : %.cpp $(HEADER)
 	@mkdir -p $(@D)
 	@$(CC) $(FLAGS) -c $< -o $@
+	@$(eval COMPILE_COUNT=$(shell echo $$(($(COMPILE_COUNT) + 1))))
+	@printf "\r\033[1;32mCompiling... $$(($(COMPILE_COUNT))) of $(words $(SRC_FILES)) files completed.\033[0m"
 
 run: $(NAME)
 	@printf "\033[1;33m---------\\n RUN $(NAME) \n---------\\n\033[0m"
