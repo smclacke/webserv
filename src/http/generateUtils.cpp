@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/11/28 17:54:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 14:24:24 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -49,7 +49,11 @@ void httpHandler::generateDirectoryListing(void)
 		}
 		for (const auto &entry : std::filesystem::directory_iterator(_request.path))
 		{
-			_response.body << entry.path().filename().string() << "\n"; // List each file/directory name
+			_response.body << entry.path().filename().string();
+			if (html)
+				_response.body << "<br>\r\n";
+			else
+				_response.body << "\r\n";
 		}
 		if (html)
 		{

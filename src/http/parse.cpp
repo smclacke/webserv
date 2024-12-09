@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 14:17:18 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 14:24:58 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,9 +166,7 @@ void httpHandler::checkUriPath(void)
 		else
 			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
 	}
-	std::cout << "URI = " << _request.uri << std::endl;
 	_request.path = buildPath();
-	std::cout << "PATH FOUND = " << _request.path << std::endl;
 	if (!std::filesystem::exists(_request.path))
 	{
 		std::cerr << "Resource not found at path: " << _request.path << std::endl;
