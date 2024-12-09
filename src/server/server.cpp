@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:21:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 13:00:31 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("./server_files")
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -67,15 +67,18 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		++line_n;
 		lineStrip(line);
 		if (line.empty())
-			continue ;
+			continue;
 		if (line.find('}') != std::string::npos)
 		{
 			if (line.size() != 1)
 				throw eConf("Unexpected text with closing }", line_n);
 			if (_location.size() == 0)
 				addLocation(addDefaultLoc(_clientMaxBodySize));
-			_serverSocket = std::make_shared<Socket>(*this); // double ports will already fail here since bind() throws if port already in use
-			return ;
+			checkErrorPages();
+			if (_host.empty())
+				throw eConf("No listen directive provided before end of Server", line_n);
+			_serverSocket = std::make_shared<Socket>(*this);
+			return;
 		}
 		size_t pos = line.find("location");
 		if (pos != std::string::npos)
@@ -90,13 +93,12 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		findServerDirective(*this, line, line_n);
 	}
 	throw eConf("eof reached with no closing } for \"server\" keyword", line_n);
-	return ;
+	return;
 }
 
 // destructor
 
 Server::~Server() {}
-
 
 /* member functions */
 
@@ -280,6 +282,16 @@ void Server::parseErrorPage(std::stringstream &ss, int line_n)
 	nErrorPage.code = std::stoi(error_code);
 	nErrorPage.path = path;
 	this->addErrorPage(nErrorPage);
+}
+
+void Server::checkErrorPages(void)
+{
+	for (auto page : _errorPage)
+	{
+		std::string combinedPath = "." + _root + page.path;
+		if (!std::filesystem::exists(combinedPath))
+			throw eConf("error page directory does not exist: " + combinedPath, -1);
+	}
 }
 
 void Server::parseClientMaxBody(std::stringstream &ss, int line_n)

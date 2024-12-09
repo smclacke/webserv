@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:03:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 13:02:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,9 @@
  */
 void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
+	std::cout << "\n======= REQUEST =======\n"
+			  << httpRequest.str() << "\n======= END OF REQ =======\n";
+
 	parseRequestLine(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
@@ -118,7 +121,7 @@ std::string httpHandler::buildPath(void)
 	if (_request.loc.root.empty())
 		path = "." + _server.getRoot() + uri;
 	else
-	{		
+	{
 		if (!_request.loc.path.empty() && _request.loc.path != "/")
 			uri.erase(0, _request.loc.path.length());
 		path = "." + _request.loc.root + uri;
@@ -173,7 +176,7 @@ void httpHandler::parseHeaders(std::stringstream &ss)
 		getline(split >> std::ws, value);
 		eRequestHeader headerType = toEHeader(key);
 		if (headerType == eRequestHeader::Invalid)
-			continue ;
+			continue;
 		if (headerType == eRequestHeader::Connection)
 		{
 			if (value != "keep-alive" && value != "close")

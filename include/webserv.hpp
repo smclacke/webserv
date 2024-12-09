@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:47:56 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 12:23:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,32 +21,32 @@ class Epoll;
 
 class Webserv
 {
-	private:
-		std::vector<std::shared_ptr<Server>>	_servers;
-		Epoll 									_epoll;
-		std::atomic<bool> 						&_keepRunning;
+private:
+	std::vector<std::shared_ptr<Server>> _servers;
+	Epoll _epoll;
+	std::atomic<bool> &_keepRunning;
 
-	public:
-		/* constructors */
-		Webserv(std::atomic<bool>  &keepRunning);
-		Webserv(std::string config, std::atomic<bool>  &keepRunning);
-		~Webserv(void);
+public:
+	/* constructors */
+	Webserv(std::atomic<bool> &keepRunning);
+	Webserv(std::string config, std::atomic<bool> &keepRunning);
+	~Webserv(void);
 
-		/* member functions */
-		void						addServersToEpoll();
-		void						removeServersFromEpoll();
-		void						monitorServers();
-		//void 						checkDoublePorts();
+	/* member functions */
+	void addServersToEpoll();
+	void removeServersFromEpoll();
+	void monitorServers();
+	void checkDoublePorts();
 
-		/* Setters */
-		void						addServer(std::shared_ptr<Server> server);
+	/* Setters */
+	void addServer(std::shared_ptr<Server> server);
 
-		/* getters */
-		std::shared_ptr<Server>						getServer(size_t index);
-		std::shared_ptr<Server>						getServer(std::string name);
-		std::vector<std::shared_ptr<Server>>		&getAllServers();
-		size_t										getServerCount(void) const;
-		Epoll										&getEpoll();
+	/* getters */
+	std::shared_ptr<Server> getServer(size_t index);
+	std::shared_ptr<Server> getServer(std::string name);
+	std::vector<std::shared_ptr<Server>> &getAllServers();
+	size_t getServerCount(void) const;
+	Epoll &getEpoll();
 };
 
 #endif /* WEBSERV_HPP */

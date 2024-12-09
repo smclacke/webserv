@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:47:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/09 12:24:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@
 /**
  * @brief default constructor in case no config file was provided.
  */
-Webserv::Webserv(std::atomic<bool>  &keepRunning) : _keepRunning(keepRunning)
+Webserv::Webserv(std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
 	auto default_server = std::make_shared<Server>();
@@ -32,9 +32,10 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 		std::cout << "Default configuration\n\n";
 		auto default_server = std::make_shared<Server>();
 		_servers.push_back(default_server);
-		return ;
+		return;
 	}
-	std::cout << "Config: " << config << std::endl << "\n";
+	std::cout << "Config: " << config << std::endl
+			  << "\n";
 	std::ifstream file(config);
 	if (!file.is_open())
 		throw std::runtime_error("unable to open file: \"" + config + "\"");
@@ -53,7 +54,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 			if (_servers.size() == 10)
 			{
 				std::cerr << "\033[1;31mwarning: max number of servers(10) added, stopped reading conf\033[0m" << std::endl;
-				//checkDoublePorts();
+				checkDoublePorts();
 				return;
 			}
 			continue;
@@ -61,7 +62,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 		else
 			throw eConf("line : \"" + line + "\": not recognized", line_n);
 	}
-	//checkDoublePorts();
+	checkDoublePorts();
 }
 
 Webserv::~Webserv(void)
@@ -74,9 +75,9 @@ void Webserv::addServersToEpoll()
 {
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		std::shared_ptr<Server>		currentServer = getServer(i);
-		int							serverSockfd = currentServer->getServerSocket()->getSockfd();
-		struct epoll_event 			event;
+		std::shared_ptr<Server> currentServer = getServer(i);
+		int serverSockfd = currentServer->getServerSocket()->getSockfd();
+		struct epoll_event event;
 
 		event.data.fd = serverSockfd;
 		_epoll.addToEpoll(serverSockfd);
@@ -89,15 +90,15 @@ void Webserv::removeServersFromEpoll()
 {
 	for (size_t i = 0; i < getServerCount(); ++i)
 	{
-		std::shared_ptr<Server>		currentServer = getServer(i);
-		int							serverSockfd = currentServer->getServerSocket()->getSockfd();
-		
+		std::shared_ptr<Server> currentServer = getServer(i);
+		int serverSockfd = currentServer->getServerSocket()->getSockfd();
+
 		if (epoll_ctl(_epoll.getEpfd(), EPOLL_CTL_DEL, serverSockfd, nullptr) == -1)
 			std::cerr << "Failed to remove fd from epoll\n";
 	}
 }
 
-void		Webserv::monitorServers()
+void Webserv::monitorServers()
 {
 	_epoll.initEpoll();
 	addServersToEpoll();
@@ -113,12 +114,12 @@ void		Webserv::monitorServers()
 		if (numEvents == -1)
 		{
 			if (_keepRunning == false)
-				return ;
+				return;
 			removeServersFromEpoll();
 			throw std::runtime_error("epoll_wait()\n");
 		}
 		else if (numEvents == 0)
-			continue ;
+			continue;
 		for (int i = 0; i < numEvents; ++i)
 		{
 			int fd = _epoll.getAllEvents()[i].data.fd;
@@ -153,9 +154,7 @@ size_t Webserv::getServerCount(void) const
 std::shared_ptr<Server> Webserv::getServer(std::string name)
 {
 	auto it = std::find_if(_servers.begin(), _servers.end(), [&name](const std::shared_ptr<Server> &server)
-						   {
-							   return server->getServerName() == name;
-						   });
+						   { return server->getServerName() == name; });
 	if (it != _servers.end())
 	{
 		return *it;
@@ -173,16 +172,16 @@ Epoll &Webserv::getEpoll()
  * @note this is checked already in bind() since function will fail if trying to bind to
  * 	an already in use address
  */
-//void Webserv::checkDoublePorts()
-//{
-//	std::unordered_set<int> portSet;
-//	for (const auto &serv : _servers)
-//	{
-//		int Port = serv->getPort();
-//		if (portSet.find(Port) != portSet.end())
-//		{
-//			throw eConf("Duplicate server port found: " + std::to_string(Port), 0);
-//		}
-//		portSet.insert(Port);
-//	}
-//}
+void Webserv::checkDoublePorts()
+{
+	std::unordered_set<int> portSet;
+	for (const auto &serv : _servers)
+	{
+		int Port = serv->getPort();
+		if (portSet.find(Port) != portSet.end())
+		{
+			throw eConf("Duplicate server port found: " + std::to_string(Port), -1);
+		}
+		portSet.insert(Port);
+	}
+}
