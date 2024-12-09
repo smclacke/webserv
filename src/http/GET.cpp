@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 15:53:05 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 17:01:33 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,13 +188,21 @@ void httpHandler::getUriEncoded(void)
  */
 void httpHandler::openFile(void)
 {
+	try
+	{
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(_request.path));
+	}
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
+		return;
+	}
 	int fileFd = open(_request.path.c_str(), O_RDONLY);
 	if (fileFd == -1)
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
 		return;
 	}
-	_response.filepath = _request.path;
-	_response.readFd = fileFd;
 	_response.readFile = true;
+	_response.readFd = fileFd;
 }
