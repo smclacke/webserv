@@ -2,12 +2,11 @@
 
 **TODOTODOTODO**
 
+1) 
+	all any todos left in server directory
 
 2) 
 	add descriptions/briefs
-
-7) 
-	check if i need to do any chunky stuff
 
 9) 
 	**restart server if fatal error occurs wooooooooo**
@@ -16,18 +15,6 @@
 	It must be non-blocking and use only 1 poll() (or equivalent) for all the I/O
 	operations between the client and the server (listen included).
 		do i have to add servers before listening?
-
-13) 
-	test big files + large images
-
-
-10) JULIUS UPDATES: 
-
-	-> portchecking logic needed to change, bind() throws so it's checked already
-		in server socket creation
-
-11) 
-	running siege causes "Fialed to read request line" error + EPOLLHUP + EPOLLERR
 
 
 
