@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 17:25:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 19:57:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -60,7 +60,9 @@ void httpHandler::stdGet(void)
 					return setErrorResponse(eHttpStatusCode::Forbidden, "Executable request doesnt have the allowed cgi extension");
 				}
 			}
-			_response.cgi = true;
+			else
+				return setErrorResponse(eHttpStatusCode::Forbidden, "Executable request doesnt have the allowed cgi extension");
+			cgiResponse();
 			return;
 		}
 	}
