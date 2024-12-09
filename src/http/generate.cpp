@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 17:19:33 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 18:49:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ s_httpSend httpHandler::generateResponse(void)
 		if (it->second == "close")
 			_response.keepalive = false;
 	}
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return (writeResponse());
 	callMethod();
 	// CGI generate its own HTTP
 	return (writeResponse());

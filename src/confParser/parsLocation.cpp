@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/31 15:42:05 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/29 13:37:08 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 18:39:52 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,14 @@ static void parseReturn(std::stringstream &ss, int line_n, s_location &loc)
 	if (!(ss >> new_route))
 		throw eConf("No value provided for directive", line_n);
 	if (ss >> unexpected)
-		throw eConf("Unexpected value found: " + unexpected, line_n);
+		throw eConf("Webserv only accepts 1 redirect url, unexpected value: " + unexpected, line_n);
 	if (numb.empty() || !std::all_of(numb.begin(), numb.end(), ::isdigit))
 		throw eConf("Invalid redirect_status format. must be numerical", line_n);
 	if (numb.size() != 3 && numb.at(0) != '3')
 		throw eConf("Invalid redirect_status format. Expected 300,301,302..", line_n);
 	loc.redirect_status = std::stoi(numb);
+	if (loc.redirect_status != 301 && loc.redirect_status != 302 && loc.redirect_status != 303 && loc.redirect_status != 307 && loc.redirect_status != 308)
+		throw eConf("Invalid redirect code, only accepting simple redirects", line_n);
 	loc.redir_url = new_route;
 }
 

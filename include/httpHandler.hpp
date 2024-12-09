@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 16:45:00 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 18:24:56 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,11 +72,12 @@ private:
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);
-	// parse
+	// parse request+ headers
 	void parseRequestLine(std::stringstream &ss);
+	bool checkRedirect();
 	void parseHeaders(std::stringstream &ss);
 	void parseBody(std::stringstream &ss);
-	void checkUriPath(void);
+	void checkPath(void);
 	// parse body
 	void parseChunkedBody(std::stringstream &ss);
 	void parseFixedLengthBody(std::stringstream &ss, size_t length);
