@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 17:01:33 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 17:25:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ void httpHandler::stdGet(void)
 	{
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
 	}
+	std::cout << "REQUEST PATH = " << _request.path;
 	std::string type = contentType(_request.path);
 	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
 	if (acceptedH.has_value())

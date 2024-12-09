@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 16:46:35 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 17:19:33 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,7 +36,7 @@ static s_httpSend internalError(void);
  */
 s_httpSend httpHandler::writeResponse(void)
 {
-	if (_response.cgi == true | _response.readFile == true)
+	if (_response.cgi == true)
 	{
 		return {"", _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
 	}
@@ -64,6 +64,7 @@ s_httpSend httpHandler::writeResponse(void)
 			responseStream << _response.body.str();
 		}
 		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
+		std::cout << "Response = " << response.msg << std::endl;
 		return (response);
 	}
 	else
