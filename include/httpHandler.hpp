@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:10:29 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:02:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 #include "web.hpp"
 #include "server.hpp"
 #include "httpConstants.hpp"
-#include "cgiHandler.hpp"
+#include "epoll.hpp"
 
 struct s_location;
 
@@ -60,10 +60,13 @@ struct	s_cgiData
 
 struct s_httpSend;
 
+class Epoll;
+
 class httpHandler
 {
 	private:
 		Server 					&_server;
+		Epoll					&_epoll;
 		eHttpStatusCode 		_statusCode;
 		s_request				_request;
 		s_response				_response;
@@ -121,7 +124,7 @@ class httpHandler
 
 	public:
 		/* constructor and deconstructor */
-		httpHandler(Server &server);
+		httpHandler(Server &server, Epoll &epoll);
 		~httpHandler(void);
 
 		/* member functions */

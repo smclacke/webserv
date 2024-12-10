@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 16:49:45 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:06:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "socket.hpp"
 #include "web.hpp"
+#include "httpHandler.hpp"
 
 class Webserv;
 class Server;
@@ -90,7 +91,7 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
-		s_httpSend						handleRequest(std::string &request);
+		s_httpSend						handleRequest(std::string &request, Server &server);
 		void							handleRead(t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
 		void							handleFile(t_clients &client);
@@ -114,6 +115,7 @@ class Epoll
 
 		/* utils -> epoll_utils.cpp */
 		void							addToEpoll(int fd);
+		void							addPipeEpoll(int fd);
 		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							updateClientClock(t_clients &client);

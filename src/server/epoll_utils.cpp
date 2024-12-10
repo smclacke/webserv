@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/08 18:30:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:05:42 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,19 @@ void		Epoll::addToEpoll(int fd)
 {
 	struct epoll_event event;
 	event.events = EPOLLIN;
+	event.data.fd = fd;
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
+	{
+		protectedClose(fd);
+		std::cerr << "Error adding fd to epoll\n";
+		return ;
+	}
+}
+
+void		Epoll::addPipeEpoll(int fd)
+{
+	struct epoll_event event;
+	event.events = EPOLLIN | EPOLLOUT;
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{

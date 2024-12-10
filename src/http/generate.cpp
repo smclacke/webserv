@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 14:10:23 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:50:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ s_httpSend httpHandler::generateResponse(void)
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return (writeResponse());
 	callMethod();
-	// CGI generate its own HTTP
+	// CGI generate its own HTTP - is this correct
 	return (writeResponse());
 }
 

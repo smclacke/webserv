@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 16:54:24 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:58:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -48,12 +48,10 @@ void	Epoll::initEpoll()
 		throw std::runtime_error("Error creating Epoll instance\n");
 }
 
-/* was in server class but need epoll for cgi so now handleRequest 
-	becomes part of epoll class */
-s_httpSend Epoll::handleRequest(std::string &request)
+s_httpSend Epoll::handleRequest(std::string &request, Server &server)
 {
 	std::stringstream stream(request);
-	httpHandler parser(*this);
+	httpHandler parser(server, *this);
 	parser.parseRequest(stream);
 	return (parser.generateResponse());
 }
@@ -103,7 +101,7 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 	// Handle Client Request
 	if (client._responseClient.msg.empty() && client._readingFile == false)
 	{
-		client._responseClient = handleRequest(client._requestClient);
+		client._responseClient = handleRequest(client._requestClient, *server._server);
 		client._clientState = clientState::WRITING;
 		client._requestClient.clear();
 	}

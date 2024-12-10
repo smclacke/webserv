@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/10 15:32:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:43:24 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -224,6 +224,7 @@ bool httpHandler::generateEnv(std::vector<char *> &env)
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
 			env.push_back(string);
+			_cgi.scriptName = string;
 		}
 
 		// Set REQUEST_METHOD

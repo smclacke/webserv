@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 16:06:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:40:59 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,8 +101,5 @@ s_location addDefaultLoc(size_t servermaxsize);
 
 /* general utils */
 void	protectedClose(int fd);
-	
-/* CGI utils */
-void	closeAllPipes(int cgiIN[2], int cgiOUT[2]);
 
 #endif /* WEB_HPP */
