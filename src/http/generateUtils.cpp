@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/09 17:26:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 15:32:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -111,4 +111,136 @@ std::string httpHandler::contentType(const std::string &filePath)
 
 	// Default MIME type if no match is found
 	return "application/octet-stream";
+}
+
+void httpHandler::CallErrorPage(std::string &path)
+{
+	// check if file permission is readable.
+	std::filesystem::file_status fileStatus = std::filesystem::status(path);
+	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	{
+		std::cerr << "No permission to read error file" << path << std::endl;
+		return;
+	}
+	std::string type = contentType(path);
+	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
+	if (acceptedH.has_value())
+	{
+		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
+		{
+			std::cerr << "Error file does not match accepted return values http" << std::endl;
+		}
+	}
+	// Read the file content
+	_response.headers[eResponseHeader::ContentType] = type;
+	// open file
+	try
+	{
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(path));
+	}
+	catch (const std::filesystem::filesystem_error &e)
+	{
+		std::cerr << "Getting size of error file didnt work: " << e.what() << std::endl;
+		return;
+	}
+	int fileFd = open(path.c_str(), O_RDONLY);
+	if (fileFd == -1)
+	{
+		std::cerr << "Failed to open error file for some reason" << std::endl;
+		return;
+	}
+	_response.readFile = true;
+	_response.readFd = fileFd;
+}
+
+/**
+ * @brief splits the uri encoding off the uri and returns the encoding
+ * sets _request.path to the uri without encoding
+ * @returns returns nullopt if there is no ? otherwise the uri Query
+ */
+std::optional<std::string> httpHandler::splitUriEncoding(void)
+{
+	// Extract query string from URI
+	std::string uri = _request.uri;
+	std::string queryString;
+	size_t queryPos = uri.find('?');
+	if (queryPos != std::string::npos)
+	{
+		queryString = uri.substr(queryPos + 1);
+		_request.path = uri.erase(queryPos);
+		return std::optional<std::string>(queryString);
+	}
+	else
+		return std::nullopt;
+}
+
+/**
+ * @brief generates the environment based on the URI encoding
+ */
+bool httpHandler::generateEnv(std::vector<char *> &env)
+{
+	try
+	{
+
+		std::optional<std::string> header;
+
+		// Set QUERY_STRING
+
+		header = findHeaderValue(_request, eRequestHeader::Accept);
+		if (header.has_value())
+		{
+			std::string accepted = "HTTP_ACCEPT=" + header.value();
+			char *string = strdup(accepted.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		header = findHeaderValue(_request, eRequestHeader::Host);
+		if (header.has_value())
+		{
+			std::string host = "SERVER_NAME=" + header.value();
+			char *string = strdup(host.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		header = findHeaderValue(_request, eRequestHeader::UserAgent);
+		if (header.has_value())
+		{
+			std::string userAgent = "HTTP_USER_AGENT=" + header.value();
+			char *string = strdup(userAgent.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		size_t pos = _request.path.find_last_of('/');
+		if (pos != std::string::npos)
+		{
+			std::string scriptname = "SCRIPT_NAME=" + _request.path.substr(pos + 1, _request.path.size());
+			char *string = strdup(scriptname.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		// Set REQUEST_METHOD
+		std::string methodEnv = "REQUEST_METHOD=" + httpMethodToStringFunc(_request.method);
+		char *string = strdup(methodEnv.c_str());
+		if (string == NULL)
+			throw std::runtime_error("failed malloc");
+		env.push_back(string);
+
+		env.push_back(nullptr);
+		// execve(args[0], args, env.data())
+	}
+	catch (std::runtime_error &e)
+	{
+		std::cerr << "Error in generateEnv: " << e.what() << std::endl;
+		setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
+		return false;
+	}
+	return true;
 }

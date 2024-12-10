@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 13:51:14 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 20:24:41 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -135,6 +135,7 @@ public:
 	const size_t &getClientMaxBodySize(void) const;
 	const std::vector<s_location> &getLocation(void) const;
 	std::shared_ptr<Socket> &getServerSocket(void);
+	std::optional<s_ePage> findErrorPage(int code) const;
 };
 
 #endif /* SERVER_HPP */

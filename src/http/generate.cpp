@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 17:19:33 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 14:10:23 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,6 +24,8 @@ s_httpSend httpHandler::generateResponse(void)
 		if (it->second == "close")
 			_response.keepalive = false;
 	}
+	if (_statusCode > eHttpStatusCode::Accepted)
+		return (writeResponse());
 	callMethod();
 	// CGI generate its own HTTP
 	return (writeResponse());
@@ -36,10 +38,6 @@ static s_httpSend internalError(void);
  */
 s_httpSend httpHandler::writeResponse(void)
 {
-	if (_response.cgi == true)
-	{
-		return {"", _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
-	}
 	auto it = statusMessages.find(_statusCode);
 	if (it != statusMessages.end())
 	{
@@ -47,18 +45,33 @@ s_httpSend httpHandler::writeResponse(void)
 		// status line
 		responseStream << "HTTP/1.1 " << static_cast<int>(_statusCode) << " "
 					   << statusMessages.at(_statusCode) << "\r\n";
-		// headers
+		// check if there is a related errorPage
+		if (static_cast<int>(_statusCode) > 308)
+		{
+			auto optPage = _server.findErrorPage(static_cast<int>(_statusCode));
+			if (optPage.has_value())
+			{
+				CallErrorPage(optPage.value().path);
+			}
+		}
+		/* headers */
+		// set keepalive
 		if (_response.keepalive)
 			_response.headers[eResponseHeader::Connection] = "keep-alive";
 		else
 			_response.headers[eResponseHeader::Connection] = "close";
+		// Content-Length check
+		if (_response.headers.find(eResponseHeader::ContentLength) == _response.headers.end())
+		{
+			_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
+		}
 		for (const auto &header : _response.headers)
 		{
 			responseStream << responseHeaderToString(header.first) << header.second << "\r\n";
 		}
 		// break between header and body:
 		responseStream << "\r\n";
-		// body
+		/* body */
 		if (_response.readFile == false && _response.cgi == false)
 		{
 			responseStream << _response.body.str();
@@ -91,7 +104,7 @@ static s_httpSend internalError(void)
 void httpHandler::callMethod(void)
 {
 	if (_request.method == eHttpMethod::GET)
-		stdGet();
+		getMethod();
 	else if (_request.method == eHttpMethod::POST)
 		stdPost();
 	else if (_request.method == eHttpMethod::DELETE)

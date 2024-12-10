@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 20:57:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 15:38:49 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -72,15 +72,18 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	void openFile(void);
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);
-	// parse
+	void CallErrorPage(std::string &path);
+	std::optional<std::string> splitUriEncoding(void);
+	bool generateEnv(std::vector<char *> &env);
+	// parse request+ headers
 	void parseRequestLine(std::stringstream &ss);
+	bool checkRedirect();
 	void parseHeaders(std::stringstream &ss);
 	void parseBody(std::stringstream &ss);
-	void checkUriPath(void);
+	void checkPath(void);
 	// parse body
 	void parseChunkedBody(std::stringstream &ss);
 	void parseFixedLengthBody(std::stringstream &ss, size_t length);
@@ -93,16 +96,23 @@ private:
 	// response
 	s_httpSend writeResponse(void);
 	void generateDirectoryListing(void);
-	// std Response
+	/* Response */
 	void callMethod(void);
-	void stdGet(void);
+	// GET METHOD
+	void getMethod(void);
 	void getUriEncoded(void);
+	bool getDirectory(void);
+	void readFile(void);
+	void openFile(void);
+	bool isExecutable(void);
+	// POST METHOD
 	void stdPost(void);
 	void wwwFormEncoded(void);
+	// DELETE METHOD
 	void stdDelete(void);
 	void deleteFromCSV();
 	// cgi Response
-	void cgiResponse(void);
+	void cgiResponse(std::vector<char *> env);
 
 public:
 	/* constructor and deconstructor */
@@ -113,5 +123,7 @@ public:
 	void parseRequest(std::stringstream &response);
 	s_httpSend generateResponse(void);
 };
+
+std::string httpMethodToStringFunc(eHttpMethod method);
 
 #endif /* HTTP_HANDLER_HPP */

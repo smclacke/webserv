@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 15:24:09 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/09 20:16:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,20 +249,22 @@ void Server::parseErrorPage(std::stringstream &ss, int line_n)
 
 	if (error_code.length() != 3 || !std::all_of(error_code.begin(), error_code.end(), ::isdigit))
 		throw eConf("Invalid error code format. Expected 3 digits", line_n);
-
 	s_ePage nErrorPage;
 	nErrorPage.code = std::stoi(error_code);
+	if (nErrorPage.code <= 308 || nErrorPage.code > 511)
+		throw eConf("Not a valid error code: " + error_code, line_n);
 	nErrorPage.path = path;
 	this->addErrorPage(nErrorPage);
 }
 
 void Server::checkErrorPages(void)
 {
-	for (auto page : _errorPage)
+	for (auto &page : _errorPage)
 	{
 		std::string combinedPath = "." + _root + page.path;
 		if (!std::filesystem::exists(combinedPath))
 			throw eConf("error page directory does not exist: " + combinedPath, -1);
+		page.path = combinedPath;
 	}
 }
 
@@ -394,4 +396,16 @@ const std::vector<s_location> &Server::getLocation(void) const
 std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
+}
+
+std::optional<s_ePage> Server::findErrorPage(int code) const
+{
+	for (auto &page : _errorPage)
+	{
+		if (page.code == code)
+		{
+			return page;
+		}
+	}
+	return std::nullopt;
 }

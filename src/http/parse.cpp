@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 18:05:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 12:14:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,16 +22,24 @@
  */
 void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
+	if (httpRequest.str().empty())
+	{
+		std::cerr << "Received empty HTTP request" << std::endl;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Empty HTTP request");
+	}
+
 	std::cout << "\n======= REQUEST =======\n"
 			  << httpRequest.str() << "\n======= END REQ =======\n";
 
 	parseRequestLine(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-	parseHeaders(httpRequest); //
+	if (!checkRedirect())
+		return;
+	parseHeaders(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-	checkUriPath();
+	checkPath();
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
 	std::string remainingData;
@@ -49,13 +57,6 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 }
 
 /* private functions */
-
-/*
- the path should be the server_root + uri but the start of the uri should
-  not contain the part that is replaced by the root
-
-
-*/
 
 /**
  * @brief Parses the request line of the HTTP request
@@ -107,7 +108,43 @@ void httpHandler::parseRequestLine(std::stringstream &ss)
 		return setErrorResponse(eHttpStatusCode::NotFound, "No Matching location for URI: " + _request.uri);
 	}
 	_request.loc = optLoc.value();
-	std::cout << "LOCPATH = " << _request.loc.path << std::endl;
+}
+
+/**
+ * @brief check if there is a redirect
+ * sets the right _response headers for the redirect
+ * @return true if no redirect, false if there is a redirect
+ */
+bool httpHandler::checkRedirect(void)
+{
+	if (_request.loc.redirect_status != 0)
+	{
+		switch (_request.loc.redirect_status)
+		{
+		case 301:
+			_statusCode = eHttpStatusCode::MovedPermanently;
+			break;
+		case 302:
+			_statusCode = eHttpStatusCode::Found;
+			break;
+		case 303:
+			_statusCode = eHttpStatusCode::SeeOther;
+			break;
+		case 307:
+			_statusCode = eHttpStatusCode::TemporaryRedirect;
+			break;
+		case 308:
+			_statusCode = eHttpStatusCode::PermanentRedirect;
+			break;
+		default:
+			setErrorResponse(eHttpStatusCode::InternalServerError, "redirect status code doesn't match any expected value");
+			return false;
+		}
+		_response.headers[eResponseHeader::Location] = _request.loc.redir_url;
+		_response.headers[eResponseHeader::ContentLength] = "0";
+		return false;
+	}
+	return (true);
 }
 
 /**
@@ -147,7 +184,7 @@ std::string httpHandler::buildPath(void)
 /**
  * @brief checks if the is a x-www-form-urlencoded request and if the path is valid
  */
-void httpHandler::checkUriPath(void)
+void httpHandler::checkPath(void)
 {
 	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
 	if (contentTypeIt != _request.headers.end())
@@ -167,7 +204,6 @@ void httpHandler::checkUriPath(void)
 		else
 			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
 	}
-	std::cout << "URI is the following:_" << _request.uri << std::endl;
 	_request.path = buildPath();
 	if (!std::filesystem::exists(_request.path))
 	{

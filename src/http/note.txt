@@ -1,21 +1,11 @@
-@todo 
-http://localhost:9999/images/
-
-http://localhost:9999/images
-
-
-
-----
--1 . check why its not getting the right path for a /error_pages/400.html
-
-0. do something with the redirect;
-if loc.path.reditect status != 0 return Red msg;
-
 1. declutter function - check if i should move the uri part to python or leave it functional in CPP
 
-
-
-2. make the Response return the appropiate error pages if they exist in the server
-
-
 3. Write the CGI PART
+105. CLEANUP - remove all unused statusCodes and other HTTPconstants;
+
+
+TODO:
+make a proper config file + include a good index.html and index.htm example
+
+
+Make a html page displaying all cat in the img/cats directory. It gets it by getting directory listing, displaying cats wiht a delete button - > DELETE request, also an upload button -> post request
