@@ -2,6 +2,7 @@
 
 # Import the CGI module
 import cgi
+#import sys
 
 # Print the HTTP headers
 print("Content-Type: text/html")

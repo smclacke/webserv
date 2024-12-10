@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:22:51 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:29:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,14 +29,15 @@ void httpHandler::getMethod(void)
 			return;
 	}
 	// Check if the file is executable
-	if (isExecutable())
-	{
+	//if (isExecutable())
+	//{
+		std::cout << "EXECUTABLE\n";
 		if (!generateEnv())
 			return;
 		return cgiResponse();
-	}
-	else
-		readFile();
+	//}
+	//else
+	//	readFile();
 	return;
 }
 

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:04:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:26:03 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,13 +30,19 @@ static void		closeAllPipes(int cgiIN[2], int cgiOUT[2])
 */
 void httpHandler::cgiResponse()
 {
+	std::cout << "we are hereeee\n";
 	// need argument array using cgiData struct scriptName
 	char	*script = strdup(_cgi.scriptname.c_str());
-
 	if (script == NULL)
 		throw std::runtime_error("failed malloc");
 
-	char	*argv[] = {script, nullptr};
+	char	*path = strdup(_request.path.c_str());
+	if (path == NULL)
+		throw std::runtime_error("failed malloc");
+
+	std::cout << "script = " << script << " path = " << path << " \n";
+
+	char	*argv[] = {script, path};
 
 	int		cgiIN[2]; // for sending data to the script
 	int		cgiOUT[2]; // for receiving data from the script
@@ -65,12 +71,15 @@ void httpHandler::cgiResponse()
 
 		// execute cgi script
 		//_request.path.c_str()
-		if (execve("/var/www/cgi_path/test_file.cgi", argv, _cgi.env.data()) == -1)
+		//"/var/www/cgi_path/test_file.cgi"
+		if (execve(_request.path.c_str(), argv, _cgi.env.data()) == -1)
 		{
 			std::cerr << "execve failed\n";
 			closeAllPipes(cgiIN, cgiOUT);
 			exit(EXIT_FAILURE);	
-		} 
+		}
+		closeAllPipes(cgiIN, cgiOUT);
+		exit(EXIT_SUCCESS);
 	}
 	else if (_response.pid > 0)
 	{
