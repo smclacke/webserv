@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/10 14:45:00 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 15:32:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -177,19 +177,70 @@ std::optional<std::string> httpHandler::splitUriEncoding(void)
 /**
  * @brief generates the environment based on the URI encoding
  */
-std::vector<char *> httpHandler::UriEncodingToEnv(std::string query)
+bool httpHandler::generateEnv(std::vector<char *> &env)
 {
-	std::vector<char *> env;
-	setErrorResponse(eHttpStatusCode::NotImplemented, "URI encoded requets not implemented");
-	return env;
-	// Set QUERY_STRING
-	std::string queryEnv = "QUERY_STRING=" + query;
-	env.push_back(strdup(queryEnv.c_str()));
+	try
+	{
 
-	// Set REQUEST_METHOD
-	std::string methodEnv = "REQUEST_METHOD=" + httpMethodToStringFunc(_request.method);
-	env.push_back(strdup(methodEnv.c_str()));
-	env.push_back(nullptr);
-	// execve(args[0], args, env.data())
-	return env;
+		std::optional<std::string> header;
+
+		// Set QUERY_STRING
+
+		header = findHeaderValue(_request, eRequestHeader::Accept);
+		if (header.has_value())
+		{
+			std::string accepted = "HTTP_ACCEPT=" + header.value();
+			char *string = strdup(accepted.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		header = findHeaderValue(_request, eRequestHeader::Host);
+		if (header.has_value())
+		{
+			std::string host = "SERVER_NAME=" + header.value();
+			char *string = strdup(host.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		header = findHeaderValue(_request, eRequestHeader::UserAgent);
+		if (header.has_value())
+		{
+			std::string userAgent = "HTTP_USER_AGENT=" + header.value();
+			char *string = strdup(userAgent.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		size_t pos = _request.path.find_last_of('/');
+		if (pos != std::string::npos)
+		{
+			std::string scriptname = "SCRIPT_NAME=" + _request.path.substr(pos + 1, _request.path.size());
+			char *string = strdup(scriptname.c_str());
+			if (string == NULL)
+				throw std::runtime_error("failed malloc");
+			env.push_back(string);
+		}
+
+		// Set REQUEST_METHOD
+		std::string methodEnv = "REQUEST_METHOD=" + httpMethodToStringFunc(_request.method);
+		char *string = strdup(methodEnv.c_str());
+		if (string == NULL)
+			throw std::runtime_error("failed malloc");
+		env.push_back(string);
+
+		env.push_back(nullptr);
+		// execve(args[0], args, env.data())
+	}
+	catch (std::runtime_error &e)
+	{
+		std::cerr << "Error in generateEnv: " << e.what() << std::endl;
+		setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
+		return false;
+	}
+	return true;
 }

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 14:50:03 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 15:28:26 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -73,7 +73,7 @@ private:
 	std::string buildPath(void);
 	void CallErrorPage(std::string &path);
 	std::optional<std::string> splitUriEncoding(void);
-	std::vector<char *> UriEncodingToEnv(std::string query);
+	bool generateEnv(std::vector<char *> &env);
 	// parse request+ headers
 	void parseRequestLine(std::stringstream &ss);
 	bool checkRedirect();
@@ -108,7 +108,7 @@ private:
 	void stdDelete(void);
 	void deleteFromCSV();
 	// cgi Response
-	void cgiResponse(void);
+	void cgiResponse(std::vector<char *> env);
 
 public:
 	/* constructor and deconstructor */

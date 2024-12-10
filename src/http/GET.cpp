@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 14:49:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 15:34:18 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
  */
 void httpHandler::getMethod(void)
 {
-	std::vector<char *> env;
 	// uri encoded GET request
 	if (_request.uriEncoded == true)
 	{
@@ -32,7 +31,11 @@ void httpHandler::getMethod(void)
 	// Check if the file is executable
 	if (isExecutable())
 	{
-		return cgiResponse();
+		std::vector<char *> env;
+		if (!generateEnv(env))
+			return;
+		_response.cgi = true;
+		return cgiResponse(env);
 	}
 	else
 	{
@@ -51,9 +54,16 @@ void httpHandler::getUriEncoded(void)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
 	if (isExecutable())
 	{
-		std::vector<char *> env = UriEncodingToEnv(query.value());
-		// pass the env to cgiResponse
-		cgiResponse();
+		std::vector<char *> env;
+		std::string queryEnv = "QUERY_STRING=" + query.value();
+		char *string = strdup(queryEnv.c_str());
+		if (string == NULL)
+			return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
+		env.push_back(strdup(queryEnv.c_str()));
+		if (!generateEnv(env))
+			return;
+		_response.cgi = true;
+		cgiResponse(env);
 		return;
 	}
 	else
@@ -149,7 +159,6 @@ bool httpHandler::isExecutable()
 			std::string extension = _request.path.substr(pos);
 			if (extension == _request.loc.cgi_ext)
 			{
-				_response.cgi = true;
 				return (true);
 			}
 			return false;
