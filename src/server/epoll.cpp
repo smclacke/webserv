@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/09 15:39:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 16:49:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ Epoll::Epoll(const Epoll &copy)
 	*this = copy;
 }
 
-Epoll	&Epoll::operator=(const Epoll &epoll)
+Epoll &Epoll::operator=(const Epoll &epoll)
 {
 	if (this != &epoll)
 	{
@@ -41,14 +41,14 @@ Epoll::~Epoll()
 }
 
 /* methods */
-void	Epoll::initEpoll()
+void Epoll::initEpoll()
 {
 	_epfd = epoll_create(10);
 	if (_epfd < 0)
 		throw std::runtime_error("Error creating Epoll instance\n");
 }
 
-void	Epoll::handleRead(t_clients &client)
+void Epoll::handleRead(t_clients &client)
 {
 	char buffer[READ_BUFFER_SIZE];
 	size_t bytesRead = 0;
@@ -56,22 +56,22 @@ void	Epoll::handleRead(t_clients &client)
 
 	client._clientState = clientState::READING;
 	bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
-	
+
 	// Error
 	if (bytesRead < 0)
 	{
 		std::cerr << "Reading from client connection failed\n";
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
-		return ;
+		return;
 	}
-	
+
 	// Disconnected
 	else if (bytesRead == 0)
 	{
 		client._clientState = clientState::CLOSE;
 		client._connectionClose = true;
-		return ;
+		return;
 	}
 
 	buffer[READ_BUFFER_SIZE - 1] = '\0';
@@ -83,12 +83,12 @@ void	Epoll::handleRead(t_clients &client)
 	{
 		client._clientState = clientState::READY;
 		client._connectionClose = false;
-		return ;
+		return;
 	}
 	client._connectionClose = false;
 }
 
-void	Epoll::handleWrite(t_serverData &server, t_clients &client)
+void Epoll::handleWrite(t_serverData &server, t_clients &client)
 {
 	// Handle Client Request
 	if (client._responseClient.msg.empty() && client._readingFile == false)
@@ -99,21 +99,21 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 	}
 	if (client._readingFile == false)
 	{
-		ssize_t		leftover;
-		ssize_t		sendlen = WRITE_BUFFER_SIZE;
+		ssize_t leftover;
+		ssize_t sendlen = WRITE_BUFFER_SIZE;
 		leftover = client._responseClient.msg.size() - client._write_offset;
 		if (leftover < WRITE_BUFFER_SIZE)
 			sendlen = leftover;
 
 		ssize_t bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, leftover, 0);
-		
+
 		// Error
 		if (bytesWritten < 0)
 		{
 			std::cerr << "Write to client failed\n";
 			client._clientState = clientState::ERROR;
 			client._connectionClose = true;
-			return ;
+			return;
 		}
 
 		// Disconnected
@@ -121,11 +121,11 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 		{
 			client._clientState = clientState::CLOSE;
 			client._connectionClose = true;
-			return ;
+			return;
 		}
 
 		client._write_offset += bytesWritten;
-		
+
 		// Finished
 		if (client._write_offset >= client._responseClient.msg.length())
 		{
@@ -133,7 +133,7 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 			{
 				client._readingFile = true;
 				client._connectionClose = false;
-				return ;
+				return;
 			}
 			else
 			{
@@ -147,7 +147,7 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 			client._connectionClose = false;
 			client._write_offset = 0;
 			client._responseClient.msg.clear();
-			return ;
+			return;
 		}
 		client._connectionClose = false;
 	}
@@ -155,18 +155,18 @@ void	Epoll::handleWrite(t_serverData &server, t_clients &client)
 		handleFile(client);
 }
 
-void	Epoll::handleFile(t_clients &client)
+void Epoll::handleFile(t_clients &client)
 {
-	ssize_t		bytesSend;
-	char		buffer[READ_BUFFER_SIZE];
-	ssize_t		bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
+	ssize_t bytesSend;
+	char buffer[READ_BUFFER_SIZE];
+	ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
 
 	// Error
 	if (bytesRead < 0)
 	{
 		std::cerr << "Reading from file failed\n";
 		operationFailed(client);
-		return ;
+		return;
 	}
 
 	// Nothing to read -> we are done
@@ -188,9 +188,9 @@ void	Epoll::handleFile(t_clients &client)
 			client._clientState = clientState::CLOSE;
 			client._connectionClose = true;
 		}
-		return ;
+		return;
 	}
-	
+
 	// Not finished reading, send what we have read and cont. loop
 	buffer[READ_BUFFER_SIZE - 1] = '\0';
 	if (bytesRead == READ_BUFFER_SIZE - 1)
@@ -200,10 +200,10 @@ void	Epoll::handleFile(t_clients &client)
 		{
 			std::cerr << "Write to client failed\n";
 			operationFailed(client);
-			return ;
+			return;
 		}
 	}
-	
+
 	// Need to send, then we are done
 	else if (bytesRead < READ_BUFFER_SIZE)
 	{
@@ -212,7 +212,7 @@ void	Epoll::handleFile(t_clients &client)
 		{
 			std::cerr << "Write to client failed\n";
 			operationFailed(client);
-			return ;
+			return;
 		}
 		client._readingFile = false;
 		client._responseClient.readfile = false;
@@ -227,11 +227,11 @@ void	Epoll::handleFile(t_clients &client)
 		client._responseClient.pid = -1;
 		if (client._responseClient.keepAlive == false)
 			client._connectionClose = true;
-		return ;
+		return;
 	}
 }
 
-void	Epoll::makeNewConnection(int fd, t_serverData &server)
+void Epoll::makeNewConnection(int fd, t_serverData &server)
 {
 	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
@@ -240,7 +240,7 @@ void	Epoll::makeNewConnection(int fd, t_serverData &server)
 	if (clientfd < 0)
 	{
 		std::cerr << "Error accepting new connection\n";
-		return ;
+		return;
 	}
 	else
 	{
@@ -250,7 +250,7 @@ void	Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 }
 
-void	Epoll::processEvent(int fd, epoll_event &event)
+void Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
 	{
@@ -297,58 +297,58 @@ void	Epoll::processEvent(int fd, epoll_event &event)
 }
 
 /* getters */
-int	Epoll::getEpfd() const
+int Epoll::getEpfd() const
 {
 	return this->_epfd;
 }
 
-int	Epoll::getNumEvents() const
+int Epoll::getNumEvents() const
 {
 	return this->_numEvents;
 }
 
-std::vector<t_serverData>	&Epoll::getAllServers()
+std::vector<t_serverData> &Epoll::getAllServers()
 {
 	return this->_serverData;
 }
 
-std::shared_ptr<Server>	Epoll::getServer(size_t i)
+std::shared_ptr<Server> Epoll::getServer(size_t i)
 {
 	return this->_serverData[i]._server;
 }
 
-std::vector<epoll_event>	&Epoll::getAllEvents()
+std::vector<epoll_event> &Epoll::getAllEvents()
 {
 	return _events;
 }
 
-struct epoll_event	&Epoll::getEvent()
+struct epoll_event &Epoll::getEvent()
 {
 	return this->_event;
 }
 
 /* setters */
-void	Epoll::setEpfd(int fd)
+void Epoll::setEpfd(int fd)
 {
 	this->_epfd = fd;
 }
 
-void	Epoll::setNumEvents(int numEvents)
+void Epoll::setNumEvents(int numEvents)
 {
 	this->_numEvents = numEvents;
 }
 
-void	Epoll::setEventMax()
+void Epoll::setEventMax()
 {
 	_events.resize(MAX_EVENTS);
 }
 
-void	Epoll::setEvent(struct epoll_event &event)
+void Epoll::setEvent(struct epoll_event &event)
 {
 	this->_event = event;
 }
 
-void	Epoll::setServer(std::shared_ptr<Server> server)
+void Epoll::setServer(std::shared_ptr<Server> server)
 {
 	t_serverData newServerData;
 	newServerData._server = server;

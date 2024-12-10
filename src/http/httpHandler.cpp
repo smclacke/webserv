@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 14:32:08 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 16:36:35 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,18 @@ httpHandler::httpHandler(Server &server) : _server(server)
 	_response.cgi = false;
 	_response.pid = -1;
 	_response.readFd = -1;
+	// cgi
+	_cgidata.env.clear();
+	_cgidata.scriptname.clear();
 }
 
 httpHandler::~httpHandler(void)
 {
+	for (char *envVar : _cgidata.env)
+	{
+		free(envVar);
+	}
+	_cgidata.env.clear();
 }
 
 /* utils */

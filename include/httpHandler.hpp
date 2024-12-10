@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 15:28:26 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:49:58 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ struct s_request
 	std::stringstream body;
 	std::vector<std::string> files;
 	bool uriEncoded;
+	std::string uriQuery;
 };
 
 struct s_response
@@ -51,6 +52,12 @@ struct s_response
 	pid_t pid = -1;
 };
 
+struct s_cgi
+{
+	std::vector<char *> env;
+	std::string scriptname;
+};
+
 struct s_httpSend;
 
 class httpHandler
@@ -60,6 +67,7 @@ private:
 	eHttpStatusCode _statusCode;
 	s_request _request;
 	s_response _response;
+	s_cgi _cgidata;
 
 	// headers to strings and back
 	eRequestHeader toEHeader(const std::string &header);
@@ -72,8 +80,7 @@ private:
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);
 	void CallErrorPage(std::string &path);
-	std::optional<std::string> splitUriEncoding(void);
-	bool generateEnv(std::vector<char *> &env);
+	bool generateEnv(void);
 	// parse request+ headers
 	void parseRequestLine(std::stringstream &ss);
 	bool checkRedirect();
@@ -84,11 +91,6 @@ private:
 	void parseChunkedBody(std::stringstream &ss);
 	void parseFixedLengthBody(std::stringstream &ss, size_t length);
 	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
-	void parseMultipartBody(const std::string &contentType);
-	std::string extractBoundary(const std::string &contentType);
-	std::string extractHeaderValue(const std::string &headers, const std::string &key);
-	std::string extractFilename(const std::string &contentDisposition);
-	std::string getTempFilePath(const std::string &filename);
 	// response
 	s_httpSend writeResponse(void);
 	void generateDirectoryListing(void);
@@ -102,13 +104,20 @@ private:
 	void openFile(void);
 	bool isExecutable(void);
 	// POST METHOD
-	void stdPost(void);
-	void wwwFormEncoded(void);
+	void postMethod(void);
+	void postMultiForm(const std::string &contentType);
+	void parseMultipartBody(const std::string &contentType);
+	std::string extractBoundary(const std::string &contentType);
+	std::string extractHeaderValue(const std::string &headers, const std::string &key);
+	std::string extractFilename(const std::string &contentDisposition);
+	std::string getTempFilePath(const std::string &filename);
+	void postUrlEncoded(void);
+	void postApplication(void);
 	// DELETE METHOD
 	void stdDelete(void);
 	void deleteFromCSV();
 	// cgi Response
-	void cgiResponse(std::vector<char *> env);
+	void cgiResponse();
 
 public:
 	/* constructor and deconstructor */

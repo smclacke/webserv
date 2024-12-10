@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/10 15:32:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:36:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -154,37 +154,22 @@ void httpHandler::CallErrorPage(std::string &path)
 }
 
 /**
- * @brief splits the uri encoding off the uri and returns the encoding
- * sets _request.path to the uri without encoding
- * @returns returns nullopt if there is no ? otherwise the uri Query
- */
-std::optional<std::string> httpHandler::splitUriEncoding(void)
-{
-	// Extract query string from URI
-	std::string uri = _request.uri;
-	std::string queryString;
-	size_t queryPos = uri.find('?');
-	if (queryPos != std::string::npos)
-	{
-		queryString = uri.substr(queryPos + 1);
-		_request.path = uri.erase(queryPos);
-		return std::optional<std::string>(queryString);
-	}
-	else
-		return std::nullopt;
-}
-
-/**
  * @brief generates the environment based on the URI encoding
+ * sets
+ * _cgidata.scriptname
+ * in _cgidata.env:
+ * HTTP_ACCEPT
+ * SERVER_NAME
+ * USER_AGENT
+ * REQUEST_METHOD
+ * CONTENT_LENGTH
+ * null_ptr
  */
-bool httpHandler::generateEnv(std::vector<char *> &env)
+bool httpHandler::generateEnv(void)
 {
 	try
 	{
-
 		std::optional<std::string> header;
-
-		// Set QUERY_STRING
 
 		header = findHeaderValue(_request, eRequestHeader::Accept);
 		if (header.has_value())
@@ -193,7 +178,7 @@ bool httpHandler::generateEnv(std::vector<char *> &env)
 			char *string = strdup(accepted.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
-			env.push_back(string);
+			_cgidata.env.push_back(string);
 		}
 
 		header = findHeaderValue(_request, eRequestHeader::Host);
@@ -203,7 +188,7 @@ bool httpHandler::generateEnv(std::vector<char *> &env)
 			char *string = strdup(host.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
-			env.push_back(string);
+			_cgidata.env.push_back(string);
 		}
 
 		header = findHeaderValue(_request, eRequestHeader::UserAgent);
@@ -213,28 +198,35 @@ bool httpHandler::generateEnv(std::vector<char *> &env)
 			char *string = strdup(userAgent.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
-			env.push_back(string);
+			_cgidata.env.push_back(string);
 		}
 
 		size_t pos = _request.path.find_last_of('/');
 		if (pos != std::string::npos)
 		{
-			std::string scriptname = "SCRIPT_NAME=" + _request.path.substr(pos + 1, _request.path.size());
-			char *string = strdup(scriptname.c_str());
+			std::string subPath = _request.path.substr(pos + 1);
+			std::string scriptName = "SCRIPT_NAME=" + subPath;
+			char *string = strdup(scriptName.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
-			env.push_back(string);
+			_cgidata.env.push_back(string);
+			_cgidata.scriptname = subPath;
 		}
 
-		// Set REQUEST_METHOD
 		std::string methodEnv = "REQUEST_METHOD=" + httpMethodToStringFunc(_request.method);
 		char *string = strdup(methodEnv.c_str());
 		if (string == NULL)
 			throw std::runtime_error("failed malloc");
-		env.push_back(string);
+		_cgidata.env.push_back(string);
 
-		env.push_back(nullptr);
-		// execve(args[0], args, env.data())
+		std::string length = "CONTENT_LENGTH=" + std::to_string(_request.body.str().size());
+		char *clen = strdup(length.c_str());
+		if (clen == NULL)
+			throw std::runtime_error("failed malloc");
+		_cgidata.env.push_back(clen);
+
+		_cgidata.env.push_back(nullptr);
+		// execve(args[0], args, _cgidata.env.data())
 	}
 	catch (std::runtime_error &e)
 	{

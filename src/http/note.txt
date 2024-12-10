@@ -5,6 +5,8 @@
 
 
 TODO:
+restart server upon ctch in main
+
 make a proper config file + include a good index.html and index.htm example
 
 

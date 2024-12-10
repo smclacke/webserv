@@ -6,13 +6,13 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 15:35:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:50:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 
-void httpHandler::stdPost(void)
+void httpHandler::postMethod(void)
 {
 	// std::cout << "Handling POST request" << std::endl;
 	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
@@ -26,51 +26,53 @@ void httpHandler::stdPost(void)
 
 	if (contentType.find("multipart/form-data") != std::string::npos)
 	{
-		// Handle multipart form data using _request.body
-		parseMultipartBody(contentType);
-		if (_request.files.empty())
-		{
-			std::cerr << "No files found in request" << std::endl;
-			setErrorResponse(eHttpStatusCode::BadRequest, "No files found in request");
-			return;
-		}
-		else
-		{
-			// return the processed files
-			_statusCode = eHttpStatusCode::Created;
-			_response.headers[eResponseHeader::ContentType] = "text/plain";
-			_response.body << "Files processed successfully: \r\n";
-			for (auto file : _request.files)
-			{
-
-				if (file.find('/') != std::string::npos)
-				{
-					_response.body << file.substr(file.find_last_of('/') + 1) << "\r\n";
-				}
-				else
-					_response.body << file << "\r\n";
-				_response.headers[eResponseHeader::Location] = file;
-			}
-			_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
-		}
-		return;
+		return postMultiForm(contentType);
 	}
 	else if (contentType == "application/x-www-form-urlencoded")
 	{
-		return wwwFormEncoded();
+		return postUrlEncoded();
 	}
 	else if (contentType.find("application/") == 0) // change to any applicatoin type, send it straight to cgi and let it try to pass it to a program
 	{
-		if (_response.cgi == false)
-			return setErrorResponse(eHttpStatusCode::Forbidden, "Cgi not allowed for this location");
-		std::cout << "Received app data: " << _request.body.str() << std::endl;
-		std::vector<char *> env;
-		return cgiResponse(env);
+		return postApplication();
 	}
 	else
 	{
 		std::cerr << "Unsupported Content-Type: " << contentType << std::endl;
 		setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Unsupported Content-Type: " + contentType);
+	}
+	return;
+}
+
+// --------- multiform
+
+/**
+ * @brief processes a content-type multi-form-data post request
+ */
+void httpHandler::postMultiForm(const std::string &contentType)
+{
+	parseMultipartBody(contentType);
+	if (_request.files.empty())
+	{
+		return;
+	}
+	else
+	{
+		_statusCode = eHttpStatusCode::Created;
+		_response.headers[eResponseHeader::ContentType] = "text/plain";
+		_response.body << "Files processed successfully: \r\n";
+		for (auto file : _request.files)
+		{
+
+			if (file.find('/') != std::string::npos)
+			{
+				_response.body << file.substr(file.find_last_of('/') + 1) << "\r\n";
+			}
+			else
+				_response.body << file << "\r\n";
+			_response.headers[eResponseHeader::Location] = file;
+		}
+		_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 	}
 	return;
 }
@@ -83,7 +85,6 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 		std::cerr << "Boundary not found in Content-Type" << std::endl;
 		return setErrorResponse(eHttpStatusCode::BadRequest, "Boundary not found in Content-Type");
 	}
-
 	std::string line;
 	while (std::getline(_request.body, line))
 	{
@@ -94,7 +95,6 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 			{
 				headers += line + "\n";
 			}
-
 			std::string contentDisposition = extractHeaderValue(headers, "Content-Disposition");
 			if (contentDisposition.find("filename=") != std::string::npos)
 			{
@@ -107,7 +107,6 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 					setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to save file: " + filename);
 					return;
 				}
-
 				while (std::getline(_request.body, line) && line.find(boundary) == std::string::npos)
 				{
 					outFile << line << "\n";
@@ -120,69 +119,8 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 			}
 		}
 	}
-}
-
-void httpHandler::wwwFormEncoded(void)
-{
-	std::string filePath;
-	if (std::filesystem::is_directory(_request.path))
-	{
-		filePath = _request.path + "/form_data.csv";
-	}
-	else if (std::filesystem::is_regular_file(_request.path))
-	{
-		if (_request.path.substr(_request.path.find_last_of(".") + 1) != "csv")
-		{
-			return setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Invalid file type: Only CSV files are supported");
-		}
-		filePath = _request.path;
-	}
-	else
-	{
-		return setErrorResponse(eHttpStatusCode::BadRequest, "Invalid path: Not a directory or a valid CSV file");
-	}
-	// check for perm
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if (((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none) && (fileStatus.permissions() & std::filesystem::perms::owner_write) == std::filesystem::perms::none)
-	{
-		setErrorResponse(eHttpStatusCode::Forbidden, "No permission to read/write file: " + _request.path);
-	}
-
-	// Parse the form data directly from the stringstream
-	std::string pair;
-	std::map<std::string, std::string> formFields;
-
-	while (std::getline(_request.body, pair, '&'))
-	{
-		size_t pos = pair.find('=');
-		if (pos != std::string::npos)
-		{
-			std::string key = pair.substr(0, pos);
-			std::string value = pair.substr(pos + 1);
-			formFields[key] = value;
-		}
-	}
-
-	// Write to CSV file
-	std::ofstream csvFile(filePath, std::ios::out | std::ios::app);
-	if (csvFile.is_open())
-	{
-		for (const auto &field : formFields)
-		{
-			csvFile << field.first << "," << field.second << "\n";
-		}
-		csvFile.close();
-	}
-	else
-	{
-		std::cerr << "Unable to open file for writing" << std::endl;
-		return setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to write to CSV file");
-	}
-
-	_statusCode = eHttpStatusCode::OK;
-	_response.headers[eResponseHeader::Location] = filePath;
-	_response.body.str("Form data processed and stored successfully");
-	_response.headers[eResponseHeader::ContentLength] = "44";
+	if (_request.files.empty())
+		return setErrorResponse(eHttpStatusCode::NoContent, "No \'filename=\' found in POST request");
 }
 
 std::string httpHandler::extractBoundary(const std::string &contentType)
@@ -225,4 +163,49 @@ std::string httpHandler::getTempFilePath(const std::string &filename)
 		return ("." + _server.getRoot() + _request.loc.path + _request.loc.upload_dir + "/" + filename);
 	else
 		return ("." + _request.loc.root + _request.loc.path + _request.loc.upload_dir + "/" + filename);
+}
+
+// ---------- url encoded
+
+/**
+ * @brief processes the Url encoded POST request
+ */
+void httpHandler::postUrlEncoded(void)
+{
+	if (_request.uriEncoded == false)
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
+	if (!isExecutable())
+		return;
+	// set contentType
+	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
+	char *cstring = strdup(content.c_str());
+	if (cstring == NULL)
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc failed in postUrlEncoded");
+	_cgidata.env.push_back(cstring);
+	// set Query string
+	std::string queryEnv = "QUERY_STRING=" + _request.uriQuery;
+	char *string = strdup(queryEnv.c_str());
+	if (string == NULL)
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
+	_cgidata.env.push_back(strdup(queryEnv.c_str()));
+	// set default env
+	if (!generateEnv())
+		return;
+	return cgiResponse();
+}
+
+void httpHandler::postApplication(void)
+{
+	if (!isExecutable())
+		return;
+	// set contentType
+	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
+	char *cstring = strdup(content.c_str());
+	if (cstring == NULL)
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc failed in postUrlEncoded");
+	_cgidata.env.push_back(cstring);
+	// set default env
+	if (!generateEnv())
+		return;
+	return cgiResponse();
 }

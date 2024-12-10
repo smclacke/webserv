@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/09 12:24:43 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:27:59 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,17 +41,21 @@ int main(int argc, char **argv)
 	catch (eConf &e)
 	{
 		if (e.line() != -1)
-			std::cout << "Config-Error: line: " << e.line() << " error: " << e.what() << std::endl;
+			std::cerr << "Config-Error: line: " << e.line() << " error: " << e.what() << std::endl;
 		else
-			std::cout << "Config-Error: " << e.what() << std::endl;
+			std::cerr << "Config-Error: " << e.what() << std::endl;
 	}
 	catch (std::runtime_error &e)
 	{
-		std::cout << "Error: " << e.what() << std::endl;
+		std::cerr << "Error: " << e.what() << std::endl;
 	}
 	catch (std::logic_error &e)
 	{
-		std::cout << "Error: " << e.what() << std::endl;
+		std::cerr << "Error: " << e.what() << std::endl;
+	}
+	catch (std::bad_alloc &e)
+	{
+		std::cerr << "Error: " << e.what() << std::endl;
 	}
 	return (EXIT_SUCCESS);
 }
