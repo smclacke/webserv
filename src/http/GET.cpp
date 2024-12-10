@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:29:30 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:39:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ void httpHandler::getMethod(void)
 	// Check if the file is executable
 	//if (isExecutable())
 	//{
-		std::cout << "EXECUTABLE\n";
 		if (!generateEnv())
 			return;
 		return cgiResponse();
@@ -91,8 +90,7 @@ bool httpHandler::getDirectory(void)
 void httpHandler::readFile()
 {
 	// check if file permission is readable.
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	if (access(_request.path.c_str(), R_OK) != 0)
 	{
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
 	}
@@ -142,8 +140,7 @@ void httpHandler::openFile()
  */
 bool httpHandler::isExecutable()
 {
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none)
+	if (access(_request.path.c_str(), X_OK) == 0)
 	{
 		size_t pos = _request.path.find_last_of('.');
 		if (pos != std::string::npos)
@@ -151,12 +148,14 @@ bool httpHandler::isExecutable()
 			std::string extension = _request.path.substr(pos);
 			if (extension == _request.loc.cgi_ext)
 			{
-				return (true);
+				return true;
 			}
-			setErrorResponse(eHttpStatusCode::Forbidden, "file extension doesn't match allowed cgi extension");
 			return false;
 		}
 	}
-	setErrorResponse(eHttpStatusCode::Forbidden, "program doesn't have executable rights");
+	else
+	{
+		return false;
+	}
 	return false;
 }

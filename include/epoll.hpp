@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:06:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 20:50:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,9 +113,10 @@ class Epoll
 		void							setEvent(struct epoll_event &event);
 		void							setServer(std::shared_ptr<Server>);
 
+		
 		/* utils -> epoll_utils.cpp */
 		void							addToEpoll(int fd);
-		void							addPipeEpoll(int fd);
+		void							addOUTEpoll(int fd);
 		void							modifyEvent(int fd, uint32_t events);
 		void							setNonBlocking(int connection);
 		void							updateClientClock(t_clients &client);

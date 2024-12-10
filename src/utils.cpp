@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/18 14:06:02 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/06 14:04:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:51:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,6 @@ void		protectedClose(int fd)
 	if (close(fd) == -1)
 	{
 		std::cerr << "Failed to close fd: " << fd << " : " << strerror(errno) << "\n";
-		throw std::runtime_error("Error: Close failed");
+		throw std::runtime_error("Close failed");
 	}
 }

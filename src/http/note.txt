@@ -1,6 +1,16 @@
-1. declutter function - check if i should move the uri part to python or leave it functional in CPP
+1. ADD CGI to DELETE method
+
+2. integrate HttpHandler into epoll.
 
 3. Write the CGI PART
+
+
+curl -X POST http://localhost:2345 \
+  -F "file1=@testfiles/text1.txt" \
+  -F "file2=@testfiles/text2.txt"
+
+
+
 105. CLEANUP - remove all unused statusCodes and other HTTPconstants;
 
 

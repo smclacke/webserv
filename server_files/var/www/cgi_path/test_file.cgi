@@ -5,16 +5,25 @@ import cgi
 #import sys
 
 # Print the HTTP headers
-print("Content-Type: text/html")
-print()  # Blank line to separate headers from the body
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
+print("THIS IS A PY CGI TEST FILE\n")
 
 # Start the HTML output
-print("<html>")
-print("<head>")
-print("<title>Simple CGI Script</title>")
-print("</head>")
-print("<body>")
-print("<h1>Hello, World!</h1>")
-print("<p>This is a simple CGI script written in Python.</p>")
-print("</body>")
-print("</html>")
+#print("<html>")
+#print("<head>")
+#print("<title>Simple CGI Script</title>")
+#print("</head>")
+#print("<body>")
+#print("<h1>Hello, World!</h1>")
+#print("<p>This is a simple CGI script written in Python.</p>")
+#print("</body>")
+#print("</html>")

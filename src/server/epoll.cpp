@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:13:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 20:52:13 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -301,6 +301,12 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					handleClientClose(serverData, client);
 			}
 		}
+		//if (fd == cgi)
+		//{
+			//handle cgi, dont modify events, use the pipes
+			// write cgiIN[1]
+			// read cgiOUT[0]
+		//}
 	}
 }
 
