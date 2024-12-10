@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:34:15 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:57:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,8 +84,7 @@ class httpHandler
 		void setErrorResponse(eHttpStatusCode code, std::string msg);
 		std::string buildPath(void);
 		void CallErrorPage(std::string &path);
-		std::optional<std::string> splitUriEncoding(void);
-		bool generateEnv();
+		bool generateEnv(void);
 		// parse request+ headers
 		void parseRequestLine(std::stringstream &ss);
 		bool checkRedirect();
@@ -96,11 +95,6 @@ class httpHandler
 		void parseChunkedBody(std::stringstream &ss);
 		void parseFixedLengthBody(std::stringstream &ss, size_t length);
 		void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
-		void parseMultipartBody(const std::string &contentType);
-		std::string extractBoundary(const std::string &contentType);
-		std::string extractHeaderValue(const std::string &headers, const std::string &key);
-		std::string extractFilename(const std::string &contentDisposition);
-		std::string getTempFilePath(const std::string &filename);
 		// response
 		s_httpSend writeResponse(void);
 		void generateDirectoryListing(void);
@@ -128,7 +122,6 @@ class httpHandler
 		void deleteFromCSV();
 		// cgi Response
 		void cgiResponse();
-
 
 	public:
 		/* constructor and deconstructor */

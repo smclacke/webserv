@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:30:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:04:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,8 @@ void httpHandler::cgiResponse()
 		protectedClose(cgiOUT[0]);
 
 		// execute cgi script
-		if (execve(_request.path.c_str(), argv, _cgi.env.data()) == -1)
+		//_request.path.c_str()
+		if (execve("/var/www/cgi_path/test_file.cgi", argv, _cgi.env.data()) == -1)
 		{
 			std::cerr << "execve failed\n";
 			closeAllPipes(cgiIN, cgiOUT);
