@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:17:55 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:20:32 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -152,13 +152,12 @@ bool httpHandler::isExecutable()
 			{
 				return true;
 			}
-			setErrorResponse(eHttpStatusCode::Forbidden, "file extension doesn't match allowed cgi extension");
 			return false;
 		}
 	}
 	else
 	{
-		setErrorResponse(eHttpStatusCode::Forbidden, "program doesn't have executable rights");
+		return false;
 	}
 	return false;
 }

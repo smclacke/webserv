@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:50:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:21:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,7 @@ void httpHandler::postUrlEncoded(void)
 	if (_request.uriEncoded == false)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
 	if (!isExecutable())
-		return;
+		return setErrorResponse(eHttpStatusCode::Forbidden, "no executable rights or incorrect cgi extension");
 	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
@@ -197,7 +197,7 @@ void httpHandler::postUrlEncoded(void)
 void httpHandler::postApplication(void)
 {
 	if (!isExecutable())
-		return;
+		return setErrorResponse(eHttpStatusCode::Forbidden, "no executable rights or incorrect cgi extension");
 	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
