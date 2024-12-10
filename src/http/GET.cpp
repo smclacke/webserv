@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:09:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:22:51 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,11 +31,9 @@ void httpHandler::getMethod(void)
 	// Check if the file is executable
 	if (isExecutable())
 	{
-		std::vector<char *> env;
-		if (!generateEnv(env))
+		if (!generateEnv())
 			return;
-		_response.cgi = true;
-		return cgiResponse(env);
+		return cgiResponse();
 	}
 	else
 		readFile();
@@ -47,26 +45,20 @@ void httpHandler::getMethod(void)
  */
 void httpHandler::getUriEncoded(void)
 {
-	std::optional<std::string> query = splitUriEncoding();
-	if (!query.has_value())
-		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
 	if (isExecutable())
 	{
-		std::vector<char *> env;
-		std::string queryEnv = "QUERY_STRING=" + query.value();
+		std::string queryEnv = "QUERY_STRING=" + _request.uriQuery;
 		char *string = strdup(queryEnv.c_str());
 		if (string == NULL)
 			return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
-		env.push_back(strdup(queryEnv.c_str()));
-		if (!generateEnv(env))
+		_cgi.env.push_back(strdup(queryEnv.c_str()));
+		if (!generateEnv())
 			return;
-		_response.cgi = true;
-		cgiResponse(env);
+		cgiResponse();
 		return;
 	}
 	else
 	{
-		setErrorResponse(eHttpStatusCode::Forbidden, "Executable request doesnt have the allowed cgi extension");
 		return;
 	}
 }
@@ -145,6 +137,7 @@ void httpHandler::openFile()
 
 /**
  * @brief checks if the file on _request.path is executable and the extension is listed as cgi
+ * sets ErrorResponse if its false
  */
 bool httpHandler::isExecutable()
 {
@@ -159,8 +152,10 @@ bool httpHandler::isExecutable()
 			{
 				return (true);
 			}
+			setErrorResponse(eHttpStatusCode::Forbidden, "file extension doesn't match allowed cgi extension");
 			return false;
 		}
 	}
+	setErrorResponse(eHttpStatusCode::Forbidden, "program doesn't have executable rights");
 	return false;
 }

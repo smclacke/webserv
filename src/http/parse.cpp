@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 12:14:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:15:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -36,10 +36,10 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 		return;
 	if (!checkRedirect())
 		return;
-	parseHeaders(httpRequest);
+	checkPath();
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-	checkPath();
+	parseHeaders(httpRequest);
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
 	std::string remainingData;
@@ -186,23 +186,23 @@ std::string httpHandler::buildPath(void)
  */
 void httpHandler::checkPath(void)
 {
-	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
-	if (contentTypeIt != _request.headers.end())
+	size_t queryPos = _request.uri.find("?");
+	if (queryPos != std::string::npos)
 	{
-		const std::string &contentType = contentTypeIt->second;
-		if (contentType == "application/x-www-form-urlencoded")
-			_request.uriEncoded = true;
-		if (_request.uri.find("?") != std::string::npos)
+		std::string tempPath = buildPath();
+		if (std::filesystem::exists(tempPath))
 		{
-			std::string path = buildPath();
-			path.substr(0, _request.uri.find_last_of("?"));
-			_request.path = path;
-			if (!std::filesystem::exists(_request.path))
-				return setErrorResponse(eHttpStatusCode::NotFound, "Path doesnt exist: " + _request.path);
-			return;
+			_request.path = tempPath;
+			return; // ? was a coincidence, not denfing URI
 		}
-		else
-			return setErrorResponse(eHttpStatusCode::BadRequest, "Expected query parameters in URI");
+		std::string uri = _request.uri;
+		_request.uriQuery = uri.substr(queryPos + 1);
+		_request.path = uri.erase(queryPos);
+		if (_request.uriQuery.empty())
+		{
+			return setErrorResponse(eHttpStatusCode::BadRequest, "Uri encoding is empty");
+		}
+		_request.uriEncoded = true;
 	}
 	_request.path = buildPath();
 	if (!std::filesystem::exists(_request.path))

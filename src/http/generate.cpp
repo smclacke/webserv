@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:50:56 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:20:38 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ void httpHandler::callMethod(void)
 	if (_request.method == eHttpMethod::GET)
 		getMethod();
 	else if (_request.method == eHttpMethod::POST)
-		stdPost();
+		postMethod();
 	else if (_request.method == eHttpMethod::DELETE)
 		stdDelete();
 	return;

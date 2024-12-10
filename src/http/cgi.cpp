@@ -6,13 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:06:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 18:30:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 #include "../../include/web.hpp"
-
 
 static void		closeAllPipes(int cgiIN[2], int cgiOUT[2])
 {
@@ -26,16 +25,18 @@ static void		closeAllPipes(int cgiIN[2], int cgiOUT[2])
 		protectedClose(cgiOUT[1]);
 }
 
-/** @todo -> get epoll in here correctly
- * -> get everything in cgi struct and use that here
- * -> make sure we dont have multiple **envs or anything else unncessary
+/** @todo
  * -> make sure the path being sent in execve is absolute path to the executable/script
- * -> check getting the scriptname into cgi struct is ok
 */
-void httpHandler::cgiResponse(std::vector<char *> env)
+void httpHandler::cgiResponse()
 {
 	// need argument array using cgiData struct scriptName
-	char	*argv[] = {_cgi.scriptName, nullptr};
+	char	*script = strdup(_cgi.scriptname.c_str());
+
+	if (script == NULL)
+		throw std::runtime_error("failed malloc");
+
+	char	*argv[] = {script, nullptr};
 
 	int		cgiIN[2]; // for sending data to the script
 	int		cgiOUT[2]; // for receiving data from the script
@@ -63,7 +64,7 @@ void httpHandler::cgiResponse(std::vector<char *> env)
 		protectedClose(cgiOUT[0]);
 
 		// execute cgi script
-		if (execve(_request.path.c_str(), argv, env.data()) == -1)
+		if (execve(_request.path.c_str(), argv, _cgi.env.data()) == -1)
 		{
 			std::cerr << "execve failed\n";
 			closeAllPipes(cgiIN, cgiOUT);
