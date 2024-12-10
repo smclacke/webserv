@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/09 20:49:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 14:01:52 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 14:41:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -44,7 +44,6 @@ class	cgiHandler
 		std::string			cgi_path;
 		int					fd;
 		char				*args[3];
-		char				**env;
 		bool				yesPy;
 		bool				yesPhp;
 
@@ -54,7 +53,7 @@ class	cgiHandler
 
 
 	/* Methods */
-	void				makeEnvArray();
+	char				**makeEnvArray();
 
 	/* setters*/
 	void				setPaths(s_request &_request);
