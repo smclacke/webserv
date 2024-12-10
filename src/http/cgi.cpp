@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:02:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 17:11:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,8 +16,7 @@
 void httpHandler::cgiResponse(std::vector<char *> env)
 {
 	// need argument array using cgiData struct scriptName
-	//char	*argv[] = { // cgiData.scriptName, nullptr};
-	char	*argv[] = {nullptr};
+	char	*argv[] = {_cgi.scriptName, nullptr};
 
 	int		cgiIN[2]; // for sending data to the script
 	int		cgiOUT[2]; // for receiving data from the script
@@ -52,7 +51,6 @@ void httpHandler::cgiResponse(std::vector<char *> env)
 		protectedClose(cgiIN[1]);
 		protectedClose(cgiOUT[0]);
 
-		
 		// execute python script
 		if (execve(_request.path.c_str(), argv, env.data()) == -1)
 		{
@@ -60,7 +58,7 @@ void httpHandler::cgiResponse(std::vector<char *> env)
 			closeAllPipes(cgiIN, cgiOUT);
 			exit(-1);	
 		} 
-		// exit child process if execve fails, else?
+		exit(0); // successfully exit child process
 	}
 	else if (_response.pid > 0)
 	{
@@ -72,8 +70,7 @@ void httpHandler::cgiResponse(std::vector<char *> env)
 		// add to epoll monitoring
 		addToEpoll(cgiIN[1]);
 		addToEpoll(cgiOUT[0]);
-		// events should be added to monitoring and trigger EPOLLOUT/EPOLLIN
-		
+
 	}
 	else // if forking errors
 	{
@@ -82,20 +79,3 @@ void httpHandler::cgiResponse(std::vector<char *> env)
 		return ;
 	}
 }
-
-
-/*
-
-write(cgiInput[1], postData.c_str(), postData.length());
-close(cgiInput[1]);
-
-// Read output from CGI script
-char buffer[1024];
-while (read(cgiOutput[0], buffer, sizeof(buffer) - 1) > 0) {
-    std::cout << buffer;
-}
-close(cgiOutput[0]);
-
-Send the Response Back to the Client
-After reading the CGI output, send it back as the HTTP response.
-*/
