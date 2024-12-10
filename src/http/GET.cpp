@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:40:01 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:17:55 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,8 +92,7 @@ bool httpHandler::getDirectory(void)
 void httpHandler::readFile()
 {
 	// check if file permission is readable.
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_read) == std::filesystem::perms::none)
+	if (access(_request.path.c_str(), R_OK) != 0)
 	{
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
 	}
@@ -143,8 +142,7 @@ void httpHandler::openFile()
  */
 bool httpHandler::isExecutable()
 {
-	std::filesystem::file_status fileStatus = std::filesystem::status(_request.path);
-	if ((fileStatus.permissions() & std::filesystem::perms::owner_exec) != std::filesystem::perms::none)
+	if (access(_request.path.c_str(), X_OK) == 0)
 	{
 		size_t pos = _request.path.find_last_of('.');
 		if (pos != std::string::npos)
@@ -152,12 +150,15 @@ bool httpHandler::isExecutable()
 			std::string extension = _request.path.substr(pos);
 			if (extension == _request.loc.cgi_ext)
 			{
-				return (true);
+				return true;
 			}
 			setErrorResponse(eHttpStatusCode::Forbidden, "file extension doesn't match allowed cgi extension");
 			return false;
 		}
 	}
-	setErrorResponse(eHttpStatusCode::Forbidden, "program doesn't have executable rights");
+	else
+	{
+		setErrorResponse(eHttpStatusCode::Forbidden, "program doesn't have executable rights");
+	}
 	return false;
 }
