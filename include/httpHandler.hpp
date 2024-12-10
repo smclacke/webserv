@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:49:58 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 19:08:23 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -115,7 +115,6 @@ private:
 	void postApplication(void);
 	// DELETE METHOD
 	void stdDelete(void);
-	void deleteFromCSV();
 	// cgi Response
 	void cgiResponse();
 
