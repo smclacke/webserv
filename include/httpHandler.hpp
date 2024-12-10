@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 15:38:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 16:24:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,8 +19,6 @@
 #include "cgiHandler.hpp"
 
 struct s_location;
-
-class cgiHandler;
 
 /**
  * @param statusCode = statusCode to be responded
@@ -63,7 +61,6 @@ private:
 	eHttpStatusCode _statusCode;
 	s_request _request;
 	s_response _response;
-	cgiHandler	_cgi;
 
 	// headers to strings and back
 	eRequestHeader toEHeader(const std::string &header);
@@ -111,8 +108,10 @@ private:
 	// DELETE METHOD
 	void stdDelete(void);
 	void deleteFromCSV();
-	// cgi Response
-	void cgiResponse(std::vector<char *> env);
+	
+	/* CGI */
+	void	cgiResponse(std::vector<char *> env);
+
 
 public:
 	/* constructor and deconstructor */

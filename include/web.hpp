@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 14:10:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 16:06:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,7 +99,10 @@ void verifyInput(int ac, char **av);
 s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
 s_location addDefaultLoc(size_t servermaxsize);
 
-/* utils */
-void protectedClose(int fd);
+/* general utils */
+void	protectedClose(int fd);
+	
+/* CGI utils */
+void	closeAllPipes(int cgiIN[2], int cgiOUT[2]);
 
 #endif /* WEB_HPP */

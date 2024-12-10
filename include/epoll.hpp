@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/09 15:05:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/10 16:49:45 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,6 +90,7 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
+		s_httpSend						handleRequest(std::string &request);
 		void							handleRead(t_clients &client);
 		void							handleWrite(t_serverData &server, t_clients &client);
 		void							handleFile(t_clients &client);
