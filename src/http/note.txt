@@ -1,10 +1,11 @@
-0 . CHEK WHAT AN EMPTY REQUEST SHOULD RETURN OTHER THAN BAD REQUEST;
-
 1. declutter function - check if i should move the uri part to python or leave it functional in CPP
 
 3. Write the CGI PART
-
-
-
-
 105. CLEANUP - remove all unused statusCodes and other HTTPconstants;
+
+
+TODO:
+make a proper config file + include a good index.html and index.htm example
+
+
+Make a html page displaying all cat in the img/cats directory. It gets it by getting directory listing, displaying cats wiht a delete button - > DELETE request, also an upload button -> post request

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 20:54:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 14:50:03 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,11 +68,12 @@ private:
 	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
 	// utils
 	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	void openFile(std::string &path);
 	std::string contentType(const std::string &filePath);
 	void setErrorResponse(eHttpStatusCode code, std::string msg);
 	std::string buildPath(void);
 	void CallErrorPage(std::string &path);
+	std::optional<std::string> splitUriEncoding(void);
+	std::vector<char *> UriEncodingToEnv(std::string query);
 	// parse request+ headers
 	void parseRequestLine(std::stringstream &ss);
 	bool checkRedirect();
@@ -91,13 +92,19 @@ private:
 	// response
 	s_httpSend writeResponse(void);
 	void generateDirectoryListing(void);
-	// std Response
+	/* Response */
 	void callMethod(void);
-	void stdGet(void);
+	// GET METHOD
+	void getMethod(void);
 	void getUriEncoded(void);
-	void readFile();
+	bool getDirectory(void);
+	void readFile(void);
+	void openFile(void);
+	bool isExecutable(void);
+	// POST METHOD
 	void stdPost(void);
 	void wwwFormEncoded(void);
+	// DELETE METHOD
 	void stdDelete(void);
 	void deleteFromCSV();
 	// cgi Response
@@ -112,5 +119,7 @@ public:
 	void parseRequest(std::stringstream &response);
 	s_httpSend generateResponse(void);
 };
+
+std::string httpMethodToStringFunc(eHttpMethod method);
 
 #endif /* HTTP_HANDLER_HPP */

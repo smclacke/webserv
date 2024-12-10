@@ -6,11 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 20:56:35 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 14:32:08 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
+#include "../../include/server.hpp"
 
 /* constructor and deconstructor */
 
@@ -138,4 +139,15 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
 	_statusCode = code;
 	_response.body.clear();
 	_response.body << msg;
+}
+
+// Function to convert HTTP method enum to string
+std::string httpMethodToStringFunc(eHttpMethod method)
+{
+	auto it = HttpMethodToString.find(method);
+	if (it != HttpMethodToString.end())
+	{
+		return it->second;
+	}
+	return "Invalid";
 }

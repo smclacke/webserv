@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 20:56:31 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 14:10:23 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,7 +104,7 @@ static s_httpSend internalError(void)
 void httpHandler::callMethod(void)
 {
 	if (_request.method == eHttpMethod::GET)
-		stdGet();
+		getMethod();
 	else if (_request.method == eHttpMethod::POST)
 		stdPost();
 	else if (_request.method == eHttpMethod::DELETE)

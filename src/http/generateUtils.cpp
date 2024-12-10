@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/09 21:01:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 14:45:00 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -113,31 +113,6 @@ std::string httpHandler::contentType(const std::string &filePath)
 	return "application/octet-stream";
 }
 
-/**
- * @brief opens the regular file, stores the fd in _response struct, gives this to handleWrite function
- * 	in epoll monitoring loop
- */
-void httpHandler::openFile(std::string &path)
-{
-	try
-	{
-		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(path));
-	}
-	catch (const std::filesystem::filesystem_error &e)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
-		return;
-	}
-	int fileFd = open(path.c_str(), O_RDONLY);
-	if (fileFd == -1)
-	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to open file");
-		return;
-	}
-	_response.readFile = true;
-	_response.readFd = fileFd;
-}
-
 void httpHandler::CallErrorPage(std::string &path)
 {
 	// check if file permission is readable.
@@ -176,4 +151,45 @@ void httpHandler::CallErrorPage(std::string &path)
 	}
 	_response.readFile = true;
 	_response.readFd = fileFd;
+}
+
+/**
+ * @brief splits the uri encoding off the uri and returns the encoding
+ * sets _request.path to the uri without encoding
+ * @returns returns nullopt if there is no ? otherwise the uri Query
+ */
+std::optional<std::string> httpHandler::splitUriEncoding(void)
+{
+	// Extract query string from URI
+	std::string uri = _request.uri;
+	std::string queryString;
+	size_t queryPos = uri.find('?');
+	if (queryPos != std::string::npos)
+	{
+		queryString = uri.substr(queryPos + 1);
+		_request.path = uri.erase(queryPos);
+		return std::optional<std::string>(queryString);
+	}
+	else
+		return std::nullopt;
+}
+
+/**
+ * @brief generates the environment based on the URI encoding
+ */
+std::vector<char *> httpHandler::UriEncodingToEnv(std::string query)
+{
+	std::vector<char *> env;
+	setErrorResponse(eHttpStatusCode::NotImplemented, "URI encoded requets not implemented");
+	return env;
+	// Set QUERY_STRING
+	std::string queryEnv = "QUERY_STRING=" + query;
+	env.push_back(strdup(queryEnv.c_str()));
+
+	// Set REQUEST_METHOD
+	std::string methodEnv = "REQUEST_METHOD=" + httpMethodToStringFunc(_request.method);
+	env.push_back(strdup(methodEnv.c_str()));
+	env.push_back(nullptr);
+	// execve(args[0], args, env.data())
+	return env;
 }
