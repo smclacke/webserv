@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 20:47:30 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 12:14:39 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,6 +22,12 @@
  */
 void httpHandler::parseRequest(std::stringstream &httpRequest)
 {
+	if (httpRequest.str().empty())
+	{
+		std::cerr << "Received empty HTTP request" << std::endl;
+		return setErrorResponse(eHttpStatusCode::BadRequest, "Empty HTTP request");
+	}
+
 	std::cout << "\n======= REQUEST =======\n"
 			  << httpRequest.str() << "\n======= END REQ =======\n";
 
