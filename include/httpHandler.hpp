@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 15:20:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 18:13:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,9 +76,8 @@ struct s_response
 	std::stringstream body;
 	bool keepalive = true;
 	bool readFile = false;
-	bool cgi = false;
 	int readFd = -1;
-	pid_t pid = -1;
+	bool cgi = false;
 };
 
 enum class cgiState
@@ -100,9 +99,13 @@ struct s_cgi
 	enum cgiState					state;
 	bool							close;
 	//std::shared_ptr<httpHandler>	http;
-	s_httpSend						response;
+	//s_httpSend						response;
+	std::string						input;
 	size_t							write_offset;
-
+	pid_t pid = -1;
+	bool							output;
+	void clearCgi(void);
+	void closeAllPipes(void);
 };
 
 struct s_httpSend;
@@ -182,6 +185,7 @@ class httpHandler
 		s_httpSend generateResponse(void);
 
 		/* for epoll read operations */
+		s_cgi	getCGI();
 		bool getKeepReading(void) const;
 		size_t getReadSize(void) const;
 };

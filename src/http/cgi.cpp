@@ -6,24 +6,15 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 15:32:34 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 18:17:10 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
 
-void		Epoll::closeAllPipes(int cgiIN[2], int cgiOUT[2])
-{
-	if (cgiIN[0])
-		protectedClose(cgiIN[0]);
-	if (cgiIN[1])
-		protectedClose(cgiIN[1]);
-	if (cgiOUT[0])
-		protectedClose(cgiOUT[0]);
-	if (cgiOUT[1])
-		protectedClose(cgiOUT[1]);
-}
+#define BAD_CGI "HTTP/1.1 500 Internal Server Error\r\n\r\n"
+#define GOOD_CGI "HTTP/1.1 200 OK\r\n\r\n"
 
 static void		freeStrings(char *script, char *path)
 {
@@ -33,8 +24,7 @@ static void		freeStrings(char *script, char *path)
 		free(path);
 }
 
-/**  @todo check - cgi has nothing to do with chunking? so only need read buffer size? */
-void	Epoll::handleCgiRead(httpHandler &cgi_http, int OutPipe)
+void	Epoll::handleCgiRead(s_cgi &cgi)
 {
 	size_t	readSize = READ_BUFFER_SIZE;
 	char	buffer[readSize];
@@ -42,10 +32,11 @@ void	Epoll::handleCgiRead(httpHandler &cgi_http, int OutPipe)
 	memset(buffer, 0, sizeof(buffer));
 
 	cgi.state = cgiState::READING;
-	bytesRead = recv(outPipe, buffer, readSize - 1, 0);
+	bytesRead = recv(cgi.cgiOUT[0], buffer, readSize - 1, 0);
 
 	if (bytesRead < 0)
 	{
+		// send httpresponse 
 		std::cerr << "recv() cgi failed\n";
 		cgi.state = cgiState::ERROR;
 		cgi.close = true;
@@ -53,46 +44,55 @@ void	Epoll::handleCgiRead(httpHandler &cgi_http, int OutPipe)
 	}
 	else if (bytesRead == 0)
 	{
-		cgi.state = cgiState::CLOSE;
-		cgi.close = true;
+		// if (cgi.pid != -1)
+		// waitpid
+		// cgi.pid = -1;
+		if (!cgi.output)
+		{
+			// if output == false , if waitpid status != 0 send 500 else send 200 OK
+		}
 		return ;
 	}
-	
+	cgi.output == true;
 	buffer[readSize - 1] = '\0';
-	std::string buf = buffer;
-
-	/* alternative: ?*/
-
-	/** @todo check */
-	// really not sure about this
-	cgi_http.addStringBuffer(buf);
-	if (cgi_http.getKeepReading())
-		return ;
-	else
+	//std::string buf = buffer;
+	// send buffer whatever has been received 
+	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
-		cgi.state = cgiState::READY;
-		cgi.close = false;
+		int bytesSend = send(cgi.cgiOUT[0], buffer, bytesRead, 0);
+		if (bytesSend < 0)
+		{
+			std::cerr << "write failed\n";
+			// close
+			return ;
+		}
+	}
+	// not receiving anymore, send anything left
+	else if (bytesRead < READ_BUFFER_SIZE)
+	{
+		int bytesSend = send(cgi.cgiOUT[0], buffer, bytesRead, 0);
+		if (bytesSend < 0)
+		{
+			std::cerr << "write failed\n";
+		}
+		// close
 	}
 }
 
-void	Epoll::handleCgiWrite(httpHandler &cgi_http, int InPipe)
+void	Epoll::handleCgiWrite(s_cgi &cgi)
 {
-	if (cgi.response.msg.empty())
-	{
-		cgi.response = cgi_http.generateResponse();
-		cgi.state = cgiState::WRITING;
-		cgi_http.clearHandler();
-	}
+
 	ssize_t leftover;
 	ssize_t sendlen = WRITE_BUFFER_SIZE;
-	leftover = cgi.response.msg.size() - cgi.write_offset;
+	leftover = cgi.input.size() - cgi.write_offset;
 	if (leftover < WRITE_BUFFER_SIZE)
 		sendlen = leftover;
 
-	int bytesWritten = send(inPipe, cgi.response.msg.c_str() + cgi.write_offset, sendlen, 0);
+	int bytesWritten = send(cgi.cgiIN[1], cgi.input.c_str() + cgi.write_offset, sendlen, 0);
 
 	if (bytesWritten < 0)
 	{
+		// the waitpid logic + send to client 500 error code;
 		std::cerr << "send() to cgi failed\n";
 		cgi.state = cgiState::ERROR;
 		cgi.close = true;
@@ -108,18 +108,10 @@ void	Epoll::handleCgiWrite(httpHandler &cgi_http, int InPipe)
 	cgi.write_offset += bytesWritten;
 
 	// Finished
-	if (cgi.write_offset >= cgi.response.msg.length())
+	if (cgi.write_offset >= cgi.input.length())
 	{
-		cgi.state = cgiState::READY;
-		if (cgi.response.keepAlive == false)
-		{
-			cgi.state = cgiState::CLOSE;
-			cgi.close = true;
-		}
-		if (cgi.response.keepAlive)
-			cgi.close = false;
-		cgi.write_offset = 0;
-		cgi.response.msg.clear();
+		cgi.state = cgiState::CLOSE;
+		cgi.close = true;
 		return ;
 	}
 	cgi.close = false;
@@ -129,25 +121,27 @@ void		httpHandler::cgiResponse()
 {
 	if (pipe(_cgi.cgiIN) < 0 || pipe(_cgi.cgiOUT) < 0)
 	{
-		_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
-		std::cerr << "pip() cgi failed\n";
+		_cgi.closeAllPipes();
+		setErrorResponse(eHttpStatusCode::InternalServerError, "failed to open pipes");
 		return ;
 	}
-	_response.pid = fork();
-	if (_response.pid == 0) // child
+	_cgi.pid = fork();
+	if (_cgi.pid == 0) // child
 	{
 		char	*scriptName = strdup(_cgi.scriptname.c_str());
 		if (scriptName == NULL)
 		{
-			_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
-			throw std::runtime_error("failed malloc");
+			_cgi.closeAllPipes();
+			std::cerr << "failed to strdup in childprocess\n";
+			exit(EXIT_FAILURE);
 		}
 		char	*scriptPath = strdup(_request.path.c_str());
 		if (scriptPath == NULL)
 		{
-			_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
+			_cgi.closeAllPipes();
 			freeStrings(scriptName, NULL);
-			throw std::runtime_error("failed malloc");
+			std::cerr << "failed to strdup in childprocess\n";
+			exit(EXIT_FAILURE);
 		}
 
 		char	*argv[] = {scriptPath, nullptr};
@@ -156,7 +150,7 @@ void		httpHandler::cgiResponse()
 		if (dup2(_cgi.cgiIN[0], STDIN_FILENO) < 0 || dup2(_cgi.cgiOUT[1], STDOUT_FILENO) < 0)
 		{
 			std::cerr << "dup2() cgi failed\n";
-			_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
+			_cgi.closeAllPipes();
 			freeStrings(scriptName, scriptPath);
 			exit(EXIT_FAILURE);
 		}
@@ -170,30 +164,35 @@ void		httpHandler::cgiResponse()
 		{
 			std::cerr << "execve failed\n";
 			freeStrings(scriptName, scriptPath);
-			_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
+			_cgi.closeAllPipes();
 			exit(EXIT_FAILURE);	
 		}
 
-		_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
+		_cgi.closeAllPipes();
 		freeStrings(scriptName, scriptPath);
 		exit(EXIT_SUCCESS);
 	}
-	else if (_response.pid > 0) // parent
+	else if (_cgi.pid > 0) // parent
 	{
 		/* parent only writes to input and reads from output*/
 		// close unused fds
 		protectedClose(_cgi.cgiIN[0]);
 		protectedClose(_cgi.cgiOUT[1]);
+		
+		/** @todo */
+		// set to nonblocking
 	
 		// add to monitor
 		_epoll.addOUTEpoll(_cgi.cgiIN[1]);
 		_epoll.addToEpoll(_cgi.cgiOUT[0]);
+		_response.cgi == true;
 		
 	}
 	else // error
 	{
-		_epoll.closeAllPipes(_cgi.cgiIN, _cgi.cgiOUT);
-		std::cerr << "fork() cgi failed\n";
+		_response.cgi = false;
+		_cgi.closeAllPipes();
+		setErrorResponse(eHttpStatusCode::InternalServerError, "failed to fork");
 		return ;
 	}
 }

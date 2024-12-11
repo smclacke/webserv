@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 15:30:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 18:13:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,11 +76,9 @@ void	Epoll::handleRead(t_clients &client)
 void Epoll::handleWrite(t_clients &client)
 {
 	// Handle Client Request
-	if (client._responseClient.msg.empty() && client._readingFile == false)
+	if (client._clientState == clientState::BEGIN && client._readingFile == false)
 	{
-		client._responseClient = client.http->generateResponse();
 		client._clientState = clientState::WRITING;
-		client.http->clearHandler();
 	}
 	if (client._readingFile == false)
 	{
@@ -176,7 +174,7 @@ void Epoll::handleFile(t_clients &client)
 			client._clientState = clientState::CLOSE;
 			client._connectionClose = true;
 		}
-		return;
+		return ;
 	}
 
 	// Not finished reading, send what we have read and cont. loop
@@ -188,7 +186,7 @@ void Epoll::handleFile(t_clients &client)
 		{
 			std::cerr << "Write to client failed\n";
 			operationFailed(client);
-			return;
+			return ;
 		}
 	}
 
@@ -215,7 +213,7 @@ void Epoll::handleFile(t_clients &client)
 		client._responseClient.pid = -1;
 		if (client._responseClient.keepAlive == false)
 			client._connectionClose = true;
-		return;
+		return ;
 	}
 }
 
@@ -257,6 +255,10 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
+						client._responseClient = client.http->generateResponse();
+						if (client._responseClient.cgi)
+							serverData.cgi = client.http->getCGI();	
+						client.http->clearHandler();
 						modifyEvent(client._fd, EPOLLOUT);
 						updateClientClock(client);
 					}
@@ -279,14 +281,22 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					handleClientClose(serverData, client);
 			}
 		}
-		if (fd == cgi.cgiIN[1] || fd == cgi.cgiOUT[0])
+		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
 		{
 			if (event.events & EPOLLIN)
-				handleCgiRead(cgi_http, cgi.cgiOUT[0]);
+				handleCgiRead(serverData.cgi);
 			if (event.events & EPOLLOUT)
-				handleCgiWrite(cgi_http, cgi.cgiIN[1]);
-			if (cgi.close == true)
-				closeAllPipes(cgi.cgiIN, cgi.cgiOUT);
+				handleCgiWrite(serverData.cgi);
+			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+				serverData.cgi.close = true;
+				// if cgi.pid != -1
+				// waitpid
+				// if output == false , if waitpid status != 0 send 500 else send 200 OK
+			if (serverData.cgi.close == true)
+			{
+				// remove from epoll
+				serverData.cgi.clearCgi();
+			}
 		}
 	}
 }

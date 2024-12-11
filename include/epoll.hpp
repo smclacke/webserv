@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 15:32:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 17:48:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,6 +70,7 @@ typedef struct s_serverData
 {
 	std::shared_ptr<Server>					_server;
 	std::deque<t_clients>					_clients;
+	struct s_cgi							cgi;
 
 	/* methods */
 	void								addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
@@ -84,8 +85,6 @@ class Epoll
 		int										_numEvents;
 		struct epoll_event						_event;
 		std::vector<epoll_event>				_events;
-		struct s_cgi							&cgi;
-		httpHandler								&cgi_http;
 
 	public:
 		Epoll();
@@ -94,9 +93,8 @@ class Epoll
 		/* methods */
 		void							initEpoll();
 		//s_httpSend						handleRequest(std::string &request, Server &server);
-		void							closeAllPipes(int cgiIN[2], int cgiOUT[2]);
-		void							handleCgiRead(httpHandler &cgi_http, int cgiOUT);
-		void							handleCgiWrite(httpHandler &cgi_http, int cgiIN);
+		void							handleCgiRead(s_cgi &cgi);
+		void							handleCgiWrite(s_cgi &cgi);
 		void							handleRead(t_clients &client);
 		void							handleWrite(t_clients &client);
 		void							handleFile(t_clients &client);

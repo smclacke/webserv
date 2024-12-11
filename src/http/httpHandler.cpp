@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 15:02:53 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 18:13:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,13 +41,14 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	_response.keepalive = true;
 	_response.readFile = false;
 	_response.cgi = false;
-	_response.pid = -1;
 	_response.readFd = -1;
 	// cgi
-	_cgi.env.clear();
-	_cgi.scriptname.clear();
-	//_cgi.http(std::make_shared<httpHandler>(server, epoll));
-	/** @todo i need  http in cgi (like pretty sure), how do i do this? */
+	_cgi.cgiIN[0] = -1;
+	_cgi.cgiIN[1] = -1;
+	_cgi.cgiOUT[0] = -1;
+	_cgi.cgiOUT[1] = -1;
+	_cgi.close = false;
+	_cgi.state = cgiState::BEGIN;
 }
 
 httpHandler::~httpHandler(void)
@@ -56,7 +57,7 @@ httpHandler::~httpHandler(void)
 	{
 		free(envVar);
 	}
-	_cgi.env.clear();
+	_cgi.clearCgi();
 }
 
 void httpHandler::clearHandler(void)
@@ -84,19 +85,13 @@ void httpHandler::clearHandler(void)
 	_response.keepalive = true;
 	_response.readFile = false;
 	_response.cgi = false;
-	_response.pid = -1;
 	_response.readFd = -1;
 	// cgi
 	for (char *envVar : _cgi.env)
 	{
 		free(envVar);
 	}
-	_cgi.env.clear();
-	_cgi.scriptname.clear();
-	_cgi.close = false;
-	_cgi.state = cgiState::BEGIN;
-	_cgi.cgiIN[2] = -1;
-	_cgi.cgiOUT[2] = -1;
+	_cgi.clearCgi();
 }
 
 /* utils */
@@ -270,4 +265,48 @@ size_t httpHandler::getReadSize(void) const
 bool httpHandler::getKeepReading(void) const
 {
 	return (_request.keepReading);
+}
+
+/* CGI :) */
+void s_cgi::clearCgi(void)
+{
+	env.clear();
+	scriptname.clear();
+	pid = -1;
+	close = false;
+	state = cgiState::BEGIN;	
+	write_offset = 0;
+	output = false;
+	input.clear();
+	closeAllPipes();
+}
+
+void		s_cgi::closeAllPipes(void)
+{
+	if (cgiIN[0] != -1)
+	{
+		protectedClose(cgiIN[0]);
+		cgiIN[0] = -1;	
+	}
+	if (cgiIN[1] != -1)
+	{
+		protectedClose(cgiIN[1]);
+		cgiIN[1] = -1;	
+	}
+	if (cgiOUT[0] != -1)
+	{
+		protectedClose(cgiOUT[0]);
+		cgiOUT[0] = -1;	
+	}
+	if (cgiOUT[1] != -1)
+	{
+		protectedClose(cgiOUT[1]);
+		cgiOUT[1] = -1;	
+	}
+}
+
+s_cgi	httpHandler::getCGI()
+{
+	_cgi.input = _request.body.content.str();
+	return this->_cgi;
 }
