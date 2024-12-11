@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 20:32:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 21:02:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -89,8 +89,6 @@ void Epoll::handleWrite(t_clients &client)
 		if (leftover < WRITE_BUFFER_SIZE)
 			sendlen = leftover;
 
-		std::cout << "\n\n message size = " << client._responseClient.msg.size() << "\n\n";
-		std::cout << "\n\nclient message = " << client._responseClient.msg.c_str() << " | write = " << client._write_offset << "  | sendlen = " << sendlen << "\n\n";
 		int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
 
 		// Error

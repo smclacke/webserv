@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:05:50 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 21:05:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,14 +31,14 @@ void httpHandler::getMethod(void)
 	// Check if the file is executable
 	if (access(_request.path.c_str(), X_OK) == 0)
 	{
-		if (isCgi())
-		{
+		//if (isCgi())
+		//{
 			if (!generateEnv())
 				return;
 			return cgiResponse();
-		}
-		else
-			return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
+		//}
+		//else
+			//return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
 	}
 	else
 	{
