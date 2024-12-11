@@ -1,13 +1,10 @@
 1. ADD CGI to DELETE method
 
-2. integrate HttpHandler into epoll.
+2. integrate HttpHandler into epoll. -- DONE
 
 3. Write the CGI PART
 
 
-curl -X POST http://localhost:2345 \
-  -F "file1=@testfiles/text1.txt" \
-  -F "file2=@testfiles/text2.txt"
 
 
 
@@ -21,3 +18,19 @@ make a proper config file + include a good index.html and index.htm example
 
 
 Make a html page displaying all cat in the img/cats directory. It gets it by getting directory listing, displaying cats wiht a delete button - > DELETE request, also an upload button -> post request
+
+
+
+FOR SARAH HELLO:
+
+If i run these two curls i end up witha  "Reading from client connection failed
+" message, which isnt super bad but a little bit bad since its not supposed to be that way
+i think i might have made an oversight in like Client cleanup or epoll cleanup but not super
+Either way most shit works yay
+
+curl -X POST http://localhost:2345 \
+  -F "file1=@testfiles/text1.txt" \
+  -F "file2=@testfiles/text2.txt"
+
+
+curl -X DELETE http://localhost:2345/uploads/text2.txt
