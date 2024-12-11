@@ -15,10 +15,17 @@
 		do i have to add servers before listening?
 
 
-11111) 
+11111) **NOW**
+
 	- parsUpdates doesn't compile
-	- CGI can't handle basic images anymore in browser
-	- epoll can do all basic stuff from before but has IsExecutable and old stuff of julius
+
+	- CGI can't handle basic images anymore in browser + calculator broken + checked server_files + conf + index but can't see any issues
+
+	- isCgi doesnt work?
+
+	- always throws error:	
+		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
+		
 
 
 

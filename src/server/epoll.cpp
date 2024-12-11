@@ -6,15 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 21:02:43 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 22:07:07 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
-
-/** @todo check cgi stuff here */
 
 /* constructors */
 Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
@@ -45,24 +43,19 @@ void	Epoll::handleRead(t_clients &client)
 
 	client._clientState = clientState::READING;
 	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
-
-	// Error
 	if (bytesRead < 0)
 	{
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
-		return;
+		return ;
 	}
-
-	// Disconnected
 	else if (bytesRead == 0)
 	{
 		client._clientState = clientState::CLOSE;
 		client._connectionClose = true;
-		return;
+		return ;
 	}
-
-	//buffer[bytesRead] = '\0';
+	buffer[readSize - 1] = '\0'; /** @todo remove after testing if not needed */
 	std::string buf = buffer;
 	client.http->addStringBuffer(buf);
 	if (client.http->getKeepReading())
@@ -76,11 +69,8 @@ void	Epoll::handleRead(t_clients &client)
 
 void Epoll::handleWrite(t_clients &client)
 {
-	// Handle Client Request
 	if (client._clientState == clientState::BEGIN && client._readingFile == false)
-	{
 		client._clientState = clientState::WRITING;
-	}
 	if (client._readingFile == false)
 	{
 		ssize_t leftover;
@@ -90,34 +80,26 @@ void Epoll::handleWrite(t_clients &client)
 			sendlen = leftover;
 
 		int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
-
-		// Error
 		if (bytesWritten < 0)
 		{
-			std::cerr << "Write to client failed\n";
 			client._clientState = clientState::ERROR;
 			client._connectionClose = true;
-			return;
+			return ;
 		}
-
-		// Disconnected
 		else if (bytesWritten == 0)
 		{
 			client._clientState = clientState::CLOSE;
 			client._connectionClose = true;
-			return;
+			return ;
 		}
-
 		client._write_offset += bytesWritten;
-
-		// Finished
 		if (client._write_offset >= client._responseClient.msg.length())
 		{
 			if (client._responseClient.readfile)
 			{
 				client._readingFile = true;
 				client._connectionClose = false;
-				return;
+				return ;
 			}
 			else
 			{
@@ -134,7 +116,7 @@ void Epoll::handleWrite(t_clients &client)
 				client._connectionClose = true;
 			client._write_offset = 0;
 			client._responseClient.msg.clear();
-			return;
+			return ;
 		}
 		client._connectionClose = false;
 	}
@@ -148,15 +130,11 @@ void Epoll::handleFile(t_clients &client)
 	char buffer[READ_BUFFER_SIZE];
 	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
 
-	// Error
 	if (bytesRead < 0)
 	{
-		std::cerr << "Reading from file failed\n";
 		operationFailed(client);
-		return;
+		return ;
 	}
-
-	// Nothing to read -> we are done
 	else if (bytesRead == 0)
 	{
 		client._readingFile = false;
@@ -171,27 +149,21 @@ void Epoll::handleFile(t_clients &client)
 		}
 		return ;
 	}
-
-	// Not finished reading, send what we have read and cont. loop
-	buffer[bytesRead - 1] = '\0';
+	buffer[bytesRead - 1] = '\0'; /** @todo remove after testing if not needed */
 	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
 		bytesSend = send(client._fd, buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
-			std::cerr << "Write to client failed\n";
 			operationFailed(client);
 			return ;
 		}
 	}
-
-	// Need to send, then we are done
 	else if (bytesRead < READ_BUFFER_SIZE)
 	{
 		bytesSend = send(client._fd, buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
-			std::cerr << "Write to client failed\n";
 			operationFailed(client);
 			return;
 		}

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 19:43:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 22:05:11 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,14 +27,12 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	char	buffer[readSize];
 	int		bytesRead = 0;
 	memset(buffer, 0, sizeof(buffer));
-
 	cgi.state = cgiState::READING;
 	bytesRead = recv(cgi.cgiOUT[0], buffer, readSize - 1, 0);
-
 	if (bytesRead < 0)
 	{
 		send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-		std::cerr << "recv() cgi failed\n"; // remove
+		std::cerr << "recv() cgi failed\n"; /** @todo remove after testing*/
 		cgi.state = cgiState::ERROR;
 		cgi.close = true;
 		return ;
@@ -60,27 +58,24 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	}
 	cgi.output = true;
 	buffer[bytesRead - 1] = '\0';
-
-	// send buffer whatever has been received 
+ 
 	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
 		int bytesSend = send(cgi.client_fd, buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
-			std::cerr << "write failed\n"; // removed
+			std::cerr << "write failed\n"; /** @todo remove after testing*/
 			cgi.state = cgiState::CLOSE;
 			cgi.close = true;
-			// close
 			return ;
 		}
 	}
-	// not receiving anymore, send anything left
 	else if (bytesRead < READ_BUFFER_SIZE)
 	{
 		int bytesSend = send(cgi.cgiOUT[0], buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
-			std::cerr << "write failed\n";// remove
+			std::cerr << "write failed\n"; /** @todo remove after testing*/
 		}
 		cgi.state = cgiState::CLOSE;
 		cgi.close = true;
@@ -96,13 +91,11 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 		cgi.close = false;
 		return ;
 	}
-	
 	ssize_t leftover;
 	ssize_t sendlen = WRITE_BUFFER_SIZE;
 	leftover = cgi.input.size() - cgi.write_offset;
 	if (leftover < WRITE_BUFFER_SIZE)
 		sendlen = leftover;
-
 	int bytesWritten = send(cgi.cgiIN[1], cgi.input.c_str() + cgi.write_offset, sendlen, 0);
 
 	if (bytesWritten < 0)
@@ -114,23 +107,12 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 			cgi.pid = -1;
 			send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
 		}
-		std::cerr << "send() to cgi failed\n"; // removed
+		std::cerr << "send() to cgi failed\n"; /** @todo remove after testing*/
 		cgi.state = cgiState::ERROR;
 		cgi.close = true;
 		return ;
 	}
-	// shouldnt happen, remove
-	//else if (bytesWritten == 0)
-	//{
-	//	send(cgi.client_fd, "Nothing to write\n", 18, 0);
-	//	cgi.state = cgiState::CLOSE;
-	//	cgi.close = true;
-	//	return ;
-	//}
-
 	cgi.write_offset += bytesWritten;
-
-	// Finished
 	if (cgi.write_offset >= cgi.input.length())
 	{
 		cgi.state = cgiState::READING;
@@ -150,13 +132,12 @@ void		httpHandler::cgiResponse()
 		return ;
 	}
 	_cgi.pid = fork();
-	if (_cgi.pid == 0) // child
+	if (_cgi.pid == 0) // child: reads from input pipe + writes to output pipe
 	{
 		char	*scriptName = strdup(_cgi.scriptname.c_str());
 		if (scriptName == NULL)
 		{
 			_cgi.closeAllPipes();
-			std::cerr << "failed to strdup in childprocess\n";
 			exit(EXIT_FAILURE);
 		}
 		char	*scriptPath = strdup(_request.path.c_str());
@@ -164,55 +145,41 @@ void		httpHandler::cgiResponse()
 		{
 			_cgi.closeAllPipes();
 			freeStrings(scriptName, NULL);
-			std::cerr << "failed to strdup in childprocess\n";
 			exit(EXIT_FAILURE);
 		}
-
 		char	*argv[] = {scriptPath, nullptr};
 		
-		 // child reads from input pipe + writes to output pipe
 		if (dup2(_cgi.cgiIN[0], STDIN_FILENO) < 0 || dup2(_cgi.cgiOUT[1], STDOUT_FILENO) < 0)
 		{
-			std::cerr << "dup2() cgi failed\n";
+			std::cerr << "dup2() cgi failed\n";  /** @todo remove after testing*/
 			_cgi.closeAllPipes();
 			freeStrings(scriptName, scriptPath);
 			exit(EXIT_FAILURE);
 		}
-
-		// close unused fds
 		protectedClose(_cgi.cgiIN[1]);
 		protectedClose(_cgi.cgiOUT[0]);
-
-		// execute cgi script
 		if (execve(scriptPath, argv, _cgi.env.data()) == -1)
 		{
-			std::cerr << "execve failed\n";
+			std::cerr << "execve failed\n"; /** @todo remove after testing*/
 			freeStrings(scriptName, scriptPath);
 			_cgi.closeAllPipes();
 			exit(EXIT_FAILURE);	
 		}
-
 		_cgi.closeAllPipes();
 		freeStrings(scriptName, scriptPath);
 		exit(EXIT_SUCCESS);
 	}
-	else if (_cgi.pid > 0) // parent
+	else if (_cgi.pid > 0) // parent: only writes to input and reads from output
 	{
-		/* parent only writes to input and reads from output*/
-		// close unused fds
 		protectedClose(_cgi.cgiIN[0]);
 		protectedClose(_cgi.cgiOUT[1]);
-		
-		/** @todo */
-		// set to nonblocking
-	
-		// add to monitor
+		_epoll.setNonBlocking(_cgi.cgiIN[1]);
+		_epoll.setNonBlocking(_cgi.cgiOUT[0]);
 		_epoll.addOUTEpoll(_cgi.cgiIN[1]);
 		_epoll.addToEpoll(_cgi.cgiOUT[0]);
 		_response.cgi = true;
-		
 	}
-	else // error
+	else
 	{
 		_response.cgi = false;
 		_cgi.closeAllPipes();
