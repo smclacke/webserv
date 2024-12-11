@@ -6,10 +6,11 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:33:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 14:06:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
 #include "../../include/server.hpp"
 
@@ -19,11 +20,21 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 {
 	_statusCode = eHttpStatusCode::OK;
 	// request
+	_request.keepReading = true;
 	_request.method = eHttpMethod::INVALID;
-	_request.uri = "";
-	_request.path = "";
-	_request.body.clear();
+	_request.uri.clear();
+	_request.path.clear();
+	_request.headers.clear();
 	_request.uriEncoded = false;
+	_request.uriQuery.clear();
+	_request.head.clear();
+	_request.headCompleted = false;
+	_request.body.content.clear();
+	_request.body.contentType = eContentType::error;
+	_request.body.contentLen = 0;
+	_request.body.nextChunkSize = 0;
+	_request.body.totalChunked = 0;
+	_request.body.formDelimiter.clear();
 	//	response
 	_response.headers.clear();
 	_response.body.clear();
@@ -44,6 +55,42 @@ httpHandler::~httpHandler(void)
 		free(envVar);
 	}
 	_cgi.env.clear();
+}
+
+void httpHandler::clearHandler(void)
+{
+	_statusCode = eHttpStatusCode::OK;
+	// request
+	_request.keepReading = true;
+	_request.method = eHttpMethod::INVALID;
+	_request.uri.clear();
+	_request.path.clear();
+	_request.headers.clear();
+	_request.uriEncoded = false;
+	_request.uriQuery.clear();
+	_request.head.clear();
+	_request.headCompleted = false;
+	_request.body.content.clear();
+	_request.body.contentType = eContentType::error;
+	_request.body.contentLen = 0;
+	_request.body.nextChunkSize = 0;
+	_request.body.totalChunked = 0;
+	_request.body.formDelimiter.clear();
+	//	response
+	_response.headers.clear();
+	_response.body.clear();
+	_response.keepalive = true;
+	_response.readFile = false;
+	_response.cgi = false;
+	_response.pid = -1;
+	_response.readFd = -1;
+	// cgi
+	for (char *envVar : _cgi.env)
+	{
+		free(envVar);
+	}
+	_cgi.env.clear();
+	_cgi.scriptname.clear();
 }
 
 /* utils */
@@ -149,13 +196,72 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
 	_response.body << msg;
 }
 
-// Function to convert HTTP method enum to string
-std::string httpMethodToStringFunc(eHttpMethod method)
+/**
+ * @brief adds the buffer to the request body
+ * @return true if the epoll should continue reading
+ * false if the epoll should stop reading
+ *
+ * determined by"
+ * end of ContentLength / Chunked=0/r/n/ / wwwFormDelimiter
+ *
+ */
+void httpHandler::addStringBuffer(std::string &buffer)
 {
-	auto it = HttpMethodToString.find(method);
-	if (it != HttpMethodToString.end())
+	std::cout << "==buffer==" << buffer << std::endl;
+	if (!_request.headCompleted)
 	{
-		return it->second;
+		size_t pos = buffer.find("\r\n\r\n");
+		if (pos != std::string::npos)
+		{
+			_request.head << buffer.substr(0, pos + 4);
+			_request.headCompleted = true;
+			parseHead();
+			if (_statusCode > eHttpStatusCode::Accepted)
+			{
+				_request.keepReading = false;
+				return;
+			}
+			setContent();
+			if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
+			{
+				_request.keepReading = false;
+				return;
+			}
+			if (pos + 4 < buffer.size())
+			{
+				std::string buf = buffer.substr(pos + 4);
+				addToBody(buf);
+			}
+			return;
+		}
+		else
+		{
+			_request.head << buffer;
+		}
 	}
-	return "Invalid";
+	else
+	{
+		if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
+		{
+			setErrorResponse(eHttpStatusCode::InternalServerError, "reached unexpected point");
+			_request.keepReading = false;
+			return;
+		}
+		addToBody(buffer);
+	}
+}
+
+/**
+ * @brief returns either READ_BUFFER_SIZE or the size of next chunk
+ */
+size_t httpHandler::getReadSize(void) const
+{
+	if (_request.body.contentType == eContentType::chunked)
+		return (_request.body.nextChunkSize);
+	return (READ_BUFFER_SIZE);
+}
+
+bool httpHandler::getKeepReading(void) const
+{
+	return (_request.keepReading);
 }

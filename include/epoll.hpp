@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 20:50:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 14:14:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,6 +21,7 @@ class Webserv;
 class Server;
 class Socket;
 class httpHandler;
+class Epoll;
 
 enum class eSocket;
 
@@ -28,17 +29,17 @@ using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
 enum class clientState
 {
-	BEGIN = 0,	 			 // ready to read/write
-	READING = 1, 			 // currently reading
-	WRITING = 2, 			 // currently writing
-	ERROR = 3,	 			 // something wrong - dont actually use since client gets closed
-	READY = 4,	 			 // finished reading/writing job
-	CLOSE = 5,	 			 // connection can be closed
-	CLOSED = 6	 			 // has been closed, should also be removed, if not, removal failed
+	BEGIN = 0,	 // ready to read/write
+	READING = 1, // currently reading
+	WRITING = 2, // currently writing
+	ERROR = 3,	 // something wrong - dont actually use since client gets closed
+	READY = 4,	 // finished reading/writing job
+	CLOSE = 5,	 // connection can be closed
+	CLOSED = 6	 // has been closed, should also be removed, if not, removal failed
 };
 
 #define MAX_EVENTS 10
-#define TIMEOUT 3000		// milliseconds | 3 seconds
+#define TIMEOUT 3000 // milliseconds | 3 seconds
 #define READ_BUFFER_SIZE 100
 #define WRITE_BUFFER_SIZE 100
 #define MAX_FILE_READ 256
@@ -52,14 +53,16 @@ typedef struct s_clients
 	std::unordered_map<int, timePoint>		_clientTime;
 	bool									_connectionClose;
 
-	/** Read */
-	std::string								_requestClient;
+	std::shared_ptr<httpHandler>			http;
+	//std::string								_requestClient; // what has julius done
 
 	/** Write */
 	s_httpSend								_responseClient;
 	size_t									_write_offset;
 	ssize_t									_bytesWritten;
 	bool									_readingFile;
+	s_clients(Epoll &epoll, Server &server);
+	~s_clients() {};
 
 } t_clients;
 
@@ -69,11 +72,10 @@ typedef struct s_serverData
 	std::deque<t_clients>					_clients;
 
 	/* methods */
-	void			addClient(int sock, struct sockaddr_in &addr, int len);
-	void			removeClient(t_clients &client);
+	void								addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
+	void								removeClient(t_clients &client);
 	
 } 				t_serverData;
-
 class Epoll
 {
 	private:
@@ -85,15 +87,13 @@ class Epoll
 
 	public:
 		Epoll();
-		Epoll(const Epoll &copy);
-		Epoll &operator=(const Epoll &epoll);
 		~Epoll();
 
 		/* methods */
 		void							initEpoll();
 		s_httpSend						handleRequest(std::string &request, Server &server);
 		void							handleRead(t_clients &client);
-		void							handleWrite(t_serverData &server, t_clients &client);
+		void							handleWrite(t_clients &client);
 		void							handleFile(t_clients &client);
 		void							makeNewConnection(int fd, t_serverData &server);
 		void							processEvent(int fd, epoll_event &event);

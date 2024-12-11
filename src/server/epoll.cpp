@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 20:52:13 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 14:14:48 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,21 +17,6 @@
 Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
 {
 	setEventMax();
-}
-
-Epoll::Epoll(const Epoll &copy)
-{
-	*this = copy;
-}
-
-Epoll &Epoll::operator=(const Epoll &epoll)
-{
-	if (this != &epoll)
-	{
-		this->_epfd = epoll._epfd;
-		this->_numEvents = epoll._numEvents;
-	}
-	return *this;
 }
 
 Epoll::~Epoll()
@@ -48,27 +33,19 @@ void Epoll::initEpoll()
 		throw std::runtime_error("Error creating Epoll instance\n");
 }
 
-s_httpSend Epoll::handleRequest(std::string &request, Server &server)
-{
-	std::stringstream stream(request);
-	httpHandler parser(server, *this);
-	parser.parseRequest(stream);
-	return (parser.generateResponse());
-}
-
 void	Epoll::handleRead(t_clients &client)
 {
-	char buffer[READ_BUFFER_SIZE];
-	size_t bytesRead = 0;
+	size_t readSize = client.http->getReadSize();
+	char buffer[readSize];
+	int bytesRead = 0;
 	memset(buffer, 0, sizeof(buffer));
 
 	client._clientState = clientState::READING;
-	bytesRead = recv(client._fd, buffer, sizeof(buffer) - 1, 0);
+	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
 
 	// Error
 	if (bytesRead < 0)
 	{
-		std::cerr << "Reading from client connection failed\n";
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
 		return;
@@ -82,28 +59,26 @@ void	Epoll::handleRead(t_clients &client)
 		return;
 	}
 
-	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	buffer[readSize - 1] = '\0';
 	std::string buf = buffer;
-	client._requestClient.append(buf);
-
-	// Finished
-	if (client._requestClient.find("\r\n\r\n") != std::string::npos)
+	client.http->addStringBuffer(buf);
+	if (client.http->getKeepReading())
+		return;
+	else
 	{
 		client._clientState = clientState::READY;
 		client._connectionClose = false;
-		return;
 	}
-	client._connectionClose = false;
 }
 
-void Epoll::handleWrite(t_serverData &server, t_clients &client)
+void Epoll::handleWrite(t_clients &client)
 {
 	// Handle Client Request
 	if (client._responseClient.msg.empty() && client._readingFile == false)
 	{
-		client._responseClient = handleRequest(client._requestClient, *server._server);
+		client._responseClient = client.http->generateResponse();
 		client._clientState = clientState::WRITING;
-		client._requestClient.clear();
+		client.http->clearHandler();
 	}
 	if (client._readingFile == false)
 	{
@@ -113,7 +88,7 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 		if (leftover < WRITE_BUFFER_SIZE)
 			sendlen = leftover;
 
-		ssize_t bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, leftover, 0);
+		int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
 
 		// Error
 		if (bytesWritten < 0)
@@ -137,7 +112,7 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 		// Finished
 		if (client._write_offset >= client._responseClient.msg.length())
 		{
-			if (client._responseClient.readFd != -1)
+			if (client._responseClient.readfile)
 			{
 				client._readingFile = true;
 				client._connectionClose = false;
@@ -152,7 +127,10 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 					client._connectionClose = true;
 				}
 			}
-			client._connectionClose = false;
+			if (client._responseClient.keepAlive)
+				client._connectionClose = false;
+			else
+				client._connectionClose = true;
 			client._write_offset = 0;
 			client._responseClient.msg.clear();
 			return;
@@ -165,9 +143,9 @@ void Epoll::handleWrite(t_serverData &server, t_clients &client)
 
 void Epoll::handleFile(t_clients &client)
 {
-	ssize_t bytesSend;
+	int bytesSend;
 	char buffer[READ_BUFFER_SIZE];
-	ssize_t bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
+	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
 
 	// Error
 	if (bytesRead < 0)
@@ -253,7 +231,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	else
 	{
 		setNonBlocking(clientfd);
-		server.addClient(clientfd, clientAddr, addrLen);
+		server.addClient(clientfd, clientAddr, addrLen, *this);
 		addToEpoll(clientfd);
 	}
 }
@@ -283,7 +261,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				}
 				if (event.events & EPOLLOUT)
 				{
-					handleWrite(serverData, client);
+					handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
@@ -291,14 +269,14 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						updateClientClock(client);
 					}
 				}
-				if (event.events & EPOLLHUP)
+				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+				{
 					client._connectionClose = true;
-				if (event.events & EPOLLRDHUP)
-					client._connectionClose = true;
-				if (event.events & EPOLLERR)
-					client._connectionClose = true;
-				if (client._connectionClose == true)
+				}
+				if (client._connectionClose)
+				{
 					handleClientClose(serverData, client);
+				}
 			}
 		}
 		//if (fd == cgi)
@@ -367,5 +345,5 @@ void Epoll::setServer(std::shared_ptr<Server> server)
 	t_serverData newServerData;
 	newServerData._server = server;
 
-	this->_serverData.push_back(newServerData);
+	this->_serverData.push_back(std::move(newServerData));
 }

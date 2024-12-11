@@ -6,12 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 20:53:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 14:04:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
-#include "../../include/web.hpp"
 
 static void		closeAllPipes(int cgiIN[2], int cgiOUT[2])
 {
