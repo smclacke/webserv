@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:40:59 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 19:54:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,13 +90,41 @@ struct s_httpSend
 	bool readfile;
 	int readFd;
 	bool cgi;
-	pid_t pid;
+};
+
+enum class cgiState
+{
+	BEGIN = 0,
+	READING = 1,
+	WRITING = 2,
+	READY = 3,
+	ERROR = 4,
+	CLOSE = 5	
+};
+
+struct s_cgi
+{
+	std::vector<char *>				env;
+	std::string						scriptname;
+	int								cgiIN[2]; 		// for sending data to the script
+	int								cgiOUT[2]; 		// for receiving data from the script
+	enum cgiState					state;
+	bool							close;
+	//std::shared_ptr<httpHandler>	http;
+	//s_httpSend						response;
+	std::string						input;
+	size_t							write_offset;
+	pid_t pid = -1;
+	bool							output;
+	int								client_fd;
+
+	void clearCgi(void);
+	void closeAllPipes(void);
 };
 
 /* parser */
 void lineStrip(std::string &line);
 void verifyInput(int ac, char **av);
-s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
 s_location addDefaultLoc(size_t servermaxsize);
 
 /* general utils */

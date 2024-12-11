@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 17:48:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 20:32:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,6 @@
 
 #include "socket.hpp"
 #include "web.hpp"
-#include "httpHandler.hpp"
 
 class Webserv;
 class Server;
@@ -23,7 +22,13 @@ class Socket;
 class httpHandler;
 class Epoll;
 
+#define BAD_CGI "HTTP/1.1 500 Internal Server Error\r\n\r\n"
+#define BAD_SIZE 39
+#define GOOD_CGI "HTTP/1.1 200 OK\r\n\r\n"
+#define GOOD_SIZE 20
+
 enum class eSocket;
+struct s_cgi;
 
 using timePoint = std::chrono::time_point<std::chrono::steady_clock>;
 
@@ -59,7 +64,6 @@ typedef struct s_clients
 	/** Write */
 	s_httpSend								_responseClient;
 	size_t									_write_offset;
-	ssize_t									_bytesWritten;
 	bool									_readingFile;
 	s_clients(Epoll &epoll, Server &server);
 	~s_clients() {};

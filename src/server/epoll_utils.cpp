@@ -6,12 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:06:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 20:42:52 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
+#include "../../include/httpHandler.hpp"
 
 /* Epoll utils */
 void Epoll::addToEpoll(int fd)
@@ -99,9 +100,9 @@ void Epoll::handleClientClose(t_serverData &server, t_clients &client)
 		std::cerr << "Failed to remove fd from epoll\n";
 
 	protectedClose(client._fd);
-	client.http->clearHandler();
 	client._responseClient.msg.clear();
 	client._fd = -1;
+	client._write_offset = 0;
 
 	client._clientState = clientState::CLOSED;
 	server.removeClient(client);

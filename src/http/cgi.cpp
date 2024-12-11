@@ -6,15 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 18:17:10 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 19:43:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
-
-#define BAD_CGI "HTTP/1.1 500 Internal Server Error\r\n\r\n"
-#define GOOD_CGI "HTTP/1.1 200 OK\r\n\r\n"
 
 static void		freeStrings(char *script, char *path)
 {
@@ -36,33 +33,43 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 
 	if (bytesRead < 0)
 	{
-		// send httpresponse 
-		std::cerr << "recv() cgi failed\n";
+		send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
+		std::cerr << "recv() cgi failed\n"; // remove
 		cgi.state = cgiState::ERROR;
 		cgi.close = true;
 		return ;
 	}
 	else if (bytesRead == 0)
 	{
-		// if (cgi.pid != -1)
-		// waitpid
-		// cgi.pid = -1;
-		if (!cgi.output)
+		if (cgi.pid != -1)
 		{
-			// if output == false , if waitpid status != 0 send 500 else send 200 OK
+			int status;
+			waitpid(cgi.pid, &status, 0);
+			cgi.pid = -1;
+			if (!cgi.output)
+			{
+				if (status != 0)
+					send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
+				else
+					send(cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
+			}
 		}
+		cgi.state = cgiState::CLOSE;
+		cgi.close = true;
 		return ;
 	}
-	cgi.output == true;
-	buffer[readSize - 1] = '\0';
-	//std::string buf = buffer;
+	cgi.output = true;
+	buffer[bytesRead - 1] = '\0';
+
 	// send buffer whatever has been received 
 	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
-		int bytesSend = send(cgi.cgiOUT[0], buffer, bytesRead, 0);
+		int bytesSend = send(cgi.client_fd, buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
-			std::cerr << "write failed\n";
+			std::cerr << "write failed\n"; // removed
+			cgi.state = cgiState::CLOSE;
+			cgi.close = true;
 			// close
 			return ;
 		}
@@ -73,15 +80,23 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 		int bytesSend = send(cgi.cgiOUT[0], buffer, bytesRead, 0);
 		if (bytesSend < 0)
 		{
-			std::cerr << "write failed\n";
+			std::cerr << "write failed\n";// remove
 		}
-		// close
+		cgi.state = cgiState::CLOSE;
+		cgi.close = true;
 	}
 }
 
 void	Epoll::handleCgiWrite(s_cgi &cgi)
 {
-
+	if (cgi.input.size() == 0)
+	{
+		cgi.state = cgiState::READING;
+		protectedClose(cgi.cgiIN[1]);
+		cgi.close = false;
+		return ;
+	}
+	
 	ssize_t leftover;
 	ssize_t sendlen = WRITE_BUFFER_SIZE;
 	leftover = cgi.input.size() - cgi.write_offset;
@@ -92,26 +107,35 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 
 	if (bytesWritten < 0)
 	{
-		// the waitpid logic + send to client 500 error code;
-		std::cerr << "send() to cgi failed\n";
+		if (cgi.pid != -1)
+		{
+			int status;
+			waitpid(cgi.pid, &status, 0);
+			cgi.pid = -1;
+			send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
+		}
+		std::cerr << "send() to cgi failed\n"; // removed
 		cgi.state = cgiState::ERROR;
 		cgi.close = true;
 		return ;
 	}
-	else if (bytesWritten == 0)
-	{
-		cgi.state = cgiState::CLOSE;
-		cgi.close = true;
-		return ;
-	}
+	// shouldnt happen, remove
+	//else if (bytesWritten == 0)
+	//{
+	//	send(cgi.client_fd, "Nothing to write\n", 18, 0);
+	//	cgi.state = cgiState::CLOSE;
+	//	cgi.close = true;
+	//	return ;
+	//}
 
 	cgi.write_offset += bytesWritten;
 
 	// Finished
 	if (cgi.write_offset >= cgi.input.length())
 	{
-		cgi.state = cgiState::CLOSE;
-		cgi.close = true;
+		cgi.state = cgiState::READING;
+		protectedClose(cgi.cgiIN[1]);
+		cgi.close = false;
 		return ;
 	}
 	cgi.close = false;
@@ -185,7 +209,7 @@ void		httpHandler::cgiResponse()
 		// add to monitor
 		_epoll.addOUTEpoll(_cgi.cgiIN[1]);
 		_epoll.addToEpoll(_cgi.cgiOUT[0]);
-		_response.cgi == true;
+		_response.cgi = true;
 		
 	}
 	else // error

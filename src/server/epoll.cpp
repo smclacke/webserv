@@ -6,12 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 18:13:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 20:32:43 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
+#include "../../include/httpHandler.hpp"
 
 /** @todo check cgi stuff here */
 
@@ -61,7 +62,7 @@ void	Epoll::handleRead(t_clients &client)
 		return;
 	}
 
-	buffer[readSize - 1] = '\0';
+	//buffer[bytesRead] = '\0';
 	std::string buf = buffer;
 	client.http->addStringBuffer(buf);
 	if (client.http->getKeepReading())
@@ -88,6 +89,8 @@ void Epoll::handleWrite(t_clients &client)
 		if (leftover < WRITE_BUFFER_SIZE)
 			sendlen = leftover;
 
+		std::cout << "\n\n message size = " << client._responseClient.msg.size() << "\n\n";
+		std::cout << "\n\nclient message = " << client._responseClient.msg.c_str() << " | write = " << client._write_offset << "  | sendlen = " << sendlen << "\n\n";
 		int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
 
 		// Error
@@ -162,13 +165,7 @@ void Epoll::handleFile(t_clients &client)
 		client._responseClient.readfile = false;
 		client._clientState = clientState::READY;
 		protectedClose(client._responseClient.readFd);
-		if (client._responseClient.pid != -1)
-		{
-			int status;
-			waitpid(client._responseClient.pid, &status, 0);
-		}
 		client._responseClient.readFd = -1;
-		client._responseClient.pid = -1;
 		if (client._responseClient.keepAlive == false)
 		{
 			client._clientState = clientState::CLOSE;
@@ -178,7 +175,7 @@ void Epoll::handleFile(t_clients &client)
 	}
 
 	// Not finished reading, send what we have read and cont. loop
-	buffer[READ_BUFFER_SIZE - 1] = '\0';
+	buffer[bytesRead - 1] = '\0';
 	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
 		bytesSend = send(client._fd, buffer, bytesRead, 0);
@@ -204,13 +201,7 @@ void Epoll::handleFile(t_clients &client)
 		client._responseClient.readfile = false;
 		client._clientState = clientState::READY;
 		protectedClose(client._responseClient.readFd);
-		if (client._responseClient.pid != -1)
-		{
-			int status;
-			waitpid(client._responseClient.pid, &status, 0);
-		}
 		client._responseClient.readFd = -1;
-		client._responseClient.pid = -1;
 		if (client._responseClient.keepAlive == false)
 			client._connectionClose = true;
 		return ;
@@ -257,7 +248,10 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						client._clientState = clientState::BEGIN;
 						client._responseClient = client.http->generateResponse();
 						if (client._responseClient.cgi)
+						{
 							serverData.cgi = client.http->getCGI();	
+							serverData.cgi.client_fd = client._fd;
+						}
 						client.http->clearHandler();
 						modifyEvent(client._fd, EPOLLOUT);
 						updateClientClock(client);
@@ -268,6 +262,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
+						client._write_offset = 0;
+						client._readingFile = false;
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
 						updateClientClock(client);
@@ -288,10 +284,21 @@ void Epoll::processEvent(int fd, epoll_event &event)
 			if (event.events & EPOLLOUT)
 				handleCgiWrite(serverData.cgi);
 			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+			{
 				serverData.cgi.close = true;
-				// if cgi.pid != -1
-				// waitpid
-				// if output == false , if waitpid status != 0 send 500 else send 200 OK
+				if (serverData.cgi.pid != -1)
+				{
+					int status;
+					waitpid(serverData.cgi.pid, &status, 0);
+					if (serverData.cgi.output == false)
+					{
+						if (status != 0)
+							send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
+						else
+							send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
+					}
+				}
+			}
 			if (serverData.cgi.close == true)
 			{
 				// remove from epoll

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 18:20:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 20:21:41 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,11 @@ static s_httpSend internalError(void);
  */
 s_httpSend httpHandler::writeResponse(void)
 {
+	if (_response.cgi)
+	{
+		s_httpSend response = {"", _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
+		return (response);
+	}
 	auto it = statusMessages.find(_statusCode);
 	if (it != statusMessages.end())
 	{
@@ -72,11 +77,11 @@ s_httpSend httpHandler::writeResponse(void)
 		// break between header and body:
 		responseStream << "\r\n";
 		/* body */
-		if (_response.readFile == false && _response.cgi == false)
+		if (_response.readFile == false)
 		{
 			responseStream << _response.body.str();
 		}
-		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi, _response.pid};
+		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
 		std::cout << "Response = " << response.msg << std::endl;
 		return (response);
 	}
@@ -97,7 +102,7 @@ static s_httpSend internalError(void)
 				   << "Connection: close\r\n"
 				   << "\r\n"
 				   << message;
-	s_httpSend response = {responseStream.str(), true, false, -1, false, -1};
+	s_httpSend response = {responseStream.str(), true, false, -1, false};
 	return (response);
 }
 

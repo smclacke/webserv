@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 18:13:23 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 20:46:24 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -53,11 +53,7 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 
 httpHandler::~httpHandler(void)
 {
-	for (char *envVar : _cgi.env)
-	{
-		free(envVar);
-	}
-	_cgi.clearCgi();
+	//_cgi.clearCgi();
 }
 
 void httpHandler::clearHandler(void)
@@ -86,12 +82,6 @@ void httpHandler::clearHandler(void)
 	_response.readFile = false;
 	_response.cgi = false;
 	_response.readFd = -1;
-	// cgi
-	for (char *envVar : _cgi.env)
-	{
-		free(envVar);
-	}
-	_cgi.clearCgi();
 }
 
 /* utils */
@@ -208,7 +198,6 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
  */
 void httpHandler::addStringBuffer(std::string &buffer)
 {
-	std::cout << "==buffer==" << buffer << std::endl;
 	if (!_request.headCompleted)
 	{
 		size_t pos = buffer.find("\r\n\r\n");
@@ -257,7 +246,7 @@ void httpHandler::addStringBuffer(std::string &buffer)
  */
 size_t httpHandler::getReadSize(void) const
 {
-	if (_request.body.contentType == eContentType::chunked)
+	if (_request.body.contentType == eContentType::chunked && _request.body.nextChunkSize != 0)
 		return (_request.body.nextChunkSize);
 	return (READ_BUFFER_SIZE);
 }
@@ -270,6 +259,11 @@ bool httpHandler::getKeepReading(void) const
 /* CGI :) */
 void s_cgi::clearCgi(void)
 {
+	// cgi
+	for (char *envVar : env)
+	{
+		free(envVar);
+	}
 	env.clear();
 	scriptname.clear();
 	pid = -1;
