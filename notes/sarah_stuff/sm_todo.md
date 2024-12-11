@@ -20,6 +20,7 @@
 ------------  CGI
 ------------------------------
 
+31) j - friday is option
 
 32) 
 	dont modifyEvent in cgi pipe situation
