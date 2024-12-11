@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:21:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/11 03:25:58 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,8 +51,9 @@ void httpHandler::postMethod(void)
  */
 void httpHandler::postMultiForm(const std::string &contentType)
 {
-	parseMultipartBody(contentType);
-	if (_request.files.empty())
+	std::list<std::string> files;
+	parseMultipartBody(contentType, files);
+	if (files.empty())
 	{
 		return;
 	}
@@ -61,7 +62,7 @@ void httpHandler::postMultiForm(const std::string &contentType)
 		_statusCode = eHttpStatusCode::Created;
 		_response.headers[eResponseHeader::ContentType] = "text/plain";
 		_response.body << "Files processed successfully: \r\n";
-		for (auto file : _request.files)
+		for (auto file : files)
 		{
 
 			if (file.find('/') != std::string::npos)
@@ -77,7 +78,7 @@ void httpHandler::postMultiForm(const std::string &contentType)
 	return;
 }
 
-void httpHandler::parseMultipartBody(const std::string &contentType)
+void httpHandler::parseMultipartBody(const std::string &contentType, std::list<std::string> &files)
 {
 	std::string boundary = extractBoundary(contentType);
 	if (boundary.empty())
@@ -86,12 +87,22 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 		return setErrorResponse(eHttpStatusCode::BadRequest, "Boundary not found in Content-Type");
 	}
 	std::string line;
-	while (std::getline(_request.body, line))
+	bool fileStarted = false;
+	std::ofstream outFile;
+	std::string filePath;
+
+	while (std::getline(_request.body.content, line))
 	{
 		if (line.find(boundary) != std::string::npos)
 		{
+			if (fileStarted)
+			{
+				outFile.close();
+				files.push_back(filePath);
+				fileStarted = false;
+			}
 			std::string headers;
-			while (std::getline(_request.body, line) && !line.empty() && line != "\r")
+			while (std::getline(_request.body.content, line) && !line.empty() && line != "\r")
 			{
 				headers += line + "\n";
 			}
@@ -99,28 +110,34 @@ void httpHandler::parseMultipartBody(const std::string &contentType)
 			if (contentDisposition.find("filename=") != std::string::npos)
 			{
 				std::string filename = extractFilename(contentDisposition);
-				std::string filePath = getTempFilePath(filename);
-				std::ofstream outFile(filePath, std::ios::binary);
+				filePath = getTempFilePath(filename);
+				outFile.open(filePath, std::ios::binary);
 				if (!outFile)
 				{
 					std::cerr << "Failed to open file for writing: " << filePath << std::endl;
 					setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to save file: " + filename);
 					return;
 				}
-				while (std::getline(_request.body, line) && line.find(boundary) == std::string::npos)
-				{
-					outFile << line << "\n";
-					if (line.size() > _request.loc.client_body_buffer_size)
-						return setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Line from multipart body exceeds client max body size");
-				}
+				fileStarted = true;
+			}
+		}
+		else if (fileStarted)
+		{
+			outFile << line << "\n";
+			if (line.size() > _request.loc.client_body_buffer_size)
+			{
 				outFile.close();
-				_request.files.push_back(filePath); // Store file path for later use
-				_statusCode = eHttpStatusCode::Created;
+				return setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Line from multipart body exceeds client max body size");
 			}
 		}
 	}
-	if (_request.files.empty())
-		return setErrorResponse(eHttpStatusCode::NoContent, "No \'filename=\' found in POST request");
+	if (fileStarted)
+	{
+		outFile.close();
+		files.push_back(filePath);
+	}
+	if (files.empty())
+		return setErrorResponse(eHttpStatusCode::NoContent, "No 'filename=' found in POST request");
 }
 
 std::string httpHandler::extractBoundary(const std::string &contentType)
@@ -174,8 +191,10 @@ void httpHandler::postUrlEncoded(void)
 {
 	if (_request.uriEncoded == false)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
-	if (!isExecutable())
-		return setErrorResponse(eHttpStatusCode::Forbidden, "no executable rights or incorrect cgi extension");
+	if (access(_request.path.c_str(), X_OK) != 0)
+		return setErrorResponse(eHttpStatusCode::Forbidden, "no rights to execute program");
+	if (!isCgi())
+		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
 	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
@@ -196,8 +215,10 @@ void httpHandler::postUrlEncoded(void)
 
 void httpHandler::postApplication(void)
 {
-	if (!isExecutable())
-		return setErrorResponse(eHttpStatusCode::Forbidden, "no executable rights or incorrect cgi extension");
+	if (access(_request.path.c_str(), X_OK) != 0)
+		return setErrorResponse(eHttpStatusCode::Forbidden, "no rights to execute program");
+	if (!isCgi())
+		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
 	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());

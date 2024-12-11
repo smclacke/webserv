@@ -6,12 +6,12 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/15 14:51:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 16:40:56 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/11 02:32:13 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
+#include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
-#include "../../include/web.hpp"
 
 void httpHandler::cgiResponse(void)
 {

@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2024/12/10 17:36:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/11 02:15:15 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -47,7 +47,7 @@ void httpHandler::generateDirectoryListing(void)
 			_response.body << "<html><head><title>Directory Listing</title></head><body>";
 			_response.body << "<h1>Directory Listing for " << _request.path << "</h1><ul>";
 		}
-		for (const auto &entry : std::filesystem::directory_iterator(_request.path))
+		for (const auto& entry : std::filesystem::directory_iterator(_request.path))
 		{
 			_response.body << entry.path().filename().string();
 			if (html)
@@ -60,7 +60,7 @@ void httpHandler::generateDirectoryListing(void)
 			_response.body << "</ul></body></html>";
 		}
 	}
-	catch (const std::filesystem::filesystem_error &e)
+	catch (const std::filesystem::filesystem_error& e)
 	{
 		_statusCode = eHttpStatusCode::InternalServerError;
 		std::cerr << "Error returning Directory Listing" << std::endl;
@@ -79,7 +79,7 @@ void httpHandler::generateDirectoryListing(void)
 	_response.headers[eResponseHeader::ContentLength] = std::to_string(_response.body.str().size());
 }
 
-std::string httpHandler::contentType(const std::string &filePath)
+std::string httpHandler::contentType(const std::string& filePath)
 {
 	static const std::unordered_map<std::string, std::string> mimeTypes = {
 		{".html", "text/html"},
@@ -96,7 +96,7 @@ std::string httpHandler::contentType(const std::string &filePath)
 		{".ico", "image/*"},
 		{".pdf", "application/pdf"},
 		{".zip", "application/zip"},
-		{".txt", "text/plain"}};
+		{".txt", "text/plain"} };
 	// Find the last dot in the file path
 	size_t dotPos = filePath.find_last_of('.');
 	if (dotPos != std::string::npos)
@@ -113,7 +113,7 @@ std::string httpHandler::contentType(const std::string &filePath)
 	return "application/octet-stream";
 }
 
-void httpHandler::CallErrorPage(std::string &path)
+void httpHandler::CallErrorPage(std::string& path)
 {
 	// check if file permission is readable.
 	std::filesystem::file_status fileStatus = std::filesystem::status(path);
@@ -138,7 +138,7 @@ void httpHandler::CallErrorPage(std::string &path)
 	{
 		_response.headers[eResponseHeader::ContentLength] = std::to_string(std::filesystem::file_size(path));
 	}
-	catch (const std::filesystem::filesystem_error &e)
+	catch (const std::filesystem::filesystem_error& e)
 	{
 		std::cerr << "Getting size of error file didnt work: " << e.what() << std::endl;
 		return;
@@ -175,7 +175,7 @@ bool httpHandler::generateEnv(void)
 		if (header.has_value())
 		{
 			std::string accepted = "HTTP_ACCEPT=" + header.value();
-			char *string = strdup(accepted.c_str());
+			char* string = strdup(accepted.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
 			_cgidata.env.push_back(string);
@@ -185,7 +185,7 @@ bool httpHandler::generateEnv(void)
 		if (header.has_value())
 		{
 			std::string host = "SERVER_NAME=" + header.value();
-			char *string = strdup(host.c_str());
+			char* string = strdup(host.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
 			_cgidata.env.push_back(string);
@@ -195,7 +195,7 @@ bool httpHandler::generateEnv(void)
 		if (header.has_value())
 		{
 			std::string userAgent = "HTTP_USER_AGENT=" + header.value();
-			char *string = strdup(userAgent.c_str());
+			char* string = strdup(userAgent.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
 			_cgidata.env.push_back(string);
@@ -206,7 +206,7 @@ bool httpHandler::generateEnv(void)
 		{
 			std::string subPath = _request.path.substr(pos + 1);
 			std::string scriptName = "SCRIPT_NAME=" + subPath;
-			char *string = strdup(scriptName.c_str());
+			char* string = strdup(scriptName.c_str());
 			if (string == NULL)
 				throw std::runtime_error("failed malloc");
 			_cgidata.env.push_back(string);
@@ -214,13 +214,13 @@ bool httpHandler::generateEnv(void)
 		}
 
 		std::string methodEnv = "REQUEST_METHOD=" + httpMethodToStringFunc(_request.method);
-		char *string = strdup(methodEnv.c_str());
+		char* string = strdup(methodEnv.c_str());
 		if (string == NULL)
 			throw std::runtime_error("failed malloc");
 		_cgidata.env.push_back(string);
 
-		std::string length = "CONTENT_LENGTH=" + std::to_string(_request.body.str().size());
-		char *clen = strdup(length.c_str());
+		std::string length = "CONTENT_LENGTH=" + std::to_string(_request.body.content.str().size());
+		char* clen = strdup(length.c_str());
 		if (clen == NULL)
 			throw std::runtime_error("failed malloc");
 		_cgidata.env.push_back(clen);
@@ -228,11 +228,22 @@ bool httpHandler::generateEnv(void)
 		_cgidata.env.push_back(nullptr);
 		// execve(args[0], args, _cgidata.env.data())
 	}
-	catch (std::runtime_error &e)
+	catch (std::runtime_error& e)
 	{
 		std::cerr << "Error in generateEnv: " << e.what() << std::endl;
 		setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
 		return false;
 	}
 	return true;
+}
+
+// Function to convert HTTP method enum to string
+std::string httpMethodToStringFunc(eHttpMethod method)
+{
+	auto it = HttpMethodToString.find(method);
+	if (it != HttpMethodToString.end())
+	{
+		return it->second;
+	}
+	return "Invalid";
 }

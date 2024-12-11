@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/09 20:24:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 23:26:02 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -86,28 +86,27 @@ private:
 	std::shared_ptr<Socket> _serverSocket;
 
 	/* Location Parsing */
-	void checkLocationPaths(s_location &loc, std::string const root, int const line_n);
-	void findLocationDirective(std::string &line, int &line_n, s_location &loc);
-	s_location parseLocation(std::ifstream &file, std::string &line, int &line_n, size_t maxbody);
-	void parseRoot(std::stringstream &ss, int line_n);
+	void checkLocationPaths(s_location& loc, std::string const root, int const line_n);
+	void findLocationDirective(std::string& line, int& line_n, s_location& loc);
+	s_location parseLocation(std::ifstream& file, std::string& line, int& line_n, size_t maxbody);
+	void parseRoot(std::stringstream& ss, int line_n);
 
 	/* Server parsing*/
-	void findServerDirective(Server &serv, std::string &line, int line_n);
-	void parseServerName(std::stringstream &ss, int line_n);
-	void parseListen(std::stringstream &ss, int line_n);
-	void parseErrorPage(std::stringstream &ss, int line_n);
-	void parseClientMaxBody(std::stringstream &ss, int line_n);
+	void findServerDirective(Server& serv, std::string& line, int line_n);
+	void parseServerName(std::stringstream& ss, int line_n);
+	void parseListen(std::stringstream& ss, int line_n);
+	void parseErrorPage(std::stringstream& ss, int line_n);
+	void parseClientMaxBody(std::stringstream& ss, int line_n);
 	void checkErrorPages(void);
 
 public:
 	Server(void);
-	Server &operator=(const Server &rhs);
-	Server(std::ifstream &file, int &line_n);
+	Server& operator=(const Server& rhs);
+	Server(std::ifstream& file, int& line_n);
 	~Server(void);
 
 	/* Member functions */
-	s_httpSend handleRequest(std::string &request);
-	eHttpMethod allowedHttpMethod(std::string &str);
+	eHttpMethod allowedHttpMethod(std::string& str);
 	void printServer(void);
 
 	/* add */
@@ -127,14 +126,14 @@ public:
 	void setServerSocket(std::shared_ptr<Socket> serverSocket);
 
 	/* getters */
-	std::string const &getServerName(void) const;
-	const std::string &getHost(void) const;
-	const int &getPort(void) const;
-	const std::string &getRoot(void) const;
-	const std::vector<s_ePage> &getErrorPage(void) const;
-	const size_t &getClientMaxBodySize(void) const;
-	const std::vector<s_location> &getLocation(void) const;
-	std::shared_ptr<Socket> &getServerSocket(void);
+	std::string const& getServerName(void) const;
+	const std::string& getHost(void) const;
+	const int& getPort(void) const;
+	const std::string& getRoot(void) const;
+	const std::vector<s_ePage>& getErrorPage(void) const;
+	const size_t& getClientMaxBodySize(void) const;
+	const std::vector<s_location>& getLocation(void) const;
+	std::shared_ptr<Socket>& getServerSocket(void);
 	std::optional<s_ePage> findErrorPage(int code) const;
 };
 

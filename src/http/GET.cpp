@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:20:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/10 21:51:09 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,11 +29,16 @@ void httpHandler::getMethod(void)
 			return;
 	}
 	// Check if the file is executable
-	if (isExecutable())
+	if (access(_request.path.c_str(), X_OK) == 0)
 	{
-		if (!generateEnv())
-			return;
-		return cgiResponse();
+		if (isCgi())
+		{
+			if (!generateEnv())
+				return;
+			return cgiResponse();
+		}
+		else
+			return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
 	}
 	else
 	{
@@ -47,20 +52,26 @@ void httpHandler::getMethod(void)
  */
 void httpHandler::getUriEncoded(void)
 {
-	if (isExecutable())
+	if (access(_request.path.c_str(), X_OK) == 0)
 	{
-		std::string queryEnv = "QUERY_STRING=" + _request.uriQuery;
-		char *string = strdup(queryEnv.c_str());
-		if (string == NULL)
-			return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
-		_cgidata.env.push_back(strdup(queryEnv.c_str()));
-		if (!generateEnv())
+		if (isCgi())
+		{
+			std::string queryEnv = "QUERY_STRING=" + _request.uriQuery;
+			char *string = strdup(queryEnv.c_str());
+			if (string == NULL)
+				return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
+			_cgidata.env.push_back(strdup(queryEnv.c_str()));
+			if (!generateEnv())
+				return;
+			cgiResponse();
 			return;
-		cgiResponse();
-		return;
+		}
+		else
+			return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
 	}
 	else
 	{
+		setErrorResponse(eHttpStatusCode::Forbidden, "url encoded request is does not target executable file");
 		return;
 	}
 }
@@ -140,23 +151,16 @@ void httpHandler::openFile()
  * @brief checks if the file on _request.path is executable and the extension is listed as cgi
  * sets ErrorResponse if its false
  */
-bool httpHandler::isExecutable()
+bool httpHandler::isCgi()
 {
-	if (access(_request.path.c_str(), X_OK) == 0)
+	size_t pos = _request.path.find_last_of('.');
+	if (pos != std::string::npos)
 	{
-		size_t pos = _request.path.find_last_of('.');
-		if (pos != std::string::npos)
+		std::string extension = _request.path.substr(pos);
+		if (extension == _request.loc.cgi_ext)
 		{
-			std::string extension = _request.path.substr(pos);
-			if (extension == _request.loc.cgi_ext)
-			{
-				return true;
-			}
-			return false;
+			return true;
 		}
-	}
-	else
-	{
 		return false;
 	}
 	return false;

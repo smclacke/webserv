@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:08:23 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/11 03:26:07 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,6 +20,32 @@
 struct s_location;
 
 /**
+ * @brief defines how the body should be read
+ * @param error = error in headers, dont read body
+ * @param ContentLength = Read until ContentLength is reached
+ * @param formEncoded = Find delimiter and Read until delim is reached
+ * @param chunked = Read in chunked sizes;
+ */
+enum class eContentType
+{
+	error,
+	noContent,
+	contentLength,
+	formData,
+	chunked
+};
+
+struct s_content
+{
+	std::stringstream content;
+	eContentType contentType;
+	size_t contentLen;
+	size_t nextChunkSize;
+	size_t totalChunked;
+	std::string formDelimiter;
+};
+
+/**
  * @param statusCode = statusCode to be responded
  * @param method = method called in HTTPSrequest
  * @param uri = uri
@@ -30,15 +56,17 @@ struct s_location;
  */
 struct s_request
 {
+	bool keepReading;
 	eHttpMethod method;
 	std::string uri;
 	s_location loc;
 	std::string path;
 	std::unordered_map<eRequestHeader, std::string> headers;
-	std::stringstream body;
-	std::vector<std::string> files;
 	bool uriEncoded;
 	std::string uriQuery;
+	std::stringstream head;
+	bool headCompleted;
+	s_content body;
 };
 
 struct s_response
@@ -59,11 +87,13 @@ struct s_cgi
 };
 
 struct s_httpSend;
+class Epoll;
 
 class httpHandler
 {
 private:
 	Server &_server;
+	Epoll &_epoll;
 	eHttpStatusCode _statusCode;
 	s_request _request;
 	s_response _response;
@@ -82,15 +112,17 @@ private:
 	void CallErrorPage(std::string &path);
 	bool generateEnv(void);
 	// parse request+ headers
-	void parseRequestLine(std::stringstream &ss);
+	void parseHead(void);
+	void parseRequestLine(void);
 	bool checkRedirect();
-	void parseHeaders(std::stringstream &ss);
-	void parseBody(std::stringstream &ss);
 	void checkPath(void);
+	void parseHeaders(void);
+	void setContent(void);
 	// parse body
-	void parseChunkedBody(std::stringstream &ss);
-	void parseFixedLengthBody(std::stringstream &ss, size_t length);
-	void decodeContentEncoding(std::stringstream &body, const std::string &encoding);
+	void addToBody(std::string &buffer);
+	void parseChunkedBody(std::string &buffer);
+	void parseFixedLengthBody(std::string &buffer);
+	void parseformData(std::string &buffer);
 	// response
 	s_httpSend writeResponse(void);
 	void generateDirectoryListing(void);
@@ -102,11 +134,11 @@ private:
 	bool getDirectory(void);
 	void readFile(void);
 	void openFile(void);
-	bool isExecutable(void);
+	bool isCgi(void);
 	// POST METHOD
 	void postMethod(void);
 	void postMultiForm(const std::string &contentType);
-	void parseMultipartBody(const std::string &contentType);
+	void parseMultipartBody(const std::string &contentType, std::list<std::string> &files);
 	std::string extractBoundary(const std::string &contentType);
 	std::string extractHeaderValue(const std::string &headers, const std::string &key);
 	std::string extractFilename(const std::string &contentDisposition);
@@ -120,12 +152,20 @@ private:
 
 public:
 	/* constructor and deconstructor */
-	httpHandler(Server &server);
+	httpHandler(Server &server, Epoll &epoll);
 	~httpHandler(void);
+	// Delete copy constructor and copy assignment operator
+	httpHandler(const httpHandler &) = delete;
+	httpHandler &operator=(const httpHandler &) = delete;
 
 	/* member functions */
-	void parseRequest(std::stringstream &response);
+	void clearHandler(void);
+	void addStringBuffer(std::string &buffer);
 	s_httpSend generateResponse(void);
+
+	/* for epoll read operations */
+	bool getKeepReading(void) const;
+	size_t getReadSize(void) const;
 };
 
 std::string httpMethodToStringFunc(eHttpMethod method);

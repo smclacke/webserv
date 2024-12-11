@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 17:15:45 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/11 03:07:57 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,18 +20,18 @@
 /**
  * @brief Parses the https request and stores it in the httpHandler::_request
  */
-void httpHandler::parseRequest(std::stringstream &httpRequest)
+void httpHandler::parseHead(void)
 {
-	if (httpRequest.str().empty())
+	if (_request.head.str().empty())
 	{
 		std::cerr << "Received empty HTTP request" << std::endl;
 		return setErrorResponse(eHttpStatusCode::BadRequest, "Empty HTTP request");
 	}
 
-	std::cout << "\n======= REQUEST =======\n"
-			  << httpRequest.str() << "\n======= END REQ =======\n";
+	std::cout << "\n======= REQUEST HEADERS =======\n"
+			  << _request.head.str() << "\n======= END REQ HEADERS =======\n";
 
-	parseRequestLine(httpRequest);
+	parseRequestLine();
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
 	if (!checkRedirect())
@@ -39,20 +39,9 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 	checkPath();
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-	parseHeaders(httpRequest);
+	parseHeaders();
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;
-	std::string remainingData;
-	std::getline(httpRequest, remainingData, '\0');
-	// Check if the remaining data is not just the end of headers
-	if (!remainingData.empty() && remainingData != "\r\n\r\n")
-	{
-		// Place the remaining data back into the stream
-		httpRequest.clear();			// Clear any error flags
-		httpRequest.str(remainingData); // Reset the stream with the remaining data
-		httpRequest.seekg(0);			// Reset the position to the beginning of the stream
-		parseBody(httpRequest);
-	}
 	return;
 }
 
@@ -61,12 +50,12 @@ void httpHandler::parseRequest(std::stringstream &httpRequest)
 /**
  * @brief Parses the request line of the HTTP request
  */
-void httpHandler::parseRequestLine(std::stringstream &ss)
+void httpHandler::parseRequestLine(void)
 {
 	std::string requestLine;
 
 	// Get the request line
-	if (!std::getline(ss, requestLine))
+	if (!std::getline(_request.head, requestLine))
 	{
 		std::cerr << "Failed to read request line" << std::endl;
 		return setErrorResponse(eHttpStatusCode::BadRequest, "Failed to read request line");
@@ -215,11 +204,11 @@ void httpHandler::checkPath(void)
 /**
  * @brief Parses the headers of the HTTP request
  */
-void httpHandler::parseHeaders(std::stringstream &ss)
+void httpHandler::parseHeaders(void)
 {
 	std::string header;
 	std::string key, value;
-	while (std::getline(ss, header) && !header.empty() && header != "\r")
+	while (std::getline(_request.head, header) && !header.empty() && header != "\r")
 	{
 		if (header.back() == '\r')
 			header.pop_back();
@@ -239,5 +228,54 @@ void httpHandler::parseHeaders(std::stringstream &ss)
 			}
 		}
 		_request.headers[headerType] = value;
+	}
+}
+
+void httpHandler::setContent(void)
+{
+	auto contentLengthHeader = findHeaderValue(_request, eRequestHeader::ContentLength);
+	auto contentTypeHeader = findHeaderValue(_request, eRequestHeader::ContentType);
+	auto transferEncodingHeader = findHeaderValue(_request, eRequestHeader::TransferEncoding);
+
+	if (contentLengthHeader.has_value())
+	{
+		size_t contentLength = std::stoul(contentLengthHeader.value());
+		if (contentLength > _request.loc.client_body_buffer_size)
+		{
+			return setErrorResponse(eHttpStatusCode::InsufficientStorage, "Fixed length body size exceeds client body buffer size");
+		}
+		if (contentLength == 0)
+		{
+			_request.body.contentType = eContentType::noContent;
+			return;
+		}
+		else if (contentTypeHeader.has_value() && contentTypeHeader.value() == "multipart/form-data")
+		{
+			_request.body.contentType = eContentType::formData;
+			_request.body.contentLen = contentLength;
+			return;
+		}
+		else
+		{
+			_request.body.contentType = eContentType::contentLength;
+			_request.body.contentLen = contentLength;
+			return;
+		}
+	}
+	else if (transferEncodingHeader.has_value())
+	{
+		if (transferEncodingHeader.value() == "chunked")
+		{
+			_request.body.contentType = eContentType::chunked;
+		}
+		else
+		{
+			_request.body.contentType = eContentType::error;
+			return setErrorResponse(eHttpStatusCode::NotImplemented, "Transfer-Encoding type not implemented: " + transferEncodingHeader.value());
+		}
+	}
+	else
+	{
+		_request.body.contentType = eContentType::noContent;
 	}
 }
