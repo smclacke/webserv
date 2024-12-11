@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:14:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 15:32:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,11 +79,13 @@ typedef struct s_serverData
 class Epoll
 {
 	private:
-		int								_epfd;
-		std::vector<t_serverData>		_serverData;
-		int								_numEvents;
-		struct epoll_event				_event;
-		std::vector<epoll_event>		_events;
+		int										_epfd;
+		std::vector<t_serverData>				_serverData;
+		int										_numEvents;
+		struct epoll_event						_event;
+		std::vector<epoll_event>				_events;
+		struct s_cgi							&cgi;
+		httpHandler								&cgi_http;
 
 	public:
 		Epoll();
@@ -91,7 +93,10 @@ class Epoll
 
 		/* methods */
 		void							initEpoll();
-		s_httpSend						handleRequest(std::string &request, Server &server);
+		//s_httpSend						handleRequest(std::string &request, Server &server);
+		void							closeAllPipes(int cgiIN[2], int cgiOUT[2]);
+		void							handleCgiRead(httpHandler &cgi_http, int cgiOUT);
+		void							handleCgiWrite(httpHandler &cgi_http, int cgiIN);
 		void							handleRead(t_clients &client);
 		void							handleWrite(t_clients &client);
 		void							handleFile(t_clients &client);

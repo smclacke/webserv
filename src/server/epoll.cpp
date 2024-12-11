@@ -6,12 +6,14 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:14:48 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 15:30:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
+
+/** @todo check cgi stuff here */
 
 /* constructors */
 Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
@@ -63,7 +65,7 @@ void	Epoll::handleRead(t_clients &client)
 	std::string buf = buffer;
 	client.http->addStringBuffer(buf);
 	if (client.http->getKeepReading())
-		return;
+		return ;
 	else
 	{
 		client._clientState = clientState::READY;
@@ -274,17 +276,18 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					client._connectionClose = true;
 				}
 				if (client._connectionClose)
-				{
 					handleClientClose(serverData, client);
-				}
 			}
 		}
-		//if (fd == cgi)
-		//{
-			//handle cgi, dont modify events, use the pipes
-			// write cgiIN[1]
-			// read cgiOUT[0]
-		//}
+		if (fd == cgi.cgiIN[1] || fd == cgi.cgiOUT[0])
+		{
+			if (event.events & EPOLLIN)
+				handleCgiRead(cgi_http, cgi.cgiOUT[0]);
+			if (event.events & EPOLLOUT)
+				handleCgiWrite(cgi_http, cgi.cgiIN[1]);
+			if (cgi.close == true)
+				closeAllPipes(cgi.cgiIN, cgi.cgiOUT);
+		}
 	}
 }
 

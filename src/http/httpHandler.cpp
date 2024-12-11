@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:06:14 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 15:02:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,8 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	// cgi
 	_cgi.env.clear();
 	_cgi.scriptname.clear();
+	//_cgi.http(std::make_shared<httpHandler>(server, epoll));
+	/** @todo i need  http in cgi (like pretty sure), how do i do this? */
 }
 
 httpHandler::~httpHandler(void)
@@ -91,6 +93,10 @@ void httpHandler::clearHandler(void)
 	}
 	_cgi.env.clear();
 	_cgi.scriptname.clear();
+	_cgi.close = false;
+	_cgi.state = cgiState::BEGIN;
+	_cgi.cgiIN[2] = -1;
+	_cgi.cgiOUT[2] = -1;
 }
 
 /* utils */

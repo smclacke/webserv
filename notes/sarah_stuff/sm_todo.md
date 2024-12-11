@@ -14,13 +14,13 @@
 	operations between the client and the server (listen included).
 		do i have to add servers before listening?
 
+31) j - friday is option
 
 
 ------------------------------
 ------------  CGI
 ------------------------------
 
-31) j - friday is option
 
 32) 
 	dont modifyEvent in cgi pipe situation

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:09:46 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/11 15:20:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,10 +81,28 @@ struct s_response
 	pid_t pid = -1;
 };
 
+enum class cgiState
+{
+	BEGIN = 0,
+	READING = 1,
+	WRITING = 2,
+	READY = 3,
+	ERROR = 4,
+	CLOSE = 5	
+};
+
 struct s_cgi
 {
-	std::vector<char *> env;
-	std::string scriptname;
+	std::vector<char *>				env;
+	std::string						scriptname;
+	int								cgiIN[2]; 		// for sending data to the script
+	int								cgiOUT[2]; 		// for receiving data from the script
+	enum cgiState					state;
+	bool							close;
+	//std::shared_ptr<httpHandler>	http;
+	s_httpSend						response;
+	size_t							write_offset;
+
 };
 
 struct s_httpSend;
