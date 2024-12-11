@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 03:07:38 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/11 03:30:45 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,6 +207,7 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
  */
 void httpHandler::addStringBuffer(std::string &buffer)
 {
+	std::cout << "==buffer==" << buffer << std::endl;
 	if (!_request.headCompleted)
 	{
 		size_t pos = buffer.find("\r\n\r\n");

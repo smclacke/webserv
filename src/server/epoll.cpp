@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 03:00:37 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/11 03:38:32 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,7 +46,6 @@ void Epoll::handleRead(t_clients &client)
 	// Error
 	if (bytesRead < 0)
 	{
-		std::cerr << "Reading from client connection failed\n";
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
 		return;
@@ -113,7 +112,7 @@ void Epoll::handleWrite(t_clients &client)
 		// Finished
 		if (client._write_offset >= client._responseClient.msg.length())
 		{
-			if (client._responseClient.readFd != -1)
+			if (client._responseClient.readfile)
 			{
 				client._readingFile = true;
 				client._connectionClose = false;
@@ -128,7 +127,10 @@ void Epoll::handleWrite(t_clients &client)
 					client._connectionClose = true;
 				}
 			}
-			client._connectionClose = false;
+			if (client._responseClient.keepAlive)
+				client._connectionClose = false;
+			else
+				client._connectionClose = true;
 			client._write_offset = 0;
 			client._responseClient.msg.clear();
 			return;
