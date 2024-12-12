@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 16:17:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 18:42:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,12 @@
  */
 void httpHandler::getMethod(void)
 {
+	std::cout << "GET METHOD" << std::endl;
+	if (_request.cgiReq == true)
+	{
+		generateEnv();
+		cgiResponse();
+	}
 	// uri encoded GET request
 	if (_request.uriEncoded == true)
 	{
@@ -25,25 +31,12 @@ void httpHandler::getMethod(void)
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
 	{
+		std::cout << "directory METHOD" << std::endl;
 		if (!getDirectory())
 			return;
+		std::cout << "index found :" << _request.path << std::endl;
 	}
-	// Check if the file is executable
-	if (access(_request.path.c_str(), X_OK) == 0)
-	{
-		if (isCgi())
-		{
-			if (!generateEnv())
-				return;
-			return cgiResponse();
-		}
-		else
-			return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
-	}
-	else
-	{
-		readFile();
-	}
+	readFile();
 	return;
 }
 
@@ -52,26 +45,21 @@ void httpHandler::getMethod(void)
  */
 void httpHandler::getUriEncoded(void)
 {
-	if (access(_request.path.c_str(), X_OK) == 0)
+	if (_request.cgiReq == true)
 	{
-		if (isCgi())
-		{
-			std::string queryEnv = "QUERY_STRING=" + _request.uriQuery;
-			char *string = strdup(queryEnv.c_str());
-			if (string == NULL)
-				return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
-			_cgi.env.push_back(strdup(queryEnv.c_str()));
-			if (!generateEnv())
-				return;
-			cgiResponse();
+		std::string queryEnv = "QUERY_STRING=" + _request.uriQuery;
+		char *string = strdup(queryEnv.c_str());
+		if (string == NULL)
+			return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
+		_cgi.env.push_back(strdup(queryEnv.c_str()));
+		if (!generateEnv())
 			return;
-		}
-		else
-			return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
+		cgiResponse();
+		return;
 	}
 	else
 	{
-		setErrorResponse(eHttpStatusCode::Forbidden, "url encoded request is does not target executable file");
+		setErrorResponse(eHttpStatusCode::Forbidden, "url encoded request are only allowed as cgi");
 		return;
 	}
 }
@@ -102,6 +90,8 @@ bool httpHandler::getDirectory(void)
 
 void httpHandler::readFile()
 {
+	std::cout << "2\n"
+			  << std::endl;
 	// check if file permission is readable.
 	if (access(_request.path.c_str(), R_OK) != 0)
 	{
@@ -118,6 +108,8 @@ void httpHandler::readFile()
 	}
 	// Read the file content
 	_response.headers[eResponseHeader::ContentType] = type;
+	std::cout << "3\n"
+			  << std::endl;
 	openFile();
 	return;
 }
@@ -137,6 +129,7 @@ void httpHandler::openFile()
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
 		return;
 	}
+	std::cout << "Right before the opening of the file" << std::endl;
 	int fileFd = open(_request.path.c_str(), O_RDONLY);
 	if (fileFd == -1)
 	{
@@ -145,23 +138,4 @@ void httpHandler::openFile()
 	}
 	_response.readFile = true;
 	_response.readFd = fileFd;
-}
-
-/**
- * @brief checks if the file on _request.path is executable and the extension is listed as cgi
- * sets ErrorResponse if its false
- */
-bool httpHandler::isCgi()
-{
-	size_t pos = _request.path.find_last_of('.');
-	if (pos != std::string::npos)
-	{
-		std::string extension = _request.path.substr(pos);
-		if (extension == _request.loc.cgi_ext)
-		{
-			return true;
-		}
-		return false;
-	}
-	return false;
 }

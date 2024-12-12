@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 16:05:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 17:23:15 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,10 +192,8 @@ void httpHandler::postUrlEncoded(void)
 {
 	if (_request.uriEncoded == false)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
-	if (access(_request.path.c_str(), X_OK) != 0)
-		return setErrorResponse(eHttpStatusCode::Forbidden, "no rights to execute program");
-	if (!isCgi())
-		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
+	if (!_request.cgiReq)
+		return setErrorResponse(eHttpStatusCode::Forbidden, "url encoded only allowed as cqi request");
 	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
@@ -216,10 +214,8 @@ void httpHandler::postUrlEncoded(void)
 
 void httpHandler::postApplication(void)
 {
-	if (access(_request.path.c_str(), X_OK) != 0)
-		return setErrorResponse(eHttpStatusCode::Forbidden, "no rights to execute program");
-	if (!isCgi())
-		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
+	if (!_request.cgiReq)
+		return setErrorResponse(eHttpStatusCode::Forbidden, "POST requests with content_type application/* only allowed as cqi request");
 	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
@@ -235,7 +231,7 @@ void httpHandler::postApplication(void)
 void httpHandler::plainText(void)
 {
 	std::ofstream outFile;
-	outFile.open(_request.path);
+	outFile.open(_request.path, std::ios::out);
 	if (!outFile.is_open())
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");

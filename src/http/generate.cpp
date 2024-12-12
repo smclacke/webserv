@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 20:21:41 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 18:09:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,11 @@
  */
 s_httpSend httpHandler::generateResponse(void)
 {
+	std::cout << "\n***********************\n";
+	std::cout << "generate response called for :\n"
+			  << _request.path << "\n"
+			  << "METHOD = " << httpMethodToStringFunc(_request.method) << "\n"
+			  << "\n***********************\n";
 	auto it = _request.headers.find(eRequestHeader::Connection);
 	if (it != _request.headers.end())
 	{

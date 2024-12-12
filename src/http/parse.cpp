@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 13:32:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 18:28:20 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,8 @@ void httpHandler::parseHead(void)
 
 	parseRequestLine();
 	if (_statusCode > eHttpStatusCode::Accepted)
+		return;
+	if (!checkMethod())
 		return;
 	if (!checkRedirect())
 		return;
@@ -99,6 +101,17 @@ void httpHandler::parseRequestLine(void)
 	_request.loc = optLoc.value();
 }
 
+bool httpHandler::checkMethod(void)
+{
+	for (auto &method : _request.loc.allowed_methods)
+	{
+		if (method == _request.method)
+			return true;
+	}
+	setErrorResponse(eHttpStatusCode::MethodNotAllowed, "this method is not allowed for this location");
+	return false;
+}
+
 /**
  * @brief check if there is a redirect
  * sets the right _response headers for the redirect
@@ -137,41 +150,7 @@ bool httpHandler::checkRedirect(void)
 }
 
 /**
- * @brief builds the path.
- * Replaces the part of the uri that tags the location with the root of said location
- */
-std::string httpHandler::buildPath(void)
-{
-	std::string buildpath;
-	std::string uri = _request.uri;
-	std::string locpath;
-
-	if (_request.loc.path == "/")
-		locpath = "";
-	else
-		locpath = _request.loc.path;
-	if (!_request.loc.root.empty())
-	{
-		if (locpath.size() <= uri.size())
-		{
-			uri.erase(0, locpath.length());
-			uri = _request.loc.root + uri;
-		}
-	}
-	else if (!_server.getRoot().empty())
-	{
-		if (locpath.size() <= uri.size())
-		{
-			uri.erase(0, locpath.length());
-			uri = _server.getRoot() + uri;
-		}
-	}
-	buildpath = "." + uri;
-	return (buildpath);
-}
-
-/**
- * @brief checks if the is a x-www-form-urlencoded request and if the path is valid
+ * @brief checks if the is a uri encoded request and if the path is valid
  */
 void httpHandler::checkPath(void)
 {
@@ -182,7 +161,7 @@ void httpHandler::checkPath(void)
 		if (std::filesystem::exists(tempPath))
 		{
 			_request.path = tempPath;
-			return; // ? was a coincidence, not denfing URI
+			return;
 		}
 		std::string uri = _request.uri;
 		_request.uriQuery = uri.substr(queryPos + 1);
@@ -194,11 +173,87 @@ void httpHandler::checkPath(void)
 		_request.uriEncoded = true;
 	}
 	_request.path = buildPath();
+	if (_statusCode == eHttpStatusCode::Forbidden)
+		return;
 	if (!std::filesystem::exists(_request.path))
 	{
-		std::cerr << "Resource not found at path: " << _request.path << std::endl;
 		return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
 	}
+	if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) == 0)
+	{
+		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to execute file, does not match cgi settings");
+	}
+}
+
+/**
+ * @brief builds the path.
+ * Replaces the part of the uri that tags the location with the root of said location
+ * if the file extension matches the cqi extension of the location it builds the path from cgi_path
+ */
+std::string httpHandler::buildPath(void)
+{
+	std::string outPath;
+	std::string uri = _request.uri;
+	std::string locpath = _request.loc.path;
+
+	if (!_request.loc.cgi_ext.empty())
+	{
+		size_t pos = _request.path.find_last_of('.');
+		if (pos != std::string::npos)
+		{
+			std::string extension = _request.path.substr(pos);
+			if (extension == _request.loc.cgi_ext)
+			{
+				return buildCgiPath();
+			}
+		}
+	}
+	// non-cgi
+	if (!_request.loc.root.empty())
+	{
+		uri.erase(0, locpath.length());
+		uri = _request.loc.root + uri;
+	}
+	else if (!_server.getRoot().empty())
+	{
+		uri.erase(0, locpath.length());
+		uri = _server.getRoot() + uri;
+	}
+	outPath = "." + uri;
+	return (outPath);
+}
+
+std::string httpHandler::buildCgiPath(void)
+{
+	std::string outPath;
+	std::string uri = _request.uri;
+	std::string locpath;
+
+	if (_request.loc.cgi_path.empty())
+		return setErrorResponse(eHttpStatusCode::Forbidden, "no cgi_path provided for this location"), "";
+	if (_request.loc.path == "/")
+		locpath = "";
+	else
+		locpath = _request.loc.path;
+	if (!_request.loc.root.empty())
+	{
+		if (locpath.size() <= uri.size())
+		{
+			uri.erase(0, locpath.length());
+			uri = _request.loc.root + _request.loc.cgi_path + uri;
+		}
+	}
+	else if (!_server.getRoot().empty())
+	{
+		if (locpath.size() <= uri.size())
+		{
+			uri.erase(0, locpath.length());
+			uri = _server.getRoot() + _request.loc.cgi_path + uri;
+		}
+	}
+	outPath = "." + uri;
+	_request.cgiReq = true;
+	return outPath;
 }
 
 /**
