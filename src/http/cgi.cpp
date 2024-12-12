@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:25:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 19:36:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,6 +23,7 @@ static void		freeStrings(char *script, char *path)
 
 void	Epoll::handleCgiRead(s_cgi &cgi)
 {
+	std::cout << "in read\n";
 	char	buffer[READ_BUFFER_SIZE];
 	int		bytesRead;
 
@@ -37,6 +38,8 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	}
 	else if (bytesRead == 0) // EOF
 	{
+		std::cout << "finished reading\n";
+		send(cgi.client_fd, cgi.input.c_str(), cgi.input.size(), 0);
 		close(cgi.cgiOUT[0]);
 		cgi.state = cgiState::READY;
 		cgi.cgiOUT[0] = -1;
@@ -44,7 +47,7 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	}
 	cgi.output = true;
 	cgi.input.append(buffer, bytesRead);
-	//std::cout << "cgi READ input = " << cgi.input << "\n\n";
+	std::cout << "cgi READ input = " << cgi.input << "\n\n";
 	return ;
 }
 
@@ -52,6 +55,7 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 {
 	if (cgi.input.size() == 0) //  we need to read
 	{
+		close(cgi.cgiIN[1]);
 		cgi.close = false;
 		return ;
 	}
@@ -60,8 +64,10 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 
 	std::cout << "cgi WRITE input size = " << cgi.input.size() << "\n\n";
 	std::cout << "cgi WRITE input = " << cgi.input << "\n\n";
+	//int bytesWritten = send(cgi.client_fd, cgi.input.c_str(), cgi.input.size(), 0);
+	
 	//modifyEvent(cgi.client_fd, EPOLLOUT);
-	int bytesWritten = send(cgi.client_fd, cgi.input.c_str(), cgi.input.size(), 0);
+	int bytesWritten = write(cgi.client_fd, cgi.input.c_str(), cgi.input.size());
 	std::cout << "cgi WRITE byteswritten = " << bytesWritten << "\n\n";
 	
 	if (bytesWritten < 0)
@@ -70,14 +76,18 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 		cgi.close = true;
 		return ;
 	}
-	if (!cgi.input.empty())
-		modifyEvent(cgi.client_fd, EPOLLOUT);
+	//if (!cgi.input.empty())
+	//{
+		
+	//}
+	//	modifyEvent(cgi.client_fd, EPOLLOUT);
 	
 	if (cgi.input.empty() && cgi.cgiOUT[0] == -1) // everything has been sent
 	{
 		cgi.close = true;
 		return ;
 	}
+	cgi.state = cgiState::BEGIN;
 	cgi.close = false;
 }
 

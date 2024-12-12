@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:24:46 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 19:41:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -216,7 +216,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						{ 
 							serverData.cgi = client.http->getCGI();
 							serverData.cgi.client_fd = client._fd;
-							modifyInANDOut(serverData.cgi.client_fd);
+							//modifyInANDOut(serverData.cgi.client_fd);
 						}
 						client.http->clearHandler();
 						modifyEvent(client._fd, EPOLLOUT);
@@ -243,32 +243,42 @@ void Epoll::processEvent(int fd, epoll_event &event)
 		}
 		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
 		{
-			//std::cout << "CGI CGI CLIENT FD = " << serverData.cgi.client_fd << "\n\n";
 			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 			{
-				serverData.cgi.close = true;
-				if (serverData.cgi.pid != -1)
-				{
-					int status;
-					waitpid(serverData.cgi.pid, &status, 0);
-					if (serverData.cgi.output == false)
-					{
-						if (status != 0)
-							send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-						else
-							send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-					}
-				}
+				std::cout << "done reading\n";
+				//serverData.cgi.close = true;
+				//if (serverData.cgi.pid != -1)
+				//{
+				//	int status;
+				//	waitpid(serverData.cgi.pid, &status, 0);
+				//	if (serverData.cgi.output == false)
+				//	{
+				//		if (status != 0)
+				//			send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
+				//		else
+				//			send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
+				//	}
+				//	send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
+				//}
+				//else
+					send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
 			}
 			if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
 				handleCgiRead(serverData.cgi);
-			if (serverData.cgi.state == cgiState::READY)
-			{
-				std::cout << "cgi input read successfully = " << serverData.cgi.input << "\n\n";
-				//exit(EXIT_SUCCESS);
-			}
+			//if (serverData.cgi.state == cgiState::READY)
+			//{
+			//	std::cout << "cgi input read successfully = " << serverData.cgi.input << "\n\n";
+			//	//exit(EXIT_SUCCESS);
+			//}
 			if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
 				handleCgiWrite(serverData.cgi);
+			//if (serverData.cgi.state == cgiState::BEGIN)
+			//{
+			//	std::cout << "cgi input WRITTEN successfully = " << serverData.cgi.input << "\n\n";
+			//	int sentBytes = send(serverData.cgi.client_fd, serverData.cgi.input.c_str(), serverData.cgi.input.size(), 0);
+			//	std::cout << "sendbytes = " << sentBytes << "\n\n";
+			//	modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+			//}
 			if (serverData.cgi.close == true)
 			{
 				removeCGIFromEpoll(serverData);
