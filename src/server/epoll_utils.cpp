@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 11:44:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:06:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,22 +94,17 @@ void	Epoll::closeDelete(int fd)
 
 void	Epoll::removeCGIFromEpoll(t_serverData &server)
 {
-	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiIN[1], nullptr) == -1)
-		return ;
-	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiOUT[0], nullptr) == -1)
-		return ;
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiIN[1], nullptr);
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiOUT[0], nullptr);
 }
 
 void	Epoll::handleClientClose(t_serverData &server, t_clients &client)
 {
-	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr) == -1)
-		return ;
-
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr);
 	protectedClose(client._fd);
 	client._responseClient.msg.clear();
 	client._fd = -1;
 	client._write_offset = 0;
-
 	client._clientState = clientState::CLOSED;
 	server.removeClient(client);
 }

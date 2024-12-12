@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 20:46:24 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:02:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -259,7 +259,6 @@ bool httpHandler::getKeepReading(void) const
 /* CGI :) */
 void s_cgi::clearCgi(void)
 {
-	// cgi
 	for (char *envVar : env)
 	{
 		free(envVar);
@@ -277,22 +276,22 @@ void s_cgi::clearCgi(void)
 
 void		s_cgi::closeAllPipes(void)
 {
-	if (cgiIN[0] != -1)
+	if (cgiIN[0] < 0)
 	{
 		protectedClose(cgiIN[0]);
 		cgiIN[0] = -1;	
 	}
-	if (cgiIN[1] != -1)
+	if (cgiIN[1] < 0)
 	{
 		protectedClose(cgiIN[1]);
 		cgiIN[1] = -1;	
 	}
-	if (cgiOUT[0] != -1)
+	if (cgiOUT[0] < 0)
 	{
 		protectedClose(cgiOUT[0]);
 		cgiOUT[0] = -1;	
 	}
-	if (cgiOUT[1] != -1)
+	if (cgiOUT[1] < 0)
 	{
 		protectedClose(cgiOUT[1]);
 		cgiOUT[1] = -1;	

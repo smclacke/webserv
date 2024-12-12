@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 11:32:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:18:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,7 +79,9 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 		}
 		cgi.state = cgiState::CLOSE;
 		cgi.close = true;
+		return ;
 	}
+	cgi.close = false;
 }
 
 void	Epoll::handleCgiWrite(s_cgi &cgi)
@@ -113,7 +115,7 @@ void	Epoll::handleCgiWrite(s_cgi &cgi)
 		return ;
 	}
 	cgi.write_offset += bytesWritten;
-	if (cgi.write_offset >= cgi.input.length())
+	if (cgi.write_offset >= cgi.input.length()) // use size() here like above
 	{
 		cgi.state = cgiState::READING;
 		protectedClose(cgi.cgiIN[1]);
