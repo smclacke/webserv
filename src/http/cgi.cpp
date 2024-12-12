@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 17:58:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 18:25:37 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,11 +26,11 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	char	buffer[READ_BUFFER_SIZE];
 	int		bytesRead;
 
-	//memset(buffer, 0, sizeof(buffer)); ?
+	memset(buffer, 0, sizeof(buffer));
 	bytesRead = read(cgi.cgiOUT[0], buffer, READ_BUFFER_SIZE - 1);
 	if (bytesRead < 0)
 	{
-		write(cgi.client_fd, BAD_CGI, BAD_SIZE);
+		send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
 		std::cerr << "read() cgi failed\n"; /** @todo remove after testing*/
 		cgi.close = true;
 		return ;
@@ -38,42 +38,42 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	else if (bytesRead == 0) // EOF
 	{
 		close(cgi.cgiOUT[0]);
-		cgi.cgiOUT[0] = -1;
-		//cgi.close = true; ?
 		cgi.state = cgiState::READY;
+		cgi.cgiOUT[0] = -1;
 		return ;
 	}
+	cgi.output = true;
 	cgi.input.append(buffer, bytesRead);
-	std::cout << "cgi READ input = " << cgi.input << "\n\n";
-	cgi.state = cgiState::READY;
+	//std::cout << "cgi READ input = " << cgi.input << "\n\n";
 	return ;
-	//modifyEvent(cgi.client_fd, EPOLLOUT);
-	//cgi.output = true;
 }
 
 void	Epoll::handleCgiWrite(s_cgi &cgi)
 {
-	//std::cout << "write input size = " << cgi.input.size() << "\n\n";
-	std::cout << "cgi WRITE input = " << cgi.input << "\n\n";
-	if (cgi.input.size() == 0)
+	if (cgi.input.size() == 0) //  we need to read
 	{
-		modifyEvent(cgi.client_fd, EPOLLIN);
 		cgi.close = false;
 		return ;
 	}
-	int bytesWritten = write(cgi.client_fd, cgi.input.c_str(), cgi.input.size());
 
+	std::cout << "CLIENT FD = " << cgi.client_fd << "\n\n";
+
+	std::cout << "cgi WRITE input size = " << cgi.input.size() << "\n\n";
+	std::cout << "cgi WRITE input = " << cgi.input << "\n\n";
+	//modifyEvent(cgi.client_fd, EPOLLOUT);
+	int bytesWritten = send(cgi.client_fd, cgi.input.c_str(), cgi.input.size(), 0);
+	std::cout << "cgi WRITE byteswritten = " << bytesWritten << "\n\n";
+	
 	if (bytesWritten < 0)
 	{
 		std::cerr << "write() to cgi failed\n"; /** @todo remove after testing*/
 		cgi.close = true;
 		return ;
 	}
-	//cgi.input.erase(0, bytesWritten);
 	if (!cgi.input.empty())
-		modifyEvent(cgi.client_fd, EPOLLIN);
+		modifyEvent(cgi.client_fd, EPOLLOUT);
 	
-	else if (cgi.cgiOUT[0] == -1) // everything has been sent
+	if (cgi.input.empty() && cgi.cgiOUT[0] == -1) // everything has been sent
 	{
 		cgi.close = true;
 		return ;

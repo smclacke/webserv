@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 17:56:59 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 18:24:46 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -214,8 +214,9 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						client._responseClient = client.http->generateResponse();
 						if (client._responseClient.cgi)
 						{ 
-							serverData.cgi = client.http->getCGI();	
+							serverData.cgi = client.http->getCGI();
 							serverData.cgi.client_fd = client._fd;
+							modifyInANDOut(serverData.cgi.client_fd);
 						}
 						client.http->clearHandler();
 						modifyEvent(client._fd, EPOLLOUT);
@@ -242,7 +243,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 		}
 		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
 		{
-			addBOTHEpoll(serverData.cgi.client_fd);
+			//std::cout << "CGI CGI CLIENT FD = " << serverData.cgi.client_fd << "\n\n";
 			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 			{
 				serverData.cgi.close = true;
@@ -264,11 +265,10 @@ void Epoll::processEvent(int fd, epoll_event &event)
 			if (serverData.cgi.state == cgiState::READY)
 			{
 				std::cout << "cgi input read successfully = " << serverData.cgi.input << "\n\n";
-				exit(EXIT_SUCCESS);
+				//exit(EXIT_SUCCESS);
 			}
-				
-			//if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
-			//	handleCgiWrite(serverData.cgi);
+			if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
+				handleCgiWrite(serverData.cgi);
 			if (serverData.cgi.close == true)
 			{
 				removeCGIFromEpoll(serverData);
