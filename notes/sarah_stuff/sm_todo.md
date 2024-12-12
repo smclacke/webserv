@@ -21,7 +21,7 @@
 
 	- CGI can't handle basic images anymore in browser + calculator broken + checked server_files + conf + index but can't see any issues
 
-	- isCgi doesnt work?
+	- isCgi doesnt work? - was an issue, maybe not anymore?
 
 	- always throws error:	
 		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");

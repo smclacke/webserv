@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 22:05:11 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 11:32:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,14 +138,14 @@ void		httpHandler::cgiResponse()
 		if (scriptName == NULL)
 		{
 			_cgi.closeAllPipes();
-			exit(EXIT_FAILURE);
+			std::exit(EXIT_FAILURE);
 		}
 		char	*scriptPath = strdup(_request.path.c_str());
 		if (scriptPath == NULL)
 		{
 			_cgi.closeAllPipes();
 			freeStrings(scriptName, NULL);
-			exit(EXIT_FAILURE);
+			std::exit(EXIT_FAILURE);
 		}
 		char	*argv[] = {scriptPath, nullptr};
 		
@@ -154,7 +154,7 @@ void		httpHandler::cgiResponse()
 			std::cerr << "dup2() cgi failed\n";  /** @todo remove after testing*/
 			_cgi.closeAllPipes();
 			freeStrings(scriptName, scriptPath);
-			exit(EXIT_FAILURE);
+			std::exit(EXIT_FAILURE);
 		}
 		protectedClose(_cgi.cgiIN[1]);
 		protectedClose(_cgi.cgiOUT[0]);
@@ -163,11 +163,11 @@ void		httpHandler::cgiResponse()
 			std::cerr << "execve failed\n"; /** @todo remove after testing*/
 			freeStrings(scriptName, scriptPath);
 			_cgi.closeAllPipes();
-			exit(EXIT_FAILURE);	
+			std::exit(EXIT_FAILURE);	
 		}
 		_cgi.closeAllPipes();
 		freeStrings(scriptName, scriptPath);
-		exit(EXIT_SUCCESS);
+		std::exit(EXIT_SUCCESS);
 	}
 	else if (_cgi.pid > 0) // parent: only writes to input and reads from output
 	{
