@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:09:40 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 22:34:31 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,10 @@ s_httpSend httpHandler::generateResponse(void)
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return (writeResponse());
 	callMethod();
-	// CGI generate its own HTTP - is this correct
+	if (_response.readFile)
+		std::cout << "\n****** read_file is true ****" << std::endl;
+	else
+		std::cout << "\n****** read_file is false ****" << std::endl;
 	return (writeResponse());
 }
 
@@ -80,12 +83,10 @@ s_httpSend httpHandler::writeResponse(void)
 			responseStream << responseHeaderToString(header.first) << header.second << "\r\n";
 		}
 		// break between header and body:
-		responseStream << "\r\n";
+		responseStream << "\r\n\r\n";
 		/* body */
 		if (_response.readFile == false)
-		{
 			responseStream << _response.body.str();
-		}
 		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
 		std::cout << "Response = " << response.msg << std::endl;
 		return (response);

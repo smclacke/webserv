@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:28:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 23:04:49 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -231,25 +231,15 @@ std::string httpHandler::buildCgiPath(void)
 
 	if (_request.loc.cgi_path.empty())
 		return setErrorResponse(eHttpStatusCode::Forbidden, "no cgi_path provided for this location"), "";
-	if (_request.loc.path == "/")
-		locpath = "";
-	else
-		locpath = _request.loc.path;
 	if (!_request.loc.root.empty())
 	{
-		if (locpath.size() <= uri.size())
-		{
-			uri.erase(0, locpath.length());
-			uri = _request.loc.root + _request.loc.cgi_path + uri;
-		}
+		uri.erase(0, locpath.length());
+		uri = _request.loc.root + _request.loc.cgi_path + uri;
 	}
 	else if (!_server.getRoot().empty())
 	{
-		if (locpath.size() <= uri.size())
-		{
-			uri.erase(0, locpath.length());
-			uri = _server.getRoot() + _request.loc.cgi_path + uri;
-		}
+		uri.erase(0, locpath.length());
+		uri = _server.getRoot() + _request.loc.cgi_path + uri;
 	}
 	outPath = "." + uri;
 	_request.cgiReq = true;

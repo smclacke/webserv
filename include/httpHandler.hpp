@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:30:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 22:22:10 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,7 +155,7 @@ public:
 
 	/* member functions */
 	void clearHandler(void);
-	void addStringBuffer(std::string &buffer);
+	void addStringBuffer(std::string buffer);
 	s_httpSend generateResponse(void);
 
 	/* for epoll read operations */

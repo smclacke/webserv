@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 19:19:52 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 23:50:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -90,7 +90,7 @@ void httpHandler::readFile()
 	// check if file permission is readable.
 	if (access(_request.path.c_str(), R_OK) != 0)
 	{
-		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to open file: " + _request.path);
+		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to read file: " + _request.path);
 	}
 	std::string type = contentType(_request.path);
 	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
@@ -103,8 +103,6 @@ void httpHandler::readFile()
 	}
 	// Read the file content
 	_response.headers[eResponseHeader::ContentType] = type;
-	std::cout << "3\n"
-			  << std::endl;
 	openFile();
 	return;
 }

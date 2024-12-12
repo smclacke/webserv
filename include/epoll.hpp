@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 11:44:30 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 23:22:55 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,20 +51,21 @@ enum class clientState
 
 typedef struct s_clients
 {
-	int										_fd;
-	struct sockaddr_in 						_addr;
-	socklen_t 								_addLen;
-	enum clientState						_clientState;
-	std::unordered_map<int, timePoint>		_clientTime;
-	bool									_connectionClose;
+	int _fd;
+	struct sockaddr_in _addr;
+	socklen_t _addLen;
+	enum clientState _clientState;
+	std::unordered_map<int, timePoint> _clientTime;
+	bool _connectionClose;
 
-	std::shared_ptr<httpHandler>			http;
-	//std::string								_requestClient; // what has julius done
+	std::shared_ptr<httpHandler> http;
+	// std::string								_requestClient; // what has julius done
 
 	/** Write */
-	s_httpSend								_responseClient;
-	size_t									_write_offset;
-	bool									_readingFile;
+	s_httpSend _responseClient;
+	size_t _write_offset;
+	bool _readingFile;
+	size_t bytes_written;
 	s_clients(Epoll &epoll, Server &server);
 	~s_clients() {};
 
@@ -72,66 +73,66 @@ typedef struct s_clients
 
 typedef struct s_serverData
 {
-	std::shared_ptr<Server>					_server;
-	std::deque<t_clients>					_clients;
-	struct s_cgi							cgi;
+	std::shared_ptr<Server> _server;
+	std::deque<t_clients> _clients;
+	struct s_cgi cgi;
 
 	/* methods */
-	void								addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
-	void								removeClient(t_clients &client);
-	
-} 				t_serverData;
+	void addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
+	void removeClient(t_clients &client);
+
+} t_serverData;
 class Epoll
 {
-	private:
-		int										_epfd;
-		std::vector<t_serverData>				_serverData;
-		int										_numEvents;
-		struct epoll_event						_event;
-		std::vector<epoll_event>				_events;
+private:
+	int _epfd;
+	std::vector<t_serverData> _serverData;
+	int _numEvents;
+	struct epoll_event _event;
+	std::vector<epoll_event> _events;
 
-	public:
-		Epoll();
-		~Epoll();
+public:
+	Epoll();
+	~Epoll();
 
-		/* methods */
-		void							initEpoll();
-		//s_httpSend						handleRequest(std::string &request, Server &server);
-		void							handleCgiRead(s_cgi &cgi);
-		void							handleCgiWrite(s_cgi &cgi);
-		void							handleRead(t_clients &client);
-		void							handleWrite(t_clients &client);
-		void							handleFile(t_clients &client);
-		void							makeNewConnection(int fd, t_serverData &server);
-		void							processEvent(int fd, epoll_event &event);
+	/* methods */
+	void initEpoll();
+	// s_httpSend						handleRequest(std::string &request, Server &server);
+	void handleCgiRead(s_cgi &cgi);
+	void handleCgiWrite(s_cgi &cgi);
+	void handleRead(t_clients &client);
+	void handleWrite(t_clients &client);
+	void handleFile(t_clients &client);
+	void makeNewConnection(int fd, t_serverData &server);
+	void processEvent(int fd, epoll_event &event);
 
-		/* getters */
-		int								getEpfd() const;
-		int								getNumEvents() const;
-		std::vector<t_serverData>		&getAllServers();
-		std::shared_ptr<Server>			getServer(size_t i);
-		std::vector<epoll_event>		&getAllEvents();
-		struct epoll_event				&getEvent();
+	/* getters */
+	int getEpfd() const;
+	int getNumEvents() const;
+	std::vector<t_serverData> &getAllServers();
+	std::shared_ptr<Server> getServer(size_t i);
+	std::vector<epoll_event> &getAllEvents();
+	struct epoll_event &getEvent();
 
-		/* setters */
-		void							setEpfd(int fd);
-		void							setNumEvents(int numEvents);
-		void							setEventMax();
-		void							setEvent(struct epoll_event &event);
-		void							setServer(std::shared_ptr<Server>);
+	/* setters */
+	void setEpfd(int fd);
+	void setNumEvents(int numEvents);
+	void setEventMax();
+	void setEvent(struct epoll_event &event);
+	void setServer(std::shared_ptr<Server>);
 
-		
-		/* utils -> epoll_utils.cpp */
-		void							addToEpoll(int fd);
-		void							addOUTEpoll(int fd);
-		void							modifyEvent(int fd, uint32_t events);
-		void							setNonBlocking(int connection);
-		void							updateClientClock(t_clients &client);
-		void							clientTimeCheck(t_clients &client);
-		void							closeDelete(int fd);
-		void							removeCGIFromEpoll(t_serverData &server);
-		void							handleClientClose(t_serverData &server, t_clients &client);
-		void							operationFailed(t_clients &client);
+	/* utils -> epoll_utils.cpp */
+	void addToEpoll(int fd);
+	void addOUTEpoll(int fd);
+	void modifyEvent(int fd, uint32_t events);
+	void setNonBlocking(int connection);
+	void updateClientClock(t_clients &client);
+	void clientTimeCheck(t_clients &client);
+	void closeDelete(int fd);
+	void removeCGIFromEpoll(t_serverData &server);
+	void handleClientClose(t_serverData &server, t_clients &client);
+	void operationFailed(t_clients &client);
+	void cleanResponse(t_clients &client);
 };
 
 #endif /* EPOLL_HPP */

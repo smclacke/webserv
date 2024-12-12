@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 19:09:32 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 23:56:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,12 +38,12 @@ void Epoll::initEpoll()
 
 void Epoll::handleRead(t_clients &client)
 {
+	client._clientState = clientState::READING;
 	size_t readSize = client.http->getReadSize();
 	char buffer[readSize];
 	int bytesRead = 0;
 	memset(buffer, 0, sizeof(buffer));
 
-	client._clientState = clientState::READING;
 	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
 
 	// Error
@@ -61,8 +61,7 @@ void Epoll::handleRead(t_clients &client)
 		client._connectionClose = true;
 		return;
 	}
-
-	// buffer[bytesRead] = '\0';
+	buffer[readSize - 1] = '\0';
 	std::string buf = buffer;
 	client.http->addStringBuffer(buf);
 	if (client.http->getKeepReading())
@@ -76,134 +75,98 @@ void Epoll::handleRead(t_clients &client)
 
 void Epoll::handleWrite(t_clients &client)
 {
-	// Handle Client Request
-	if (client._clientState == clientState::BEGIN && client._readingFile == false)
+	if (client._clientState == clientState::BEGIN)
 	{
 		client._clientState = clientState::WRITING;
 	}
-	if (client._readingFile == false)
+	if (client._readingFile)
 	{
-		ssize_t leftover;
-		ssize_t sendlen = WRITE_BUFFER_SIZE;
-		leftover = client._responseClient.msg.size() - client._write_offset;
-		if (leftover < WRITE_BUFFER_SIZE)
-			sendlen = leftover;
-
-		int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
-
-		// Error
-		if (bytesWritten < 0)
-		{
-			std::cerr << "Write to client failed\n";
-			client._clientState = clientState::ERROR;
-			client._connectionClose = true;
-			return;
-		}
-
-		// Disconnected
-		else if (bytesWritten == 0)
-		{
-			client._clientState = clientState::CLOSE;
-			client._connectionClose = true;
-			return;
-		}
-
-		client._write_offset += bytesWritten;
-
-		// Finished
-		if (client._write_offset >= client._responseClient.msg.length())
-		{
-			if (client._responseClient.readfile)
-			{
-				client._readingFile = true;
-				client._connectionClose = false;
-				return;
-			}
-			else
-			{
-				client._clientState = clientState::READY;
-				if (client._responseClient.keepAlive == false)
-				{
-					client._clientState = clientState::CLOSE;
-					client._connectionClose = true;
-				}
-			}
-			if (client._responseClient.keepAlive)
-				client._connectionClose = false;
-			else
-				client._connectionClose = true;
-			client._write_offset = 0;
-			client._responseClient.msg.clear();
-			return;
-		}
-		client._connectionClose = false;
-	}
-	else
 		handleFile(client);
+		return;
+	}
+	ssize_t leftover;
+	ssize_t sendlen = WRITE_BUFFER_SIZE;
+	leftover = client._responseClient.msg.size() - client._write_offset;
+	if (leftover < WRITE_BUFFER_SIZE)
+		sendlen = leftover;
+	int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
+	// Error
+	if (bytesWritten < 0)
+	{
+		std::cerr << "Write to client failed\n";
+		client._clientState = clientState::ERROR;
+		client._connectionClose = true;
+		return;
+	}
+
+	// Disconnected
+	else if (bytesWritten == 0)
+	{
+		client._clientState = clientState::CLOSE;
+		client._connectionClose = true;
+		return;
+	}
+
+	client._write_offset += bytesWritten;
+
+	// Finished
+	if (client._write_offset >= client._responseClient.msg.length())
+	{
+		client._write_offset = 0;
+		client._responseClient.msg.clear();
+		if (client._responseClient.readfile)
+		{
+			client._readingFile = true;
+			client._connectionClose = false;
+			return;
+		}
+		else
+		{
+			client._clientState = clientState::READY;
+			if (client._responseClient.keepAlive == false)
+			{
+				client._clientState = clientState::CLOSE;
+				client._connectionClose = true;
+			}
+		}
+		if (client._responseClient.keepAlive)
+			client._connectionClose = false;
+		else
+			client._connectionClose = true;
+		return;
+	}
+	client._connectionClose = false;
 }
 
 void Epoll::handleFile(t_clients &client)
 {
-	int bytesSend;
 	char buffer[READ_BUFFER_SIZE];
-	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
-
-	// Error
+	memset(buffer, 0, sizeof(buffer));
+	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE);
 	if (bytesRead < 0)
 	{
 		std::cerr << "Reading from file failed\n";
 		operationFailed(client);
 		return;
 	}
-
-	// Nothing to read -> we are done
 	else if (bytesRead == 0)
 	{
-		client._readingFile = false;
-		client._responseClient.readfile = false;
 		client._clientState = clientState::READY;
-		protectedClose(client._responseClient.readFd);
-		client._responseClient.readFd = -1;
-		if (client._responseClient.keepAlive == false)
+		if (!client._responseClient.keepAlive)
 		{
-			client._clientState = clientState::CLOSE;
 			client._connectionClose = true;
 		}
 		return;
 	}
-
-	// Not finished reading, send what we have read and cont. loop
-	buffer[bytesRead - 1] = '\0';
-	if (bytesRead == READ_BUFFER_SIZE - 1)
+	int bytesSent = send(client._fd, buffer, bytesRead, 0);
+	if (bytesSent < 0)
 	{
-		bytesSend = send(client._fd, buffer, bytesRead, 0);
-		if (bytesSend < 0)
-		{
-			std::cerr << "Write to client failed\n";
-			operationFailed(client);
-			return;
-		}
-	}
-
-	// Need to send, then we are done
-	else if (bytesRead < READ_BUFFER_SIZE)
-	{
-		bytesSend = send(client._fd, buffer, bytesRead, 0);
-		if (bytesSend < 0)
-		{
-			std::cerr << "Write to client failed\n";
-			operationFailed(client);
-			return;
-		}
-		client._readingFile = false;
-		client._responseClient.readfile = false;
-		client._clientState = clientState::READY;
-		protectedClose(client._responseClient.readFd);
-		client._responseClient.readFd = -1;
-		if (client._responseClient.keepAlive == false)
-			client._connectionClose = true;
+		std::cerr << "Write to client failed\n";
+		operationFailed(client);
 		return;
 	}
+	client._clientState = clientState::WRITING;
+	client.bytes_written += bytesSent;
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData &server)
@@ -260,8 +223,9 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
-						client._write_offset = 0;
-						client._readingFile = false;
+						std::cout << "\nBYTES SEND: " << client.bytes_written << std::endl;
+						std::cout << "\nAfter writing client set to READY\n";
+						cleanResponse(client);
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
 						updateClientClock(client);
@@ -270,6 +234,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 				{
 					client._connectionClose = true;
+					cleanResponse(client);
+					client.http->clearHandler();
 				}
 				if (client._connectionClose)
 					handleClientClose(serverData, client);

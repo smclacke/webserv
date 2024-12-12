@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:36:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 22:22:17 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -185,7 +185,7 @@ std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
 void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
 {
 	_statusCode = code;
-	_response.body.clear();
+	resetStringStream(_response.body);
 	_response.body << msg;
 }
 
@@ -198,7 +198,7 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
  * end of ContentLength / Chunked=0/r/n/ / wwwFormDelimiter
  *
  */
-void httpHandler::addStringBuffer(std::string &buffer)
+void httpHandler::addStringBuffer(std::string buffer)
 {
 	if (!_request.headCompleted)
 	{
@@ -239,7 +239,7 @@ void httpHandler::addStringBuffer(std::string &buffer)
 	{
 		if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
 		{
-			setErrorResponse(eHttpStatusCode::InternalServerError, "reached unexpected point");
+			setErrorResponse(eHttpStatusCode::InternalServerError, "unexpected body");
 			_request.keepReading = false;
 			return;
 		}
