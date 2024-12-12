@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 03:30:45 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/12 12:31:36 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -210,10 +210,10 @@ void httpHandler::addStringBuffer(std::string &buffer)
 	std::cout << "==buffer==" << buffer << std::endl;
 	if (!_request.headCompleted)
 	{
-		size_t pos = buffer.find("\r\n\r\n");
+		_request.head << buffer;
+		size_t pos = _request.head.str().find("\r\n\r\n");
 		if (pos != std::string::npos)
 		{
-			_request.head << buffer.substr(0, pos + 4);
 			_request.headCompleted = true;
 			parseHead();
 			if (_statusCode > eHttpStatusCode::Accepted)
@@ -229,15 +229,14 @@ void httpHandler::addStringBuffer(std::string &buffer)
 			}
 			if (pos + 4 < buffer.size())
 			{
-				std::string buf = buffer.substr(pos + 4);
+				std::string buf = _request.head.str().substr(pos + 4);
+				std::string headStr = _request.head.str();
+				headStr.erase(pos + 4);
+				_request.head.str(headStr);
 				addToBody(buf);
 			}
-			return;
 		}
-		else
-		{
-			_request.head << buffer;
-		}
+		return;
 	}
 	else
 	{

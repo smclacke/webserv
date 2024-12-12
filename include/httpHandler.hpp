@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 03:26:07 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/12 13:15:13 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,7 +32,8 @@ enum class eContentType
 	noContent,
 	contentLength,
 	formData,
-	chunked
+	chunked,
+	application
 };
 
 struct s_content
@@ -137,14 +138,15 @@ private:
 	bool isCgi(void);
 	// POST METHOD
 	void postMethod(void);
-	void postMultiForm(const std::string &contentType);
-	void parseMultipartBody(const std::string &contentType, std::list<std::string> &files);
-	std::string extractBoundary(const std::string &contentType);
+	void generateEmptyFile(void);
+	void postMultiForm(void);
+	void parseMultipartBody(std::list<std::string> &files);
 	std::string extractHeaderValue(const std::string &headers, const std::string &key);
 	std::string extractFilename(const std::string &contentDisposition);
 	std::string getTempFilePath(const std::string &filename);
 	void postUrlEncoded(void);
 	void postApplication(void);
+	void plainText(void);
 	// DELETE METHOD
 	void stdDelete(void);
 	// cgi Response
