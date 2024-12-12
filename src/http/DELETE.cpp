@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:08:27 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/10 19:10:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 19:21:02 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,10 @@
  */
 void httpHandler::stdDelete(void)
 {
+	if (_request.cgiReq == true)
+	{
+		return setErrorResponse(eHttpStatusCode::Forbidden, "Not allowed to delete cgi programs");
+	}
 	if (_request.uriEncoded == true)
 	{
 		return setErrorResponse(eHttpStatusCode::NotImplemented, "Not accepting URI encoded delete requests");

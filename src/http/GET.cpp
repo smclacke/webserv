@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 18:42:15 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 19:19:52 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
  */
 void httpHandler::getMethod(void)
 {
-	std::cout << "GET METHOD" << std::endl;
 	if (_request.cgiReq == true)
 	{
 		generateEnv();
@@ -31,10 +30,8 @@ void httpHandler::getMethod(void)
 	// Check if the requested path is a directory
 	if (std::filesystem::is_directory(_request.path))
 	{
-		std::cout << "directory METHOD" << std::endl;
 		if (!getDirectory())
 			return;
-		std::cout << "index found :" << _request.path << std::endl;
 	}
 	readFile();
 	return;
@@ -90,8 +87,6 @@ bool httpHandler::getDirectory(void)
 
 void httpHandler::readFile()
 {
-	std::cout << "2\n"
-			  << std::endl;
 	// check if file permission is readable.
 	if (access(_request.path.c_str(), R_OK) != 0)
 	{
@@ -129,7 +124,6 @@ void httpHandler::openFile()
 		setErrorResponse(eHttpStatusCode::InternalServerError, "Failed to retrieve file size: " + std::string(e.what()));
 		return;
 	}
-	std::cout << "Right before the opening of the file" << std::endl;
 	int fileFd = open(_request.path.c_str(), O_RDONLY);
 	if (fileFd == -1)
 	{

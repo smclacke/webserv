@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 17:23:15 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 19:19:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 
 void httpHandler::postMethod(void)
 {
-	std::cout << "\n\nHandling POST request\n"
-			  << std::endl;
 	if (_request.body.contentType == eContentType::error)
 	{
 		setErrorResponse(eHttpStatusCode::BadRequest, "bad content");
