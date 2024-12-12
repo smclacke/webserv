@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 21:06:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 11:44:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "../../include/httpHandler.hpp"
 
 /* Epoll utils */
-void Epoll::addToEpoll(int fd)
+void	Epoll::addToEpoll(int fd)
 {
 	struct epoll_event event;
 	event.events = EPOLLIN;
@@ -28,7 +28,7 @@ void Epoll::addToEpoll(int fd)
 	}
 }
 
-void		Epoll::addOUTEpoll(int fd)
+void	Epoll::addOUTEpoll(int fd)
 {
 	struct epoll_event event;
 	event.events = EPOLLOUT;
@@ -41,7 +41,7 @@ void		Epoll::addOUTEpoll(int fd)
 	}
 }
 
-void Epoll::modifyEvent(int fd, uint32_t events)
+void	Epoll::modifyEvent(int fd, uint32_t events)
 {
 	struct epoll_event event;
 
@@ -54,18 +54,18 @@ void Epoll::modifyEvent(int fd, uint32_t events)
 	}
 }
 
-void Epoll::setNonBlocking(int connection)
+void	Epoll::setNonBlocking(int connection)
 {
 	int flag = fcntl(connection, F_GETFL, 0);
 	fcntl(connection, F_SETFL, flag | O_NONBLOCK);
 }
 
-void Epoll::updateClientClock(t_clients &client)
+void	Epoll::updateClientClock(t_clients &client)
 {
 	client._clientTime[client._fd] = std::chrono::steady_clock::now();
 }
 
-void Epoll::clientTimeCheck(t_clients &client)
+void	Epoll::clientTimeCheck(t_clients &client)
 {
 	auto now = std::chrono::steady_clock::now();
 
@@ -85,17 +85,25 @@ void Epoll::clientTimeCheck(t_clients &client)
 	}
 }
 
-void Epoll::closeDelete(int fd)
+void	Epoll::closeDelete(int fd)
 {
 	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr) < 0)
 		std::cerr << "Failed to remove fd from epoll\n";
 	protectedClose(fd);
 }
 
-void Epoll::handleClientClose(t_serverData &server, t_clients &client)
+void	Epoll::removeCGIFromEpoll(t_serverData &server)
+{
+	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiIN[1], nullptr) == -1)
+		return ;
+	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiOUT[0], nullptr) == -1)
+		return ;
+}
+
+void	Epoll::handleClientClose(t_serverData &server, t_clients &client)
 {
 	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr) == -1)
-		std::cerr << "Failed to remove fd from epoll\n";
+		return ;
 
 	protectedClose(client._fd);
 	client._responseClient.msg.clear();
@@ -106,7 +114,7 @@ void Epoll::handleClientClose(t_serverData &server, t_clients &client)
 	server.removeClient(client);
 }
 
-void Epoll::operationFailed(t_clients &client)
+void	Epoll::operationFailed(t_clients &client)
 {
 	client._readingFile = false;
 	client._responseClient.readfile = false;

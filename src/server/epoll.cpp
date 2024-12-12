@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 22:07:07 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 11:43:29 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -271,7 +271,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 			}
 			if (serverData.cgi.close == true)
 			{
-				// remove from epoll
+				removeCGIFromEpoll(serverData);
 				serverData.cgi.clearCgi();
 			}
 		}

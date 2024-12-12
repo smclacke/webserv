@@ -17,7 +17,7 @@
 
 11111) **NOW**
 
-	- parsUpdates doesn't compile
+	- parsUpdates doesn't compile - and now it does... web page buttons dont do anything
 
 	- CGI can't handle basic images anymore in browser + calculator broken + checked server_files + conf + index but can't see any issues
 

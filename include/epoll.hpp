@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 20:32:16 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 11:44:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -129,6 +129,7 @@ class Epoll
 		void							updateClientClock(t_clients &client);
 		void							clientTimeCheck(t_clients &client);
 		void							closeDelete(int fd);
+		void							removeCGIFromEpoll(t_serverData &server);
 		void							handleClientClose(t_serverData &server, t_clients &client);
 		void							operationFailed(t_clients &client);
 };
