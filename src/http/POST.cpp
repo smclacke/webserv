@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 13:21:44 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 15:26:00 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,10 +54,10 @@ void httpHandler::generateEmptyFile()
 		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");
 		return;
 	}
-	else
-		_response.body.clear();
+	file.close();
+	_response.body.clear();
 	_response.body << "opened file";
-	_statusCode = eHttpStatusCode::Created;
+	_statusCode = eHttpStatusCode::NoContent;
 }
 
 /**
@@ -67,10 +67,8 @@ void httpHandler::postMultiForm(void)
 {
 	std::list<std::string> files;
 	parseMultipartBody(files);
-	if (files.empty())
-	{
+	if (_statusCode > eHttpStatusCode::PartialContent)
 		return;
-	}
 	else
 	{
 		_statusCode = eHttpStatusCode::Created;
@@ -244,6 +242,7 @@ void httpHandler::plainText(void)
 		return;
 	}
 	outFile << _request.body.content.str();
+	outFile.close();
 	_response.body.clear();
 	_response.body << "wrote content to file";
 	_statusCode = eHttpStatusCode::Created;

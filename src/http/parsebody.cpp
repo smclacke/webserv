@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 12:54:22 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 15:05:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,7 @@ void httpHandler::addToBody(std::string &buffer)
 {
 	if (_request.body.contentType == eContentType::noContent)
 	{
-		setErrorResponse(eHttpStatusCode::BadRequest, "unexpected body encountered");
+		setErrorResponse(eHttpStatusCode::BadRequest, "unexpected dedbody encountered");
 		_request.keepReading = false;
 		return;
 	}

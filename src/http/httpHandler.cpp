@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 12:31:36 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 15:20:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -207,7 +207,6 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
  */
 void httpHandler::addStringBuffer(std::string &buffer)
 {
-	std::cout << "==buffer==" << buffer << std::endl;
 	if (!_request.headCompleted)
 	{
 		_request.head << buffer;
@@ -215,6 +214,15 @@ void httpHandler::addStringBuffer(std::string &buffer)
 		if (pos != std::string::npos)
 		{
 			_request.headCompleted = true;
+			std::string buf = "";
+			if (pos + 4 < _request.head.str().size())
+			{
+				buf = _request.head.str().substr(pos + 4);
+				std::string headStr = _request.head.str();
+				headStr.erase(pos + 4);
+				_request.head.clear();
+				_request.head.str(headStr);
+			}
 			parseHead();
 			if (_statusCode > eHttpStatusCode::Accepted)
 			{
@@ -222,17 +230,14 @@ void httpHandler::addStringBuffer(std::string &buffer)
 				return;
 			}
 			setContent();
-			if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
+			std::cout << "CONTENT= " << static_cast<int>(_request.body.contentType) << std::endl;
+			if (_statusCode > eHttpStatusCode::Accepted || _request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
 			{
 				_request.keepReading = false;
 				return;
 			}
-			if (pos + 4 < buffer.size())
+			if (!buf.empty())
 			{
-				std::string buf = _request.head.str().substr(pos + 4);
-				std::string headStr = _request.head.str();
-				headStr.erase(pos + 4);
-				_request.head.str(headStr);
 				addToBody(buf);
 			}
 		}

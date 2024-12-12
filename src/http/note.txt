@@ -40,3 +40,6 @@ curl -X DELETE http://localhost:2345/uploads/text2.txt
 -it should post
 - add functoin after findLocatoin to check if method is allowed
 - check CGI path
+
+--------------------------a6c016e9e08faca2
+--------------------------a6c016e9e08faca2

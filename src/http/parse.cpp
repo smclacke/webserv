@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 13:23:37 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 13:32:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -269,7 +269,7 @@ void httpHandler::setContent(void)
 		}
 		else if (contentTypeHeader.has_value() && contentTypeHeader.value().find("application/") != std::string::npos)
 		{
-			_request.body.contentType == eContentType::application;
+			_request.body.contentType = eContentType::application;
 			return;
 		}
 		else
