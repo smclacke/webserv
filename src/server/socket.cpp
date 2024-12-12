@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/09 15:28:24 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:28:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 /* constructors */
 Socket::Socket() {}
 
-Socket::Socket(const Server &servInstance) : _maxConnections(10), _reuseaddr(1), _flags(0)
+Socket::Socket(const Server &servInstance) : _sockfd(-1), _maxConnections(10), _reuseaddr(1), _flags(0)
 {
 	openServerSocket(servInstance);
 	std::cout << "Server socket setup successful\n\n";

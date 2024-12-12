@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 19:54:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:27:22 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,11 +110,9 @@ struct s_cgi
 	int								cgiOUT[2]; 		// for receiving data from the script
 	enum cgiState					state;
 	bool							close;
-	//std::shared_ptr<httpHandler>	http;
-	//s_httpSend						response;
 	std::string						input;
 	size_t							write_offset;
-	pid_t pid = -1;
+	pid_t							pid = -1;
 	bool							output;
 	int								client_fd;
 

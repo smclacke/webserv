@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 14:06:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:25:50 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,8 +23,7 @@ void	Epoll::addToEpoll(int fd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		std::cerr << "Error adding fd to epoll\n";
-		return;
+		return ;
 	}
 }
 
@@ -36,7 +35,6 @@ void	Epoll::addOUTEpoll(int fd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		std::cerr << "Error adding fd to epoll\n";
 		return ;
 	}
 }
@@ -48,10 +46,7 @@ void	Epoll::modifyEvent(int fd, uint32_t events)
 	event.events = events;
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_MOD, fd, &event) == -1)
-	{
 		closeDelete(fd);
-		std::cerr << "Failed to modify socket event type\n";
-	}
 }
 
 void	Epoll::setNonBlocking(int connection)
@@ -76,7 +71,6 @@ void	Epoll::clientTimeCheck(t_clients &client)
 
 		if (std::chrono::duration_cast<std::chrono::seconds>(now - lastActivity).count() > TIMEOUT)
 		{
-			std::cerr << "Client timed out\n";
 			closeDelete(client_fd);
 			it = client._clientTime.erase(it);
 		}
@@ -87,8 +81,7 @@ void	Epoll::clientTimeCheck(t_clients &client)
 
 void	Epoll::closeDelete(int fd)
 {
-	if (epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr) < 0)
-		std::cerr << "Failed to remove fd from epoll\n";
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, fd, nullptr);
 	protectedClose(fd);
 }
 
@@ -103,7 +96,6 @@ void	Epoll::handleClientClose(t_serverData &server, t_clients &client)
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr);
 	protectedClose(client._fd);
 	client._responseClient.msg.clear();
-	client._fd = -1;
 	client._write_offset = 0;
 	client._clientState = clientState::CLOSED;
 	server.removeClient(client);

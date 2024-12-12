@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/18 14:06:02 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 21:07:09 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:20:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,6 +16,7 @@
 void		protectedClose(int fd)
 {
 	close(fd);
+	fd = -1;
 	//if (fd < 0)
 	//{
 	//	std::cerr << "Invalid fd: " << fd << "\n";

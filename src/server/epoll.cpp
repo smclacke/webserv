@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 11:43:29 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 14:29:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "../../include/httpHandler.hpp"
 
 /* constructors */
-Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
+Epoll::Epoll() : _epfd(-1), _numEvents(MAX_EVENTS)
 {
 	setEventMax();
 }
@@ -141,7 +141,6 @@ void Epoll::handleFile(t_clients &client)
 		client._responseClient.readfile = false;
 		client._clientState = clientState::READY;
 		protectedClose(client._responseClient.readFd);
-		client._responseClient.readFd = -1;
 		if (client._responseClient.keepAlive == false)
 		{
 			client._clientState = clientState::CLOSE;
@@ -165,13 +164,12 @@ void Epoll::handleFile(t_clients &client)
 		if (bytesSend < 0)
 		{
 			operationFailed(client);
-			return;
+			return ;
 		}
 		client._readingFile = false;
 		client._responseClient.readfile = false;
 		client._clientState = clientState::READY;
 		protectedClose(client._responseClient.readFd);
-		client._responseClient.readFd = -1;
 		if (client._responseClient.keepAlive == false)
 			client._connectionClose = true;
 		return ;
@@ -185,10 +183,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 
 	int clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
 	if (clientfd < 0)
-	{
-		std::cerr << "Error accepting new connection\n";
-		return;
-	}
+		return ;
 	else
 	{
 		setNonBlocking(clientfd);
@@ -240,9 +235,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					}
 				}
 				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
-				{
 					client._connectionClose = true;
-				}
 				if (client._connectionClose)
 					handleClientClose(serverData, client);
 			}
