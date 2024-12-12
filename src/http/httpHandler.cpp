@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 16:05:17 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 17:45:58 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -221,7 +221,6 @@ void httpHandler::addStringBuffer(std::string &buffer)
 				return;
 			}
 			setContent();
-			std::cout << "CONTENT= " << static_cast<int>(_request.body.contentType) << std::endl;
 			if (_statusCode > eHttpStatusCode::Accepted || _request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
 			{
 				_request.keepReading = false;

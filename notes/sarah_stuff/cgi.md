@@ -1,4 +1,147 @@
 
+**CGIREAD**
+
+
+void Epoll::handleCgiRead(s_cgi &cgi)
+{
+    char buffer[READ_BUFFER_SIZE];
+    int bytesRead = read(cgi.cgiOUT[0], buffer, sizeof(buffer));
+
+    if (bytesRead < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return; // No data yet, try later
+
+        std::cerr << "read() failed\n";
+        cgi.state = cgiState::ERROR;
+        cgi.close = true;
+        return;
+    }
+
+    if (bytesRead == 0) // EOF
+    {
+        close(cgi.cgiOUT[0]);
+        cgi.cgiOUT[0] = -1;
+        cgi.state = cgiState::WRITING;
+        return;
+    }
+
+    // Append to output buffer
+    cgi.outputBuffer.append(buffer, bytesRead);
+
+    // Notify epoll that client_fd is ready for writing
+    modifyEpoll(client_fd, EPOLLOUT);
+    cgi.state = cgiState::WRITING;
+}
+
+void Epoll::handleCgiWrite(s_cgi &cgi)
+{
+    if (cgi.outputBuffer.empty())
+    {
+        cgi.state = cgiState::READING;
+        modifyEpoll(cgi.client_fd, EPOLLIN);
+        return;
+    }
+
+    int bytesSent = write(cgi.client_fd, cgi.outputBuffer.c_str(), cgi.outputBuffer.size());
+
+    if (bytesSent < 0)
+    {
+        if (errno == EAGAIN || errno == EWOULDBLOCK)
+            return; // Client not ready to receive
+
+        std::cerr << "write() failed\n";
+        cgi.state = cgiState::ERROR;
+        cgi.close = true;
+        return;
+    }
+
+    // Remove sent data from buffer
+    cgi.outputBuffer.erase(0, bytesSent);
+
+    // If buffer is empty, check if we are done
+    if (cgi.outputBuffer.empty() && cgi.cgiOUT[0] == -1)
+    {
+        cgi.state = cgiState::CLOSE;
+        cgi.close = true;
+    }
+}
+
+
+
+
+
+void Epoll::handleCgiRead(s_cgi &cgi)
+{
+    char buffer[READ_BUFFER_SIZE];
+    int bytesRead = read(cgi.cgiOUT[0], buffer, sizeof(buffer));
+
+    if (bytesRead < 0)
+    {
+        std::cerr << "read() cgi failed\n";
+        write(cgi.client_fd, BAD_CGI, BAD_SIZE);
+        cgi.state = cgiState::ERROR;
+        cgi.close = true;
+        return;
+    }
+
+    if (bytesRead == 0) // EOF
+    {
+        if (cgi.pid != -1)
+        {
+            int status;
+            waitpid(cgi.pid, &status, 0);
+            cgi.pid = -1;
+            if (!cgi.output && status != 0)
+                write(cgi.client_fd, BAD_CGI, BAD_SIZE);
+        }
+        cgi.state = cgiState::CLOSE;
+        cgi.close = true;
+        return;
+    }
+
+    // Store data for later sending
+    cgi.outputBuffer.append(buffer, bytesRead);
+    cgi.output = true;
+
+    // Change state and wait for client socket to become writable
+    cgi.state = cgiState::WRITING;
+}
+
+
+void Epoll::handleCgiWrite(s_cgi &cgi)
+{
+    if (cgi.outputBuffer.empty())
+    {
+        cgi.state = cgiState::CLOSE;
+        cgi.close = true;
+        return;
+    }
+
+    int bytesSent = write(cgi.client_fd, cgi.outputBuffer.c_str(), cgi.outputBuffer.size());
+
+    if (bytesSent < 0)
+    {
+        std::cerr << "write() failed\n";
+        cgi.state = cgiState::ERROR;
+        cgi.close = true;
+        return;
+    }
+
+    // Remove sent data from buffer
+    cgi.outputBuffer.erase(0, bytesSent);
+
+    // If all data has been sent, mark for closure
+    if (cgi.outputBuffer.empty())
+    {
+        cgi.state = cgiState::CLOSE;
+        cgi.close = true;
+    }
+}
+
+
+
+
 
 /**
  * check if file is executable

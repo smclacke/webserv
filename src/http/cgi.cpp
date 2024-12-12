@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 14:18:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 17:58:28 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,103 +23,59 @@ static void		freeStrings(char *script, char *path)
 
 void	Epoll::handleCgiRead(s_cgi &cgi)
 {
-	size_t	readSize = READ_BUFFER_SIZE;
-	char	buffer[readSize];
-	int		bytesRead = 0;
-	memset(buffer, 0, sizeof(buffer));
-	cgi.state = cgiState::READING;
-	bytesRead = recv(cgi.cgiOUT[0], buffer, readSize - 1, 0);
+	char	buffer[READ_BUFFER_SIZE];
+	int		bytesRead;
+
+	//memset(buffer, 0, sizeof(buffer)); ?
+	bytesRead = read(cgi.cgiOUT[0], buffer, READ_BUFFER_SIZE - 1);
 	if (bytesRead < 0)
 	{
-		send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-		std::cerr << "recv() cgi failed\n"; /** @todo remove after testing*/
-		cgi.state = cgiState::ERROR;
+		write(cgi.client_fd, BAD_CGI, BAD_SIZE);
+		std::cerr << "read() cgi failed\n"; /** @todo remove after testing*/
 		cgi.close = true;
 		return ;
 	}
-	else if (bytesRead == 0)
+	else if (bytesRead == 0) // EOF
 	{
-		if (cgi.pid != -1)
-		{
-			int status;
-			waitpid(cgi.pid, &status, 0);
-			cgi.pid = -1;
-			if (!cgi.output)
-			{
-				if (status != 0)
-					send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-				else
-					send(cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-			}
-		}
-		cgi.state = cgiState::CLOSE;
-		cgi.close = true;
+		close(cgi.cgiOUT[0]);
+		cgi.cgiOUT[0] = -1;
+		//cgi.close = true; ?
+		cgi.state = cgiState::READY;
 		return ;
 	}
-	cgi.output = true;
-	buffer[bytesRead - 1] = '\0';
- 
-	if (bytesRead == READ_BUFFER_SIZE - 1)
-	{
-		int bytesSend = send(cgi.client_fd, buffer, bytesRead, 0);
-		if (bytesSend < 0)
-		{
-			std::cerr << "write failed\n"; /** @todo remove after testing*/
-			cgi.state = cgiState::CLOSE;
-			cgi.close = true;
-			return ;
-		}
-	}
-	else if (bytesRead < READ_BUFFER_SIZE)
-	{
-		int bytesSend = send(cgi.cgiOUT[0], buffer, bytesRead, 0);
-		if (bytesSend < 0)
-		{
-			std::cerr << "write failed\n"; /** @todo remove after testing*/
-		}
-		cgi.state = cgiState::CLOSE;
-		cgi.close = true;
-		return ;
-	}
-	cgi.close = false;
+	cgi.input.append(buffer, bytesRead);
+	std::cout << "cgi READ input = " << cgi.input << "\n\n";
+	cgi.state = cgiState::READY;
+	return ;
+	//modifyEvent(cgi.client_fd, EPOLLOUT);
+	//cgi.output = true;
 }
 
 void	Epoll::handleCgiWrite(s_cgi &cgi)
 {
+	//std::cout << "write input size = " << cgi.input.size() << "\n\n";
+	std::cout << "cgi WRITE input = " << cgi.input << "\n\n";
 	if (cgi.input.size() == 0)
 	{
-		cgi.state = cgiState::READING;
-		protectedClose(cgi.cgiIN[1]);
+		modifyEvent(cgi.client_fd, EPOLLIN);
 		cgi.close = false;
 		return ;
 	}
-	ssize_t leftover;
-	ssize_t sendlen = WRITE_BUFFER_SIZE;
-	leftover = cgi.input.size() - cgi.write_offset;
-	if (leftover < WRITE_BUFFER_SIZE)
-		sendlen = leftover;
-	int bytesWritten = send(cgi.cgiIN[1], cgi.input.c_str() + cgi.write_offset, sendlen, 0);
+	int bytesWritten = write(cgi.client_fd, cgi.input.c_str(), cgi.input.size());
 
 	if (bytesWritten < 0)
 	{
-		if (cgi.pid != -1)
-		{
-			int status;
-			waitpid(cgi.pid, &status, 0);
-			cgi.pid = -1;
-			send(cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-		}
-		std::cerr << "send() to cgi failed\n"; /** @todo remove after testing*/
-		cgi.state = cgiState::ERROR;
+		std::cerr << "write() to cgi failed\n"; /** @todo remove after testing*/
 		cgi.close = true;
 		return ;
 	}
-	cgi.write_offset += bytesWritten;
-	if (cgi.write_offset >= cgi.input.length()) // use size() here like above
+	//cgi.input.erase(0, bytesWritten);
+	if (!cgi.input.empty())
+		modifyEvent(cgi.client_fd, EPOLLIN);
+	
+	else if (cgi.cgiOUT[0] == -1) // everything has been sent
 	{
-		cgi.state = cgiState::READING;
-		protectedClose(cgi.cgiIN[1]);
-		cgi.close = false;
+		cgi.close = true;
 		return ;
 	}
 	cgi.close = false;

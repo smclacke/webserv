@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 16:05:57 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 17:56:59 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -126,7 +126,7 @@ void Epoll::handleWrite(t_clients &client)
 
 void Epoll::handleFile(t_clients &client)
 {
-	int bytesSend;
+	int bytesSent;
 	char buffer[READ_BUFFER_SIZE];
 	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
 
@@ -151,8 +151,8 @@ void Epoll::handleFile(t_clients &client)
 	buffer[bytesRead - 1] = '\0'; /** @todo remove after testing if not needed */
 	if (bytesRead == READ_BUFFER_SIZE - 1)
 	{
-		bytesSend = send(client._fd, buffer, bytesRead, 0);
-		if (bytesSend < 0)
+		bytesSent = send(client._fd, buffer, bytesRead, 0);
+		if (bytesSent < 0)
 		{
 			operationFailed(client);
 			return ;
@@ -160,8 +160,8 @@ void Epoll::handleFile(t_clients &client)
 	}
 	else if (bytesRead < READ_BUFFER_SIZE)
 	{
-		bytesSend = send(client._fd, buffer, bytesRead, 0);
-		if (bytesSend < 0)
+		bytesSent = send(client._fd, buffer, bytesRead, 0);
+		if (bytesSent < 0)
 		{
 			operationFailed(client);
 			return ;
@@ -213,7 +213,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						client._clientState = clientState::BEGIN;
 						client._responseClient = client.http->generateResponse();
 						if (client._responseClient.cgi)
-						{
+						{ 
 							serverData.cgi = client.http->getCGI();	
 							serverData.cgi.client_fd = client._fd;
 						}
@@ -242,10 +242,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 		}
 		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
 		{
-			if (event.events & EPOLLIN)
-				handleCgiRead(serverData.cgi);
-			if (event.events & EPOLLOUT)
-				handleCgiWrite(serverData.cgi);
+			addBOTHEpoll(serverData.cgi.client_fd);
 			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 			{
 				serverData.cgi.close = true;
@@ -262,6 +259,16 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					}
 				}
 			}
+			if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
+				handleCgiRead(serverData.cgi);
+			if (serverData.cgi.state == cgiState::READY)
+			{
+				std::cout << "cgi input read successfully = " << serverData.cgi.input << "\n\n";
+				exit(EXIT_SUCCESS);
+			}
+				
+			//if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
+			//	handleCgiWrite(serverData.cgi);
 			if (serverData.cgi.close == true)
 			{
 				removeCGIFromEpoll(serverData);

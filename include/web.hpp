@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 14:27:22 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 17:07:27 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -114,6 +114,7 @@ struct s_cgi
 	size_t							write_offset;
 	pid_t							pid = -1;
 	bool							output;
+	std::string						outputBuffer;
 	int								client_fd;
 
 	void clearCgi(void);
