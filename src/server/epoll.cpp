@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/11 03:38:32 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/12 15:29:55 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,12 +74,8 @@ void Epoll::handleRead(t_clients &client)
 void Epoll::handleWrite(t_clients &client)
 {
 	// Handle Client Request
-	if (client._responseClient.msg.empty() && client._readingFile == false)
-	{
-		client._responseClient = client.http->generateResponse();
-		client._clientState = clientState::WRITING;
-		client.http->clearHandler();
-	}
+	client._clientState = clientState::WRITING;
+
 	if (client._readingFile == false)
 	{
 		ssize_t leftover;
@@ -255,6 +251,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					if (client._clientState == clientState::READY)
 					{
 						client._clientState = clientState::BEGIN;
+						client._responseClient = client.http->generateResponse();
+						client.http->clearHandler();
 						modifyEvent(client._fd, EPOLLOUT);
 						updateClientClock(client);
 					}
