@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 03:07:57 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/12 13:32:47 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -239,26 +239,42 @@ void httpHandler::setContent(void)
 
 	if (contentLengthHeader.has_value())
 	{
-		size_t contentLength = std::stoul(contentLengthHeader.value());
-		if (contentLength > _request.loc.client_body_buffer_size)
+		_request.body.contentLen = std::stoul(contentLengthHeader.value());
+		if (_request.body.contentLen > _request.loc.client_body_buffer_size)
 		{
+			_request.keepReading = false;
 			return setErrorResponse(eHttpStatusCode::InsufficientStorage, "Fixed length body size exceeds client body buffer size");
 		}
-		if (contentLength == 0)
+		if (_request.body.contentLen == 0)
 		{
+			_request.keepReading = false;
 			_request.body.contentType = eContentType::noContent;
 			return;
 		}
-		else if (contentTypeHeader.has_value() && contentTypeHeader.value() == "multipart/form-data")
+		if (contentTypeHeader.has_value() && contentTypeHeader.value().find("multipart/form-data") != std::string::npos)
 		{
+			size_t pos = contentTypeHeader.value().find("boundary=");
+			if (pos == std::string::npos)
+			{
+				setErrorResponse(eHttpStatusCode::BadRequest, "multipart/form-data has no boundary");
+				_request.keepReading = false;
+				return;
+			}
+			else
+			{
+				_request.body.formDelimiter = contentTypeHeader.value().substr(pos + 9);
+			}
 			_request.body.contentType = eContentType::formData;
-			_request.body.contentLen = contentLength;
+			return;
+		}
+		else if (contentTypeHeader.has_value() && contentTypeHeader.value().find("application/") != std::string::npos)
+		{
+			_request.body.contentType = eContentType::application;
 			return;
 		}
 		else
 		{
 			_request.body.contentType = eContentType::contentLength;
-			_request.body.contentLen = contentLength;
 			return;
 		}
 	}

@@ -6,18 +6,18 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 02:09:47 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/12 15:05:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 #include "../../include/web.hpp"
 
-void httpHandler::addToBody(std::string& buffer)
+void httpHandler::addToBody(std::string &buffer)
 {
 	if (_request.body.contentType == eContentType::noContent)
 	{
-		setErrorResponse(eHttpStatusCode::BadRequest, "unexpected body encountered");
+		setErrorResponse(eHttpStatusCode::BadRequest, "unexpected dedbody encountered");
 		_request.keepReading = false;
 		return;
 	}
@@ -41,7 +41,7 @@ void httpHandler::addToBody(std::string& buffer)
 	return;
 }
 
-void httpHandler::parseFixedLengthBody(std::string& buffer)
+void httpHandler::parseFixedLengthBody(std::string &buffer)
 {
 	_request.body.content << buffer;
 	if (_request.body.content.str().size() >= _request.body.contentLen)
@@ -50,26 +50,21 @@ void httpHandler::parseFixedLengthBody(std::string& buffer)
 	}
 }
 
-void httpHandler::parseformData(std::string& buffer)
+void httpHandler::parseformData(std::string &buffer)
 {
 	_request.body.content << buffer;
 	if (_request.body.formDelimiter.empty())
 	{
-		size_t pos = buffer.find("\r\n");
-		if (pos != std::string::npos)
-		{
-			//getting the delimiter from the start of the buffer
-			_request.body.formDelimiter = buffer.substr(0, pos);
-		}
+		_request.keepReading = false;
 	}
 	// Check if the end delimiter is in the buffer
-	if (buffer.find(_request.body.formDelimiter + "--") != std::string::npos)
+	if (_request.body.content.str().find(_request.body.formDelimiter + "--") != std::string::npos)
 	{
 		_request.keepReading = false;
 	}
 }
 
-void httpHandler::parseChunkedBody(std::string& buffer)
+void httpHandler::parseChunkedBody(std::string &buffer)
 {
 	std::string line;
 	std::istringstream bufferStream(buffer);

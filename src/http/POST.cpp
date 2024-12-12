@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:08:31 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 16:05:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,49 +14,61 @@
 
 void httpHandler::postMethod(void)
 {
-	// std::cout << "Handling POST request" << std::endl;
-	auto contentTypeIt = _request.headers.find(eRequestHeader::ContentType);
-	if (contentTypeIt == _request.headers.end() || contentTypeIt->second.empty())
+	std::cout << "\n\nHandling POST request\n"
+			  << std::endl;
+	if (_request.body.contentType == eContentType::error)
 	{
-		std::cerr << "Missing or empty Content-Type header" << std::endl;
-		setErrorResponse(eHttpStatusCode::BadRequest, "Missing or empty Content-Type header");
-		return;
+		setErrorResponse(eHttpStatusCode::BadRequest, "bad content");
 	}
-	const std::string &contentType = contentTypeIt->second;
-
-	if (contentType.find("multipart/form-data") != std::string::npos)
+	if (_request.body.contentType == eContentType::noContent)
 	{
-		return postMultiForm(contentType);
+		return generateEmptyFile();
 	}
-	else if (contentType == "application/x-www-form-urlencoded")
+	else if (_request.body.contentType == eContentType::formData)
+	{
+		return postMultiForm();
+	}
+	else if (_request.uriEncoded == true)
 	{
 		return postUrlEncoded();
 	}
-	else if (contentType.find("application/") == 0) // change to any applicatoin type, send it straight to cgi and let it try to pass it to a program
+	else if (_request.body.contentType == eContentType::application)
 	{
 		return postApplication();
 	}
-	else
+	else if (_request.body.contentType == eContentType::contentLength)
 	{
-		std::cerr << "Unsupported Content-Type: " << contentType << std::endl;
-		setErrorResponse(eHttpStatusCode::UnsupportedMediaType, "Unsupported Content-Type: " + contentType);
+		return plainText();
 	}
 	return;
 }
 
 // --------- multiform
 
+void httpHandler::generateEmptyFile()
+{
+	std::fstream file;
+	file.open(_request.path);
+	if (!file.is_open())
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");
+		return;
+	}
+	file.close();
+	_response.body.clear();
+	_response.body << "opened file";
+	_statusCode = eHttpStatusCode::NoContent;
+}
+
 /**
  * @brief processes a content-type multi-form-data post request
  */
-void httpHandler::postMultiForm(const std::string &contentType)
+void httpHandler::postMultiForm(void)
 {
 	std::list<std::string> files;
-	parseMultipartBody(contentType, files);
-	if (files.empty())
-	{
+	parseMultipartBody(files);
+	if (_statusCode > eHttpStatusCode::PartialContent)
 		return;
-	}
 	else
 	{
 		_statusCode = eHttpStatusCode::Created;
@@ -78,10 +90,9 @@ void httpHandler::postMultiForm(const std::string &contentType)
 	return;
 }
 
-void httpHandler::parseMultipartBody(const std::string &contentType, std::list<std::string> &files)
+void httpHandler::parseMultipartBody(std::list<std::string> &files)
 {
-	std::string boundary = extractBoundary(contentType);
-	if (boundary.empty())
+	if (_request.body.formDelimiter.empty())
 	{
 		std::cerr << "Boundary not found in Content-Type" << std::endl;
 		return setErrorResponse(eHttpStatusCode::BadRequest, "Boundary not found in Content-Type");
@@ -93,7 +104,7 @@ void httpHandler::parseMultipartBody(const std::string &contentType, std::list<s
 
 	while (std::getline(_request.body.content, line))
 	{
-		if (line.find(boundary) != std::string::npos)
+		if (line.find(_request.body.formDelimiter) != std::string::npos)
 		{
 			if (fileStarted)
 			{
@@ -138,16 +149,6 @@ void httpHandler::parseMultipartBody(const std::string &contentType, std::list<s
 	}
 	if (files.empty())
 		return setErrorResponse(eHttpStatusCode::NoContent, "No 'filename=' found in POST request");
-}
-
-std::string httpHandler::extractBoundary(const std::string &contentType)
-{
-	size_t pos = contentType.find("boundary=");
-	if (pos != std::string::npos)
-	{
-		return "--" + contentType.substr(pos + 9);
-	}
-	return "";
 }
 
 std::string httpHandler::extractHeaderValue(const std::string &headers, const std::string &key)
@@ -229,4 +230,20 @@ void httpHandler::postApplication(void)
 	if (!generateEnv())
 		return;
 	return cgiResponse();
+}
+
+void httpHandler::plainText(void)
+{
+	std::ofstream outFile;
+	outFile.open(_request.path);
+	if (!outFile.is_open())
+	{
+		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");
+		return;
+	}
+	outFile << _request.body.content.str();
+	outFile.close();
+	_response.body.clear();
+	_response.body << "wrote content to file";
+	_statusCode = eHttpStatusCode::Created;
 }

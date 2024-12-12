@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 14:25:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 16:05:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -200,11 +200,20 @@ void httpHandler::addStringBuffer(std::string &buffer)
 {
 	if (!_request.headCompleted)
 	{
-		size_t pos = buffer.find("\r\n\r\n");
+		_request.head << buffer;
+		size_t pos = _request.head.str().find("\r\n\r\n");
 		if (pos != std::string::npos)
 		{
-			_request.head << buffer.substr(0, pos + 4);
 			_request.headCompleted = true;
+			std::string buf = "";
+			if (pos + 4 < _request.head.str().size())
+			{
+				buf = _request.head.str().substr(pos + 4);
+				std::string headStr = _request.head.str();
+				headStr.erase(pos + 4);
+				_request.head.clear();
+				_request.head.str(headStr);
+			}
 			parseHead();
 			if (_statusCode > eHttpStatusCode::Accepted)
 			{
@@ -212,22 +221,18 @@ void httpHandler::addStringBuffer(std::string &buffer)
 				return;
 			}
 			setContent();
-			if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
+			std::cout << "CONTENT= " << static_cast<int>(_request.body.contentType) << std::endl;
+			if (_statusCode > eHttpStatusCode::Accepted || _request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
 			{
 				_request.keepReading = false;
 				return;
 			}
-			if (pos + 4 < buffer.size())
+			if (!buf.empty())
 			{
-				std::string buf = buffer.substr(pos + 4);
 				addToBody(buf);
 			}
-			return;
 		}
-		else
-		{
-			_request.head << buffer;
-		}
+		return;
 	}
 	else
 	{
