@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 19:36:39 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 20:04:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,14 +39,23 @@ void	Epoll::handleCgiRead(s_cgi &cgi)
 	else if (bytesRead == 0) // EOF
 	{
 		std::cout << "finished reading\n";
+		// GIVE THIS TO HTTPRESPONSE
 		send(cgi.client_fd, cgi.input.c_str(), cgi.input.size(), 0);
 		close(cgi.cgiOUT[0]);
-		cgi.state = cgiState::READY;
 		cgi.cgiOUT[0] = -1;
 		return ;
 	}
 	cgi.output = true;
 	cgi.input.append(buffer, bytesRead);
+	if (bytesRead <= READ_BUFFER_SIZE)
+	{
+		std::cout << "finished reading, no more to read\n";
+		// GIVE THIS TO HTTPRESPONSE
+		close(cgi.cgiOUT[0]);
+		cgi.cgiOUT[0] = -1;
+		return ;
+		
+	}
 	std::cout << "cgi READ input = " << cgi.input << "\n\n";
 	return ;
 }

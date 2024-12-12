@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 19:41:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/12 20:05:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -246,30 +246,23 @@ void Epoll::processEvent(int fd, epoll_event &event)
 			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 			{
 				std::cout << "done reading\n";
-				//serverData.cgi.close = true;
-				//if (serverData.cgi.pid != -1)
-				//{
-				//	int status;
-				//	waitpid(serverData.cgi.pid, &status, 0);
-				//	if (serverData.cgi.output == false)
-				//	{
-				//		if (status != 0)
-				//			send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-				//		else
-				//			send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-				//	}
-				//	send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-				//}
-				//else
+				serverData.cgi.close = true;
+				if (serverData.cgi.pid != -1)
+				{
+					int status;
+					waitpid(serverData.cgi.pid, &status, 0);
+					if (serverData.cgi.output == false)
+					{
+						if (status != 0) // not send but give back to http
+							send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
+						else
+							send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
+					}
 					send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
+				}				
 			}
 			if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
 				handleCgiRead(serverData.cgi);
-			//if (serverData.cgi.state == cgiState::READY)
-			//{
-			//	std::cout << "cgi input read successfully = " << serverData.cgi.input << "\n\n";
-			//	//exit(EXIT_SUCCESS);
-			//}
 			if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
 				handleCgiWrite(serverData.cgi);
 			//if (serverData.cgi.state == cgiState::BEGIN)
