@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:03:16 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 09:20:09 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -158,21 +158,15 @@ void Epoll::handleFile(t_clients &client)
 		}
 		return;
 	}
-	int totalBytesSent = 0;
-	while (totalBytesSent < bytesRead)
+	int bytesSent = send(client._fd, buffer, bytesRead, 0);
+	if (bytesSent < 0)
 	{
-		int bytesSent = send(client._fd, buffer + totalBytesSent, bytesRead - totalBytesSent, 0);
-		if (bytesSent < 0)
-		{
-			std::cerr << "Write to client failed\n";
-			operationFailed(client);
-			return;
-		}
-		totalBytesSent += bytesSent;
+		std::cerr << "Write to client failed\n";
+		operationFailed(client);
+		return;
 	}
-
 	client._clientState = clientState::WRITING;
-	client.bytes_written += totalBytesSent;
+	client.bytes_written += bytesSent;
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData &server)
