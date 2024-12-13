@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 16:05:08 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/13 10:23:14 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,6 @@
 
 void httpHandler::postMethod(void)
 {
-	std::cout << "\n\nHandling POST request\n"
-			  << std::endl;
 	if (_request.body.contentType == eContentType::error)
 	{
 		setErrorResponse(eHttpStatusCode::BadRequest, "bad content");
@@ -178,9 +176,9 @@ std::string httpHandler::extractFilename(const std::string &contentDisposition)
 std::string httpHandler::getTempFilePath(const std::string &filename)
 {
 	if (_request.loc.root.empty())
-		return ("." + _server.getRoot() + _request.loc.path + _request.loc.upload_dir + "/" + filename);
+		return (_request.path + _request.loc.upload_dir + "/" + filename);
 	else
-		return ("." + _request.loc.root + _request.loc.path + _request.loc.upload_dir + "/" + filename);
+		return (_request.path + _request.loc.upload_dir + "/" + filename);
 }
 
 // ---------- url encoded
@@ -192,11 +190,8 @@ void httpHandler::postUrlEncoded(void)
 {
 	if (_request.uriEncoded == false)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
-	if (access(_request.path.c_str(), X_OK) != 0)
-		return setErrorResponse(eHttpStatusCode::Forbidden, "no rights to execute program");
-	if (!isCgi())
-		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
-	// set contentType
+	if (!_request.cgiReq)
+		return setErrorResponse(eHttpStatusCode::Forbidden, "url encoded only allowed as cqi request");
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
 	if (cstring == NULL)
@@ -216,26 +211,35 @@ void httpHandler::postUrlEncoded(void)
 
 void httpHandler::postApplication(void)
 {
-	if (access(_request.path.c_str(), X_OK) != 0)
-		return setErrorResponse(eHttpStatusCode::Forbidden, "no rights to execute program");
-	if (!isCgi())
-		return setErrorResponse(eHttpStatusCode::Forbidden, "file extension does not match accepted cgi extension");
+	if (!_request.cgiReq)
+		return setErrorResponse(eHttpStatusCode::Forbidden, "POST requests with content_type application/* only allowed as cqi request");
 	// set contentType
-	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
+	// set contentType
+	auto contentOpt = findHeaderValue(_request, eRequestHeader::ContentType);
+	if (!contentOpt.has_value())
+	{
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "postApplication couldn't determinte contentType");
+	}
+	std::string content = "CONTENT_TYPE=" + contentOpt.value();
 	char *cstring = strdup(content.c_str());
 	if (cstring == NULL)
-		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc failed in postUrlEncoded");
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc failed in postApplication");
 	_cgi.env.push_back(cstring);
 	// set default env
 	if (!generateEnv())
 		return;
+	if (!_request.body.content.str().empty())
+	{
+		resetStringStream(_response.body);
+		_response.body.str() = _request.body.content.str();
+	}
 	return cgiResponse();
 }
 
 void httpHandler::plainText(void)
 {
 	std::ofstream outFile;
-	outFile.open(_request.path);
+	outFile.open(_request.path, std::ios::out);
 	if (!outFile.is_open())
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");

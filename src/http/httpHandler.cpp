@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 17:45:58 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/13 13:08:31 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -23,13 +23,14 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	_request.keepReading = true;
 	_request.method = eHttpMethod::INVALID;
 	_request.uri.clear();
+	_request.cgiReq = false;
 	_request.path.clear();
 	_request.headers.clear();
 	_request.uriEncoded = false;
 	_request.uriQuery.clear();
-	_request.head.clear();
+	resetStringStream(_request.head);
 	_request.headCompleted = false;
-	_request.body.content.clear();
+	resetStringStream(_request.body.content);
 	_request.body.contentType = eContentType::error;
 	_request.body.contentLen = 0;
 	_request.body.nextChunkSize = 0;
@@ -37,7 +38,7 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	_request.body.formDelimiter.clear();
 	//	response
 	_response.headers.clear();
-	_response.body.clear();
+	resetStringStream(_response.body);
 	_response.keepalive = true;
 	_response.readFile = false;
 	_response.cgi = false;
@@ -47,7 +48,6 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	_cgi.cgiIN[1] = -1;
 	_cgi.cgiOUT[0] = -1;
 	_cgi.cgiOUT[1] = -1;
-	_cgi.close = false;
 	_cgi.state = cgiState::BEGIN;
 }
 
@@ -63,13 +63,14 @@ void httpHandler::clearHandler(void)
 	_request.keepReading = true;
 	_request.method = eHttpMethod::INVALID;
 	_request.uri.clear();
+	_request.cgiReq = false;
 	_request.path.clear();
 	_request.headers.clear();
 	_request.uriEncoded = false;
 	_request.uriQuery.clear();
-	_request.head.clear();
+	resetStringStream(_request.head);
 	_request.headCompleted = false;
-	_request.body.content.clear();
+	resetStringStream(_request.body.content);
 	_request.body.contentType = eContentType::error;
 	_request.body.contentLen = 0;
 	_request.body.nextChunkSize = 0;
@@ -77,11 +78,24 @@ void httpHandler::clearHandler(void)
 	_request.body.formDelimiter.clear();
 	//	response
 	_response.headers.clear();
-	_response.body.clear();
+	resetStringStream(_response.body);
 	_response.keepalive = true;
 	_response.readFile = false;
 	_response.cgi = false;
 	_response.readFd = -1;
+	// cgi
+	_cgi.env.clear();
+	_cgi.scriptname.clear();
+	_cgi.pid = -1;
+	_cgi.state = cgiState::BEGIN;
+	_cgi.write_offset = 0;
+	_cgi.output = false;
+	_cgi.input.clear();
+}
+
+void httpHandler::httpClearCgi(void)
+{
+	_cgi.clearCgi();
 }
 
 /* utils */
@@ -183,7 +197,7 @@ std::string httpHandler::responseHeaderToString(const eResponseHeader &header)
 void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
 {
 	_statusCode = code;
-	_response.body.clear();
+	resetStringStream(_response.body);
 	_response.body << msg;
 }
 
@@ -196,7 +210,7 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
  * end of ContentLength / Chunked=0/r/n/ / wwwFormDelimiter
  *
  */
-void httpHandler::addStringBuffer(std::string &buffer)
+void httpHandler::addStringBuffer(std::string buffer)
 {
 	if (!_request.headCompleted)
 	{
@@ -237,7 +251,7 @@ void httpHandler::addStringBuffer(std::string &buffer)
 	{
 		if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
 		{
-			setErrorResponse(eHttpStatusCode::InternalServerError, "reached unexpected point");
+			setErrorResponse(eHttpStatusCode::InternalServerError, "unexpected body");
 			_request.keepReading = false;
 			return;
 		}
@@ -270,28 +284,41 @@ void s_cgi::clearCgi(void)
 	env.clear();
 	scriptname.clear();
 	pid = -1;
-	close = false;
-	state = cgiState::BEGIN;	
+	state = cgiState::BEGIN;
 	write_offset = 0;
 	output = false;
 	input.clear();
+	output.clear();
 	closeAllPipes();
 }
 
-void		s_cgi::closeAllPipes(void)
+void s_cgi::closeAllPipes(void)
 {
-	if (cgiIN[0] != -1)
-		protectedClose(cgiIN[0]);
-	if (cgiIN[1] != -1)
-		protectedClose(cgiIN[1]);
-	if (cgiOUT[0] != -1)
-		protectedClose(cgiOUT[0]);
-	if (cgiOUT[1] != -1)
-		protectedClose(cgiOUT[1]);
+	protectedClose(cgiIN[0]);
+	protectedClose(cgiIN[1]);
+	protectedClose(cgiOUT[0]);
+	protectedClose(cgiOUT[1]);
 }
 
-s_cgi	httpHandler::getCGI()
+s_cgi httpHandler::getCGI()
 {
 	_cgi.input = _request.body.content.str();
 	return this->_cgi;
+}
+
+void resetStringStream(std::stringstream &ss)
+{
+	ss.str("");	 // Clear the content
+	ss.clear();	 // Clear any error flags
+	ss.seekg(0); // Reset the position to the beginning
+	ss.seekp(0); // Reset the position to the beginning
+}
+
+void s_httpSend::clearHttpSend(void)
+{
+	msg.clear();
+	keepAlive = true;
+	readfile = false;
+	readFd = -1;
+	cgi = false;
 }

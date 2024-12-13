@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 20:05:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/13 12:16:47 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,8 +14,10 @@
 #include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
 
+/** @todo check cgi stuff here */
+
 /* constructors */
-Epoll::Epoll() : _epfd(-1), _numEvents(MAX_EVENTS)
+Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
 {
 	setEventMax();
 }
@@ -34,32 +36,36 @@ void Epoll::initEpoll()
 		throw std::runtime_error("Error creating Epoll instance\n");
 }
 
-void	Epoll::handleRead(t_clients &client)
+void Epoll::handleRead(t_clients &client)
 {
+	client._clientState = clientState::READING;
 	size_t readSize = client.http->getReadSize();
 	char buffer[readSize];
 	int bytesRead = 0;
 	memset(buffer, 0, sizeof(buffer));
 
-	client._clientState = clientState::READING;
 	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
+
+	// Error
 	if (bytesRead < 0)
 	{
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
-		return ;
+		return;
 	}
+
+	// Disconnected
 	else if (bytesRead == 0)
 	{
 		client._clientState = clientState::CLOSE;
 		client._connectionClose = true;
-		return ;
+		return;
 	}
-	buffer[readSize - 1] = '\0'; /** @todo remove after testing if not needed */
+	buffer[readSize - 1] = '\0';
 	std::string buf = buffer;
 	client.http->addStringBuffer(buf);
 	if (client.http->getKeepReading())
-		return ;
+		return;
 	else
 	{
 		client._clientState = clientState::READY;
@@ -69,111 +75,97 @@ void	Epoll::handleRead(t_clients &client)
 
 void Epoll::handleWrite(t_clients &client)
 {
-	if (client._clientState == clientState::BEGIN && client._readingFile == false)
-		client._clientState = clientState::WRITING;
-	if (client._readingFile == false)
+	if (client._clientState == clientState::BEGIN)
 	{
-		ssize_t leftover;
-		ssize_t sendlen = WRITE_BUFFER_SIZE;
-		leftover = client._responseClient.msg.size() - client._write_offset;
-		if (leftover < WRITE_BUFFER_SIZE)
-			sendlen = leftover;
-
-		int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
-		if (bytesWritten < 0)
-		{
-			client._clientState = clientState::ERROR;
-			client._connectionClose = true;
-			return ;
-		}
-		else if (bytesWritten == 0)
-		{
-			client._clientState = clientState::CLOSE;
-			client._connectionClose = true;
-			return ;
-		}
-		client._write_offset += bytesWritten;
-		if (client._write_offset >= client._responseClient.msg.length())
-		{
-			if (client._responseClient.readfile)
-			{
-				client._readingFile = true;
-				client._connectionClose = false;
-				return ;
-			}
-			else
-			{
-				client._clientState = clientState::READY;
-				if (client._responseClient.keepAlive == false)
-				{
-					client._clientState = clientState::CLOSE;
-					client._connectionClose = true;
-				}
-			}
-			if (client._responseClient.keepAlive)
-				client._connectionClose = false;
-			else
-				client._connectionClose = true;
-			client._write_offset = 0;
-			client._responseClient.msg.clear();
-			return ;
-		}
-		client._connectionClose = false;
+		client._clientState = clientState::WRITING;
 	}
-	else
+	if (client._readingFile)
+	{
 		handleFile(client);
+		return;
+	}
+	ssize_t leftover;
+	ssize_t sendlen = WRITE_BUFFER_SIZE;
+	leftover = client._responseClient.msg.size() - client._write_offset;
+	if (leftover < WRITE_BUFFER_SIZE)
+		sendlen = leftover;
+	int bytesWritten = send(client._fd, client._responseClient.msg.c_str() + client._write_offset, sendlen, 0);
+	// Error
+	if (bytesWritten < 0)
+	{
+		std::cerr << "Write to client failed\n";
+		client._clientState = clientState::ERROR;
+		client._connectionClose = true;
+		return;
+	}
+
+	// Disconnected
+	else if (bytesWritten == 0)
+	{
+		client._clientState = clientState::CLOSE;
+		client._connectionClose = true;
+		return;
+	}
+
+	client._write_offset += bytesWritten;
+
+	// Finished
+	if (client._write_offset >= client._responseClient.msg.length())
+	{
+		client._write_offset = 0;
+		client._responseClient.msg.clear();
+		if (client._responseClient.readfile)
+		{
+			client._readingFile = true;
+			client._connectionClose = false;
+			return;
+		}
+		else
+		{
+			client._clientState = clientState::READY;
+			if (client._responseClient.keepAlive == false)
+			{
+				client._clientState = clientState::CLOSE;
+				client._connectionClose = true;
+			}
+		}
+		if (client._responseClient.keepAlive)
+			client._connectionClose = false;
+		else
+			client._connectionClose = true;
+		return;
+	}
+	client._connectionClose = false;
 }
 
 void Epoll::handleFile(t_clients &client)
 {
-	int bytesSent;
 	char buffer[READ_BUFFER_SIZE];
-	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE - 1);
-
+	memset(buffer, 0, sizeof(buffer));
+	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE);
 	if (bytesRead < 0)
 	{
+		std::cerr << "Reading from file failed\n";
 		operationFailed(client);
-		return ;
+		return;
 	}
 	else if (bytesRead == 0)
 	{
-		client._readingFile = false;
-		client._responseClient.readfile = false;
 		client._clientState = clientState::READY;
-		protectedClose(client._responseClient.readFd);
-		if (client._responseClient.keepAlive == false)
+		if (!client._responseClient.keepAlive)
 		{
-			client._clientState = clientState::CLOSE;
 			client._connectionClose = true;
 		}
-		return ;
+		return;
 	}
-	buffer[bytesRead - 1] = '\0'; /** @todo remove after testing if not needed */
-	if (bytesRead == READ_BUFFER_SIZE - 1)
+	int bytesSent = send(client._fd, buffer, bytesRead, 0);
+	if (bytesSent < 0)
 	{
-		bytesSent = send(client._fd, buffer, bytesRead, 0);
-		if (bytesSent < 0)
-		{
-			operationFailed(client);
-			return ;
-		}
+		std::cerr << "Write to client failed\n";
+		operationFailed(client);
+		return;
 	}
-	else if (bytesRead < READ_BUFFER_SIZE)
-	{
-		bytesSent = send(client._fd, buffer, bytesRead, 0);
-		if (bytesSent < 0)
-		{
-			operationFailed(client);
-			return ;
-		}
-		client._readingFile = false;
-		client._responseClient.readfile = false;
-		client._clientState = clientState::READY;
-		protectedClose(client._responseClient.readFd);
-		if (client._responseClient.keepAlive == false)
-			client._connectionClose = true;
-		return ;
-	}
+	client._clientState = clientState::WRITING;
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData &server)
@@ -183,7 +175,10 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 
 	int clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
 	if (clientfd < 0)
-		return ;
+	{
+		std::cerr << "Error accepting new connection\n";
+		return;
+	}
 	else
 	{
 		setNonBlocking(clientfd);
@@ -213,69 +208,125 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						client._clientState = clientState::BEGIN;
 						client._responseClient = client.http->generateResponse();
 						if (client._responseClient.cgi)
-						{ 
+						{
 							serverData.cgi = client.http->getCGI();
 							serverData.cgi.client_fd = client._fd;
-							//modifyInANDOut(serverData.cgi.client_fd);
+							// modifyInANDOut(serverData.cgi.client_fd);
+						}
+						else
+						{
+							modifyEvent(client._fd, EPOLLOUT);
 						}
 						client.http->clearHandler();
-						modifyEvent(client._fd, EPOLLOUT);
-						updateClientClock(client);
 					}
+					updateClientClock(client);
 				}
 				if (event.events & EPOLLOUT)
 				{
+					if (client._responseClient.cgi == true)
+					{
+						if (serverData.cgi.complete)
+						{
+							s_httpSend newResposne = {serverData.cgi.output, true, false, -1, false};
+							client._responseClient = newResposne;
+						}
+					}
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
-						client._write_offset = 0;
-						client._readingFile = false;
+						cleanResponse(client);
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
-						updateClientClock(client);
 					}
+					updateClientClock(client);
 				}
 				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+				{
 					client._connectionClose = true;
+					cleanResponse(client);
+					client.http->clearHandler();
+				}
 				if (client._connectionClose)
 					handleClientClose(serverData, client);
 			}
+			if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
+				cgiEvent(fd, serverData, event);
 		}
-		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
+	}
+}
+
+void Epoll::cgiEvent(int &fd, t_serverData &serverData, epoll_event &event)
+{
+	if (fd == serverData.cgi.cgiIN[1])
+	{
+		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
-			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
-			{
-				std::cout << "done reading\n";
-				serverData.cgi.close = true;
-				if (serverData.cgi.pid != -1)
-				{
-					int status;
-					waitpid(serverData.cgi.pid, &status, 0);
-					if (serverData.cgi.output == false)
-					{
-						if (status != 0) // not send but give back to http
-							send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-						else
-							send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-					}
-					send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-				}				
-			}
-			if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
-				handleCgiRead(serverData.cgi);
-			if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
-				handleCgiWrite(serverData.cgi);
-			//if (serverData.cgi.state == cgiState::BEGIN)
-			//{
-			//	std::cout << "cgi input WRITTEN successfully = " << serverData.cgi.input << "\n\n";
-			//	int sentBytes = send(serverData.cgi.client_fd, serverData.cgi.input.c_str(), serverData.cgi.input.size(), 0);
-			//	std::cout << "sendbytes = " << sentBytes << "\n\n";
-			//	modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
-			//}
-			if (serverData.cgi.close == true)
+			epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiIN[1], nullptr);
+			protectedClose(serverData.cgi.cgiIN[1]);
+		}
+		if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
+		{
+			handleCgiWrite(serverData.cgi);
+			if (serverData.cgi.state == cgiState::ERROR)
 			{
 				removeCGIFromEpoll(serverData);
-				serverData.cgi.clearCgi();
+				modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+				int status;
+				if (serverData.cgi.pid != -1)
+				{
+					waitpid(serverData.cgi.pid, &status, 0);
+				}
+				serverData.cgi.output = internalError("cgi error");
+				serverData.cgi.complete = true;
+			}
+			if (serverData.cgi.state == cgiState::READY)
+			{
+				epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiIN[1], nullptr);
+				protectedClose(serverData.cgi.cgiIN[1]);
+			}
+		}
+	}
+	if (fd == serverData.cgi.cgiOUT[0])
+	{
+		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+		{
+			epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiOUT[0], nullptr);
+			protectedClose(serverData.cgi.cgiOUT[0]);
+			modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+			int status;
+			if (serverData.cgi.pid != -1)
+			{
+				waitpid(serverData.cgi.pid, &status, 0);
+				if (WEXITSTATUS(status) != 0)
+					serverData.cgi.output = internalError("cgi bad exitstatus");
+				if (serverData.cgi.output.empty())
+					serverData.cgi.output = internalError("cgi executed");
+			}
+		}
+		if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
+		{
+			handleCgiRead(serverData.cgi);
+			if (serverData.cgi.state == cgiState::ERROR)
+			{
+				removeCGIFromEpoll(serverData);
+				protectedClose(serverData.cgi.cgiOUT[0]);
+				modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+				int status;
+				waitpid(serverData.cgi.pid, &status, 0);
+				serverData.cgi.output = internalError("cgi error");
+			}
+			if (serverData.cgi.state == cgiState::READY)
+			{
+				epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiOUT[0], nullptr);
+				protectedClose(serverData.cgi.cgiOUT[0]);
+				modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+				int status;
+				if (serverData.cgi.pid != -1)
+				{
+					waitpid(serverData.cgi.pid, &status, 0);
+					if (WEXITSTATUS(status) != 0)
+						serverData.cgi.output = internalError("cgi bad exitstatus");
+				}
 			}
 		}
 	}

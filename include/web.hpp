@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 17:07:27 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/13 12:13:58 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,14 +74,16 @@ enum class eSocket
 	Server = 2
 };
 
+#define READ_BUFFER_SIZE 100
+#define WRITE_BUFFER_SIZE 100
+
 /* http */
 /**
  * @param msg the httpResponse message to be send to the client
  * @param keepAlive true if connection should stay alive, false is it should close
  * @param readFile true if there is a fileDescriptor that should be read
  * @param readFd the FD to read from
- * @param cgi true if its a cgi request. meaning the filedescriptor should be read and there should be a waitpid
- * @param pid the pid to wait for in case of a cgi request
+ * @param cgi true if its a cgi request, call getCGI for cgi data
  */
 struct s_httpSend
 {
@@ -90,6 +92,7 @@ struct s_httpSend
 	bool readfile;
 	int readFd;
 	bool cgi;
+	void clearHttpSend(void);
 };
 
 enum class cgiState
@@ -99,23 +102,22 @@ enum class cgiState
 	WRITING = 2,
 	READY = 3,
 	ERROR = 4,
-	CLOSE = 5	
+	CLOSE = 5
 };
 
 struct s_cgi
 {
-	std::vector<char *>				env;
-	std::string						scriptname;
-	int								cgiIN[2]; 		// for sending data to the script
-	int								cgiOUT[2]; 		// for receiving data from the script
-	enum cgiState					state;
-	bool							close;
-	std::string						input;
-	size_t							write_offset;
-	pid_t							pid = -1;
-	bool							output;
-	std::string						outputBuffer;
-	int								client_fd;
+	std::vector<char *> env;
+	std::string scriptname;
+	int cgiIN[2];  // for sending data to the script
+	int cgiOUT[2]; // for receiving data from the script
+	enum cgiState state;
+	bool complete;
+	std::string input;
+	size_t write_offset;
+	pid_t pid = -1;
+	int client_fd;
+	std::string output;
 
 	void clearCgi(void);
 	void closeAllPipes(void);
@@ -127,6 +129,6 @@ void verifyInput(int ac, char **av);
 s_location addDefaultLoc(size_t servermaxsize);
 
 /* general utils */
-void	protectedClose(int fd);
+void protectedClose(int fd);
 
 #endif /* WEB_HPP */

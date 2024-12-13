@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 20:21:41 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/13 13:07:47 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,11 @@
  */
 s_httpSend httpHandler::generateResponse(void)
 {
+	std::cout << "\n***********************\n";
+	std::cout << "generate response called for :\n"
+			  << _request.path << "\n"
+			  << "METHOD = " << httpMethodToStringFunc(_request.method) << "\n"
+			  << "\n***********************\n";
 	auto it = _request.headers.find(eRequestHeader::Connection);
 	if (it != _request.headers.end())
 	{
@@ -27,11 +32,8 @@ s_httpSend httpHandler::generateResponse(void)
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return (writeResponse());
 	callMethod();
-	// CGI generate its own HTTP - is this correct
 	return (writeResponse());
 }
-
-static s_httpSend internalError(void);
 
 /**
  * @brief Builds the response based on the information in s_response;
@@ -78,23 +80,22 @@ s_httpSend httpHandler::writeResponse(void)
 		responseStream << "\r\n";
 		/* body */
 		if (_response.readFile == false)
-		{
 			responseStream << _response.body.str();
-		}
 		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
 		std::cout << "Response = " << response.msg << std::endl;
 		return (response);
 	}
 	else
 	{
-		return (internalError());
+		s_httpSend response = {internalError("Unknown response type"), false, false, -1, false};
+		return (response);
 	}
 }
 
-static s_httpSend internalError(void)
+std::string internalError(std::string msg)
 {
 	eHttpStatusCode statusCode = eHttpStatusCode::InternalServerError;
-	std::string message = "Unknown response type";
+	std::string message = msg;
 	std::ostringstream responseStream;
 	responseStream << "HTTP/1.1 " << static_cast<int>(statusCode) << " " << message << "\r\n"
 				   << "Content-Type: text/plain\r\n"
@@ -102,8 +103,7 @@ static s_httpSend internalError(void)
 				   << "Connection: close\r\n"
 				   << "\r\n"
 				   << message;
-	s_httpSend response = {responseStream.str(), true, false, -1, false};
-	return (response);
+	return (responseStream.str());
 }
 
 void httpHandler::callMethod(void)
