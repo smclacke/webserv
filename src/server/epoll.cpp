@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:37:32 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 12:16:47 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -213,21 +213,32 @@ void Epoll::processEvent(int fd, epoll_event &event)
 							serverData.cgi.client_fd = client._fd;
 							// modifyInANDOut(serverData.cgi.client_fd);
 						}
+						else
+						{
+							modifyEvent(client._fd, EPOLLOUT);
+						}
 						client.http->clearHandler();
-						modifyEvent(client._fd, EPOLLOUT);
-						updateClientClock(client);
 					}
+					updateClientClock(client);
 				}
 				if (event.events & EPOLLOUT)
 				{
+					if (client._responseClient.cgi == true)
+					{
+						if (serverData.cgi.complete)
+						{
+							s_httpSend newResposne = {serverData.cgi.output, true, false, -1, false};
+							client._responseClient = newResposne;
+						}
+					}
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
 						cleanResponse(client);
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
-						updateClientClock(client);
 					}
+					updateClientClock(client);
 				}
 				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 				{
@@ -238,42 +249,84 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				if (client._connectionClose)
 					handleClientClose(serverData, client);
 			}
+			if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
+				cgiEvent(fd, serverData, event);
 		}
-		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
+	}
+}
+
+void Epoll::cgiEvent(int &fd, t_serverData &serverData, epoll_event &event)
+{
+	if (fd == serverData.cgi.cgiIN[1])
+	{
+		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
-			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+			epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiIN[1], nullptr);
+			protectedClose(serverData.cgi.cgiIN[1]);
+		}
+		if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
+		{
+			handleCgiWrite(serverData.cgi);
+			if (serverData.cgi.state == cgiState::ERROR)
 			{
-				std::cout << "done reading\n";
-				serverData.cgi.close = true;
+				removeCGIFromEpoll(serverData);
+				modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+				int status;
 				if (serverData.cgi.pid != -1)
 				{
-					int status;
 					waitpid(serverData.cgi.pid, &status, 0);
-					if (serverData.cgi.output == false)
-					{
-						if (status != 0) // not send but give back to http
-							send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
-						else
-							send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
-					}
-					send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
 				}
+				serverData.cgi.output = internalError("cgi error");
+				serverData.cgi.complete = true;
 			}
-			if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
-				handleCgiRead(serverData.cgi);
-			if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
-				handleCgiWrite(serverData.cgi);
-			// if (serverData.cgi.state == cgiState::BEGIN)
-			//{
-			//	std::cout << "cgi input WRITTEN successfully = " << serverData.cgi.input << "\n\n";
-			//	int sentBytes = send(serverData.cgi.client_fd, serverData.cgi.input.c_str(), serverData.cgi.input.size(), 0);
-			//	std::cout << "sendbytes = " << sentBytes << "\n\n";
-			//	modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
-			// }
-			if (serverData.cgi.close == true)
+			if (serverData.cgi.state == cgiState::READY)
 			{
-				// remove from epoll
-				serverData.cgi.clearCgi();
+				epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiIN[1], nullptr);
+				protectedClose(serverData.cgi.cgiIN[1]);
+			}
+		}
+	}
+	if (fd == serverData.cgi.cgiOUT[0])
+	{
+		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
+		{
+			epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiOUT[0], nullptr);
+			protectedClose(serverData.cgi.cgiOUT[0]);
+			modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+			int status;
+			if (serverData.cgi.pid != -1)
+			{
+				waitpid(serverData.cgi.pid, &status, 0);
+				if (WEXITSTATUS(status) != 0)
+					serverData.cgi.output = internalError("cgi bad exitstatus");
+				if (serverData.cgi.output.empty())
+					serverData.cgi.output = internalError("cgi executed");
+			}
+		}
+		if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
+		{
+			handleCgiRead(serverData.cgi);
+			if (serverData.cgi.state == cgiState::ERROR)
+			{
+				removeCGIFromEpoll(serverData);
+				protectedClose(serverData.cgi.cgiOUT[0]);
+				modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+				int status;
+				waitpid(serverData.cgi.pid, &status, 0);
+				serverData.cgi.output = internalError("cgi error");
+			}
+			if (serverData.cgi.state == cgiState::READY)
+			{
+				epoll_ctl(_epfd, EPOLL_CTL_DEL, serverData.cgi.cgiOUT[0], nullptr);
+				protectedClose(serverData.cgi.cgiOUT[0]);
+				modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+				int status;
+				if (serverData.cgi.pid != -1)
+				{
+					waitpid(serverData.cgi.pid, &status, 0);
+					if (WEXITSTATUS(status) != 0)
+						serverData.cgi.output = internalError("cgi bad exitstatus");
+				}
 			}
 		}
 	}

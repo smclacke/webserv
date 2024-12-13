@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 11:34:11 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 13:07:47 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,7 +87,7 @@ s_httpSend httpHandler::writeResponse(void)
 	}
 	else
 	{
-		s_httpSend response = {internalError("Unknown response type"), false, -1, -1};
+		s_httpSend response = {internalError("Unknown response type"), false, false, -1, false};
 		return (response);
 	}
 }
@@ -95,7 +95,7 @@ s_httpSend httpHandler::writeResponse(void)
 std::string internalError(std::string msg)
 {
 	eHttpStatusCode statusCode = eHttpStatusCode::InternalServerError;
-	std::string message = "Unknown response type";
+	std::string message = msg;
 	std::ostringstream responseStream;
 	responseStream << "HTTP/1.1 " << static_cast<int>(statusCode) << " " << message << "\r\n"
 				   << "Content-Type: text/plain\r\n"
