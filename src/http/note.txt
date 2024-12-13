@@ -1,35 +1,7 @@
-0. in parser check for CGI path
+perhaps try putting a HTTPResponseLine and then adding the cgiOutput
 
 
-1. ADD CGI to DELETE method
-
-2. integrate HttpHandler into epoll. -- DONE
-
-3. Write the CGI PART
-
-
-
-
-
-105. CLEANUP - remove all unused statusCodes and other HTTPconstants;
-
-
-TODO:
-restart server upon ctch in main
-
-make a proper config file + include a good index.html and index.htm example
-
-
-Make a html page displaying all cat in the img/cats directory. It gets it by getting directory listing, displaying cats wiht a delete button - > DELETE request, also an upload button -> post request
-
-
-
-FOR SARAH HELLO:
-
-If i run these two curls i end up witha  "Reading from client connection failed
-" message, which isnt super bad but a little bit bad since its not supposed to be that way
-i think i might have made an oversight in like Client cleanup or epoll cleanup but not super
-Either way most shit works yay
+-----
 
 curl -X POST http://localhost:2345 \
   -F "file1=@testfiles/text1.txt" \
@@ -38,16 +10,3 @@ curl -X POST http://localhost:2345 \
 
 curl -X DELETE http://localhost:2345/uploads/text2.txt
 
-
--- 
--it should post
-- add functoin after findLocatoin to check if method is allowed
-- check CGI path
-
---------------------------a6c016e9e08faca2
---------------------------a6c016e9e08faca2
-
-0msgHTTP/1.1 200 OK
-Connection: keep-alive
-Content-Length: 55
-Content-Type: text/html

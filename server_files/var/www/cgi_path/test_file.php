@@ -1,7 +1,6 @@
 #!/usr/bin/php
    <?php
    // Send HTTP headers
-   header("Content-Type: text/html");
    echo "<html>";
    echo "<head>";
    echo "<title>Simple CGI Script</title>";
