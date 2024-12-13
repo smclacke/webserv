@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:31:39 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 09:36:36 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,15 @@ void Epoll::addOUTEpoll(int fd)
 		protectedClose(fd);
 		return;
 	}
+}
+
+void Epoll::modifyInANDOut(int fd)
+{
+	struct epoll_event event;
+	event.events = EPOLLIN | EPOLLOUT;
+	event.data.fd = fd;
+	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
+		closeDelete(fd);
 }
 
 void Epoll::modifyEvent(int fd, uint32_t events)

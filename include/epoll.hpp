@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:31:21 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 09:41:05 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,6 +124,7 @@ public:
 	void addToEpoll(int fd);
 	void addOUTEpoll(int fd);
 	void modifyEvent(int fd, uint32_t events);
+	void modifyInANDOut(int fd);
 	void setNonBlocking(int connection);
 	void updateClientClock(t_clients &client);
 	void clientTimeCheck(t_clients &client);

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:31:33 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 09:37:32 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -211,6 +211,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						{
 							serverData.cgi = client.http->getCGI();
 							serverData.cgi.client_fd = client._fd;
+							// modifyInANDOut(serverData.cgi.client_fd);
 						}
 						client.http->clearHandler();
 						modifyEvent(client._fd, EPOLLOUT);
@@ -240,12 +241,9 @@ void Epoll::processEvent(int fd, epoll_event &event)
 		}
 		if (fd == serverData.cgi.cgiIN[1] || fd == serverData.cgi.cgiOUT[0])
 		{
-			if (event.events & EPOLLIN)
-				handleCgiRead(serverData.cgi);
-			if (event.events & EPOLLOUT)
-				handleCgiWrite(serverData.cgi);
 			if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 			{
+				std::cout << "done reading\n";
 				serverData.cgi.close = true;
 				if (serverData.cgi.pid != -1)
 				{
@@ -253,13 +251,25 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					waitpid(serverData.cgi.pid, &status, 0);
 					if (serverData.cgi.output == false)
 					{
-						if (status != 0)
+						if (status != 0) // not send but give back to http
 							send(serverData.cgi.client_fd, BAD_CGI, BAD_SIZE, 0);
 						else
 							send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
 					}
+					send(serverData.cgi.client_fd, GOOD_CGI, GOOD_SIZE, 0);
 				}
 			}
+			if (event.events & EPOLLIN && fd == serverData.cgi.cgiOUT[0])
+				handleCgiRead(serverData.cgi);
+			if (event.events & EPOLLOUT && fd == serverData.cgi.cgiIN[1])
+				handleCgiWrite(serverData.cgi);
+			// if (serverData.cgi.state == cgiState::BEGIN)
+			//{
+			//	std::cout << "cgi input WRITTEN successfully = " << serverData.cgi.input << "\n\n";
+			//	int sentBytes = send(serverData.cgi.client_fd, serverData.cgi.input.c_str(), serverData.cgi.input.size(), 0);
+			//	std::cout << "sendbytes = " << sentBytes << "\n\n";
+			//	modifyEvent(serverData.cgi.client_fd, EPOLLOUT);
+			// }
 			if (serverData.cgi.close == true)
 			{
 				// remove from epoll

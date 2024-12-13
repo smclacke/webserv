@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 19:19:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 09:58:34 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -176,9 +176,9 @@ std::string httpHandler::extractFilename(const std::string &contentDisposition)
 std::string httpHandler::getTempFilePath(const std::string &filename)
 {
 	if (_request.loc.root.empty())
-		return ("." + _server.getRoot() + _request.loc.path + _request.loc.upload_dir + "/" + filename);
+		return (_request.path + _request.loc.upload_dir + "/" + filename);
 	else
-		return ("." + _request.loc.root + _request.loc.path + _request.loc.upload_dir + "/" + filename);
+		return (_request.path + _request.loc.upload_dir + "/" + filename);
 }
 
 // ---------- url encoded

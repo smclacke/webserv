@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 23:04:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 09:57:34 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,6 +195,8 @@ std::string httpHandler::buildPath(void)
 	std::string outPath;
 	std::string uri = _request.uri;
 	std::string locpath = _request.loc.path;
+	if (locpath == "/")
+		locpath = "";
 
 	if (!_request.loc.cgi_ext.empty())
 	{
@@ -228,6 +230,8 @@ std::string httpHandler::buildCgiPath(void)
 	std::string outPath;
 	std::string uri = _request.uri;
 	std::string locpath;
+	if (locpath == "/")
+		locpath = "";
 
 	if (_request.loc.cgi_path.empty())
 		return setErrorResponse(eHttpStatusCode::Forbidden, "no cgi_path provided for this location"), "";
