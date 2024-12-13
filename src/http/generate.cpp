@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 22:34:31 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 09:18:36 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -83,7 +83,7 @@ s_httpSend httpHandler::writeResponse(void)
 			responseStream << responseHeaderToString(header.first) << header.second << "\r\n";
 		}
 		// break between header and body:
-		responseStream << "\r\n\r\n";
+		responseStream << "\r\n";
 		/* body */
 		if (_response.readFile == false)
 			responseStream << _response.body.str();
