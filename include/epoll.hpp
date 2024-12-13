@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 12:10:36 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 14:57:35 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ typedef struct s_clients
 	bool _connectionClose;
 
 	std::shared_ptr<httpHandler> http;
+	struct s_cgi cgi;
 	// std::string								_requestClient; // what has julius done
 
 	/** Write */
@@ -72,7 +73,6 @@ typedef struct s_serverData
 {
 	std::shared_ptr<Server> _server;
 	std::deque<t_clients> _clients;
-	struct s_cgi cgi;
 
 	/* methods */
 	void addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
@@ -102,7 +102,7 @@ public:
 	void handleFile(t_clients &client);
 	void makeNewConnection(int fd, t_serverData &server);
 	void processEvent(int fd, epoll_event &event);
-	void cgiEvent(int &fd, t_serverData &serverData, epoll_event &event);
+	void cgiEvent(int &fd, t_clients &client, epoll_event &event);
 
 	/* getters */
 	int getEpfd() const;
@@ -128,7 +128,7 @@ public:
 	void updateClientClock(t_clients &client);
 	void clientTimeCheck(t_clients &client);
 	void closeDelete(int fd);
-	void removeCGIFromEpoll(t_serverData &server);
+	void removeCGIFromEpoll(t_clients &client);
 	void handleClientClose(t_serverData &server, t_clients &client);
 	void operationFailed(t_clients &client);
 	void cleanResponse(t_clients &client);

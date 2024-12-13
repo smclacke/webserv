@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:36:36 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 14:58:01 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,10 +94,10 @@ void Epoll::closeDelete(int fd)
 	protectedClose(fd);
 }
 
-void Epoll::removeCGIFromEpoll(t_serverData &server)
+void Epoll::removeCGIFromEpoll(t_clients &client)
 {
-	epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiIN[1], nullptr);
-	epoll_ctl(_epfd, EPOLL_CTL_DEL, server.cgi.cgiOUT[0], nullptr);
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiIN[1], nullptr);
+	epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiOUT[0], nullptr);
 }
 
 void Epoll::handleClientClose(t_serverData &server, t_clients &client)

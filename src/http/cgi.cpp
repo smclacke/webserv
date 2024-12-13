@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 12:17:17 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 15:27:02 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,12 +102,22 @@ void httpHandler::cgiResponse()
 	_cgi.pid = fork();
 	if (_cgi.pid == 0) // child: reads from input pipe + writes to output pipe
 	{
+		size_t lastSlashPos = _request.path.find_last_of('/');
+		if (lastSlashPos != std::string::npos)
+		{
+			_cgi.scriptname = _request.path.substr(lastSlashPos + 1);
+		}
+		else
+		{
+			_cgi.scriptname = _request.path;
+		}
 		char *scriptName = strdup(_cgi.scriptname.c_str());
 		if (scriptName == NULL)
 		{
 			_cgi.closeAllPipes();
 			std::exit(EXIT_FAILURE);
 		}
+		std::cout << "1" << std::endl; /** @todo remove after testing*/
 		char *scriptPath = strdup(_request.path.c_str());
 		if (scriptPath == NULL)
 		{
@@ -115,8 +125,8 @@ void httpHandler::cgiResponse()
 			freeStrings(scriptName, NULL);
 			std::exit(EXIT_FAILURE);
 		}
-		char *argv[] = {scriptPath, nullptr};
-
+		char *argv[] = {scriptName, nullptr};
+		std::cout << "2" << std::endl; /** @todo remove after testing*/
 		if (dup2(_cgi.cgiIN[0], STDIN_FILENO) < 0 || dup2(_cgi.cgiOUT[1], STDOUT_FILENO) < 0)
 		{
 			std::cerr << "dup2() cgi failed\n"; /** @todo remove after testing*/
@@ -124,10 +134,15 @@ void httpHandler::cgiResponse()
 			freeStrings(scriptName, scriptPath);
 			std::exit(EXIT_FAILURE);
 		}
+		std::cerr << "3" << std::endl; /** @todo remove after testing*/
 		protectedClose(_cgi.cgiIN[1]);
 		protectedClose(_cgi.cgiOUT[0]);
+		std::cerr << "4" << std::endl;				   /** @todo remove after testing*/
+		std::cerr << "execve(" << scriptPath << ")\n"; /** @todo remove after testing*/
+		std::cerr << "execve(" << argv[0] << ")\n";	   /** @todo remove after testing*/
 		if (execve(scriptPath, argv, _cgi.env.data()) == -1)
 		{
+			perror("execve failed why:");
 			std::cerr << "execve failed\n"; /** @todo remove after testing*/
 			freeStrings(scriptName, scriptPath);
 			_cgi.closeAllPipes();
