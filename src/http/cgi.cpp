@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 12:17:17 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 13:42:14 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,21 +35,21 @@ void Epoll::handleCgiRead(s_cgi &cgi)
 	{
 		std::cerr << "read() cgi failed\n"; /** @todo remove after testing*/
 		cgi.state = cgiState::ERROR;
-		return;
+		return ;
 	}
 	else if (bytesRead == 0) // EOF
 	{
 		cgi.state = cgiState::READY;
-		return;
+		return ;
 	}
 	cgi.complete = true;
 	cgi.output.append(buffer, bytesRead);
 	if (bytesRead < READ_BUFFER_SIZE - 1)
 	{
 		cgi.state = cgiState::READY;
-		return;
+		return ;
 	}
-	return;
+	return ;
 }
 
 /**
@@ -65,7 +65,7 @@ void Epoll::handleCgiWrite(s_cgi &cgi)
 	if (cgi.input.size() == 0) // no input to write to child, we close pipe
 	{
 		cgi.state = cgiState::READY;
-		return;
+		return ;
 	}
 	cgi.state = cgiState::WRITING;
 	ssize_t leftover;
@@ -77,12 +77,12 @@ void Epoll::handleCgiWrite(s_cgi &cgi)
 	if (bytesWritten < 0)
 	{
 		cgi.state = cgiState::ERROR;
-		return;
+		return ;
 	}
 	else if (bytesWritten == 0)
 	{
 		cgi.state = cgiState::READY;
-		return;
+		return ;
 	}
 	cgi.write_offset += bytesWritten;
 	if (cgi.write_offset >= cgi.input.size())
@@ -97,7 +97,7 @@ void httpHandler::cgiResponse()
 	{
 		_cgi.closeAllPipes();
 		setErrorResponse(eHttpStatusCode::InternalServerError, "failed to open pipes");
-		return;
+		return ;
 	}
 	_cgi.pid = fork();
 	if (_cgi.pid == 0) // child: reads from input pipe + writes to output pipe
@@ -117,7 +117,7 @@ void httpHandler::cgiResponse()
 		}
 		char *argv[] = {scriptPath, nullptr};
 
-		if (dup2(_cgi.cgiIN[0], STDIN_FILENO) < 0 || dup2(_cgi.cgiOUT[1], STDOUT_FILENO) < 0)
+		if (dup2(STDIN_FILENO, _cgi.cgiIN[0]) < 0 || dup2(STDOUT_FILENO, _cgi.cgiOUT[1]) < 0)
 		{
 			std::cerr << "dup2() cgi failed\n"; /** @todo remove after testing*/
 			_cgi.closeAllPipes();
@@ -144,7 +144,7 @@ void httpHandler::cgiResponse()
 		_epoll.setNonBlocking(_cgi.cgiIN[1]);
 		_epoll.setNonBlocking(_cgi.cgiOUT[0]);
 		_epoll.addOUTEpoll(_cgi.cgiIN[1]);
-		_epoll.addToEpoll(_cgi.cgiOUT[0]);
+		_epoll.addINEpoll(_cgi.cgiOUT[0]);
 		_response.cgi = true;
 	}
 	else
@@ -152,6 +152,6 @@ void httpHandler::cgiResponse()
 		_response.cgi = false;
 		_cgi.closeAllPipes();
 		setErrorResponse(eHttpStatusCode::InternalServerError, "failed to fork");
-		return;
+		return ;
 	}
 }

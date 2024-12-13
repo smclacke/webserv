@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 16:44:49 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/13 13:43:08 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -76,7 +76,7 @@ void Webserv::addServersToEpoll()
 		struct epoll_event event;
 
 		event.data.fd = serverSockfd;
-		_epoll.addToEpoll(serverSockfd);
+		_epoll.addINEpoll(serverSockfd);
 		_epoll.setEvent(event);
 		_epoll.setServer(currentServer);
 	}
@@ -88,9 +88,7 @@ void Webserv::removeServersFromEpoll()
 	{
 		std::shared_ptr<Server> currentServer = getServer(i);
 		int serverSockfd = currentServer->getServerSocket()->getSockfd();
-
-		if (epoll_ctl(_epoll.getEpfd(), EPOLL_CTL_DEL, serverSockfd, nullptr) == -1)
-			std::cerr << "Failed to remove fd from epoll\n";
+		epoll_ctl(_epoll.getEpfd(), EPOLL_CTL_DEL, serverSockfd, nullptr);
 	}
 }
 
@@ -110,7 +108,7 @@ void Webserv::monitorServers()
 		if (numEvents == -1)
 		{
 			if (_keepRunning == false)
-				return;
+				return ;
 			removeServersFromEpoll();
 			throw std::runtime_error("epoll_wait()\n");
 		}

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 12:13:58 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 13:41:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -107,28 +107,28 @@ enum class cgiState
 
 struct s_cgi
 {
-	std::vector<char *> env;
-	std::string scriptname;
-	int cgiIN[2];  // for sending data to the script
-	int cgiOUT[2]; // for receiving data from the script
-	enum cgiState state;
-	bool complete;
-	std::string input;
-	size_t write_offset;
-	pid_t pid = -1;
-	int client_fd;
-	std::string output;
+	std::vector<char *>			env;
+	std::string					scriptname;
+	int							cgiIN[2];  // for sending data to the script
+	int							cgiOUT[2]; // for receiving data from the script
+	enum cgiState				state;
+	bool						complete;
+	std::string					input;
+	size_t						write_offset;
+	pid_t						pid = -1;
+	int							client_fd;
+	std::string					output;
 
-	void clearCgi(void);
-	void closeAllPipes(void);
+	void				clearCgi(void);
+	void				closeAllPipes(void);
 };
 
 /* parser */
-void lineStrip(std::string &line);
-void verifyInput(int ac, char **av);
-s_location addDefaultLoc(size_t servermaxsize);
+void					lineStrip(std::string &line);
+void					verifyInput(int ac, char **av);
+s_location				addDefaultLoc(size_t servermaxsize);
 
 /* general utils */
-void protectedClose(int fd);
+void					protectedClose(int fd);
 
 #endif /* WEB_HPP */

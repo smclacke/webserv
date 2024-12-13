@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:36:36 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 13:42:55 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "../../include/httpHandler.hpp"
 
 /* Epoll utils */
-void Epoll::addToEpoll(int fd)
+void Epoll::addINEpoll(int fd)
 {
 	struct epoll_event event;
 	event.events = EPOLLIN;
@@ -23,7 +23,7 @@ void Epoll::addToEpoll(int fd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		return;
+		return ;
 	}
 }
 
@@ -35,17 +35,20 @@ void Epoll::addOUTEpoll(int fd)
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
 	{
 		protectedClose(fd);
-		return;
+		return ;
 	}
 }
 
-void Epoll::modifyInANDOut(int fd)
+void Epoll::modifyInAndOut(int fd)
 {
 	struct epoll_event event;
 	event.events = EPOLLIN | EPOLLOUT;
 	event.data.fd = fd;
 	if (epoll_ctl(_epfd, EPOLL_CTL_ADD, fd, &event) < 0)
-		closeDelete(fd);
+	{
+		protectedClose(fd);
+		return ;
+	}
 }
 
 void Epoll::modifyEvent(int fd, uint32_t events)
