@@ -17,6 +17,10 @@
 
 11111) **NOW**
 
+	- get fixed version and continue on cgi with most up to date parser + big fix    
+	- im dup2() wrong FIX THIS!
+
+
 	- parsUpdates doesn't compile - and now it does... web page buttons dont do anything
 
 	- CGI can't handle basic images anymore in browser + calculator broken + checked server_files + conf + index but can't see any issues
