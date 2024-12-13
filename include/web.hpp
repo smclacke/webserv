@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:38:28 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 12:13:58 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,6 +74,9 @@ enum class eSocket
 	Server = 2
 };
 
+#define READ_BUFFER_SIZE 100
+#define WRITE_BUFFER_SIZE 100
+
 /* http */
 /**
  * @param msg the httpResponse message to be send to the client
@@ -89,6 +92,7 @@ struct s_httpSend
 	bool readfile;
 	int readFd;
 	bool cgi;
+	void clearHttpSend(void);
 };
 
 enum class cgiState
@@ -108,12 +112,12 @@ struct s_cgi
 	int cgiIN[2];  // for sending data to the script
 	int cgiOUT[2]; // for receiving data from the script
 	enum cgiState state;
-	bool close;
+	bool complete;
 	std::string input;
 	size_t write_offset;
 	pid_t pid = -1;
-	bool output;
 	int client_fd;
+	std::string output;
 
 	void clearCgi(void);
 	void closeAllPipes(void);

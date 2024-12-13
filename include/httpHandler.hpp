@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 22:22:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 11:32:58 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,6 +155,7 @@ public:
 
 	/* member functions */
 	void clearHandler(void);
+	void httpClearCgi(void);
 	void addStringBuffer(std::string buffer);
 	s_httpSend generateResponse(void);
 
@@ -166,5 +167,6 @@ public:
 
 std::string httpMethodToStringFunc(eHttpMethod method);
 void resetStringStream(std::stringstream &ss);
+std::string internalError(std::string msg);
 
 #endif /* HTTP_HANDLER_HPP */

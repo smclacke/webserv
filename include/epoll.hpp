@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:41:05 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 12:10:36 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -45,8 +45,6 @@ enum class clientState
 
 #define MAX_EVENTS 10
 #define TIMEOUT 3000 // milliseconds | 3 seconds
-#define READ_BUFFER_SIZE 100
-#define WRITE_BUFFER_SIZE 100
 #define MAX_FILE_READ 256
 
 typedef struct s_clients
@@ -104,6 +102,7 @@ public:
 	void handleFile(t_clients &client);
 	void makeNewConnection(int fd, t_serverData &server);
 	void processEvent(int fd, epoll_event &event);
+	void cgiEvent(int &fd, t_serverData &serverData, epoll_event &event);
 
 	/* getters */
 	int getEpfd() const;

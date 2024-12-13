@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:37:51 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 11:37:23 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -84,6 +84,20 @@ void httpHandler::clearHandler(void)
 	_response.readFile = false;
 	_response.cgi = false;
 	_response.readFd = -1;
+	// cgi
+	_cgi.env.clear();
+	_cgi.scriptname.clear();
+	_cgi.pid = -1;
+	_cgi.close = false;
+	_cgi.state = cgiState::BEGIN;
+	_cgi.write_offset = 0;
+	_cgi.output = false;
+	_cgi.input.clear();
+}
+
+void httpHandler::httpClearCgi(void)
+{
+	_cgi.clearCgi();
 }
 
 /* utils */
@@ -277,19 +291,16 @@ void s_cgi::clearCgi(void)
 	write_offset = 0;
 	output = false;
 	input.clear();
+	output.clear();
 	closeAllPipes();
 }
 
 void s_cgi::closeAllPipes(void)
 {
-	if (cgiIN[0] != -1)
-		protectedClose(cgiIN[0]);
-	if (cgiIN[1] != -1)
-		protectedClose(cgiIN[1]);
-	if (cgiOUT[0] != -1)
-		protectedClose(cgiOUT[0]);
-	if (cgiOUT[1] != -1)
-		protectedClose(cgiOUT[1]);
+	protectedClose(cgiIN[0]);
+	protectedClose(cgiIN[1]);
+	protectedClose(cgiOUT[0]);
+	protectedClose(cgiOUT[1]);
 }
 
 s_cgi httpHandler::getCGI()
@@ -304,4 +315,13 @@ void resetStringStream(std::stringstream &ss)
 	ss.clear();	 // Clear any error flags
 	ss.seekg(0); // Reset the position to the beginning
 	ss.seekp(0); // Reset the position to the beginning
+}
+
+void s_httpSend::clearHttpSend(void)
+{
+	msg.clear();
+	keepAlive = true;
+	readfile = false;
+	readFd = -1;
+	cgi = false;
 }

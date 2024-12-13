@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 10:25:02 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 11:34:11 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,8 +35,6 @@ s_httpSend httpHandler::generateResponse(void)
 	return (writeResponse());
 }
 
-static s_httpSend internalError(void);
-
 /**
  * @brief Builds the response based on the information in s_response;
  */
@@ -44,7 +42,7 @@ s_httpSend httpHandler::writeResponse(void)
 {
 	if (_response.cgi)
 	{
-		s_httpSend response = {_response.body.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
+		s_httpSend response = {"", _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
 		return (response);
 	}
 	auto it = statusMessages.find(_statusCode);
@@ -89,11 +87,12 @@ s_httpSend httpHandler::writeResponse(void)
 	}
 	else
 	{
-		return (internalError());
+		s_httpSend response = {internalError("Unknown response type"), false, -1, -1};
+		return (response);
 	}
 }
 
-static s_httpSend internalError(void)
+std::string internalError(std::string msg)
 {
 	eHttpStatusCode statusCode = eHttpStatusCode::InternalServerError;
 	std::string message = "Unknown response type";
@@ -104,8 +103,7 @@ static s_httpSend internalError(void)
 				   << "Connection: close\r\n"
 				   << "\r\n"
 				   << message;
-	s_httpSend response = {responseStream.str(), true, false, -1, false};
-	return (response);
+	return (responseStream.str());
 }
 
 void httpHandler::callMethod(void)
