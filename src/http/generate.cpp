@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:18:36 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 10:25:02 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,10 +32,6 @@ s_httpSend httpHandler::generateResponse(void)
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return (writeResponse());
 	callMethod();
-	if (_response.readFile)
-		std::cout << "\n****** read_file is true ****" << std::endl;
-	else
-		std::cout << "\n****** read_file is false ****" << std::endl;
 	return (writeResponse());
 }
 
@@ -48,7 +44,7 @@ s_httpSend httpHandler::writeResponse(void)
 {
 	if (_response.cgi)
 	{
-		s_httpSend response = {"", _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
+		s_httpSend response = {_response.body.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
 		return (response);
 	}
 	auto it = statusMessages.find(_statusCode);

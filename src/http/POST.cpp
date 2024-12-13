@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:58:34 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 10:23:14 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -192,7 +192,6 @@ void httpHandler::postUrlEncoded(void)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
 	if (!_request.cgiReq)
 		return setErrorResponse(eHttpStatusCode::Forbidden, "url encoded only allowed as cqi request");
-	// set contentType
 	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
 	char *cstring = strdup(content.c_str());
 	if (cstring == NULL)
@@ -215,14 +214,25 @@ void httpHandler::postApplication(void)
 	if (!_request.cgiReq)
 		return setErrorResponse(eHttpStatusCode::Forbidden, "POST requests with content_type application/* only allowed as cqi request");
 	// set contentType
-	std::string content = "CONTENT_TYPE=application/x-www-form-urlencoded";
+	// set contentType
+	auto contentOpt = findHeaderValue(_request, eRequestHeader::ContentType);
+	if (!contentOpt.has_value())
+	{
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "postApplication couldn't determinte contentType");
+	}
+	std::string content = "CONTENT_TYPE=" + contentOpt.value();
 	char *cstring = strdup(content.c_str());
 	if (cstring == NULL)
-		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc failed in postUrlEncoded");
+		return setErrorResponse(eHttpStatusCode::InternalServerError, "malloc failed in postApplication");
 	_cgi.env.push_back(cstring);
 	// set default env
 	if (!generateEnv())
 		return;
+	if (!_request.body.content.str().empty())
+	{
+		resetStringStream(_response.body);
+		_response.body.str() = _request.body.content.str();
+	}
 	return cgiResponse();
 }
 
