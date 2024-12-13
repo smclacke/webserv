@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:08:27 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 19:21:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 15:07:53 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,6 @@ void httpHandler::stdDelete(void)
 	{
 		std::filesystem::remove(_request.path);
 		_statusCode = eHttpStatusCode::NoContent;
-		_response.body << "Succesfully deleted the requested file";
 	}
 	catch (const std::filesystem::filesystem_error &e)
 	{
