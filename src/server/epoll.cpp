@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:20:09 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/13 09:31:33 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -166,7 +166,6 @@ void Epoll::handleFile(t_clients &client)
 		return;
 	}
 	client._clientState = clientState::WRITING;
-	client.bytes_written += bytesSent;
 }
 
 void Epoll::makeNewConnection(int fd, t_serverData &server)
@@ -223,8 +222,6 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					handleWrite(client);
 					if (client._clientState == clientState::READY)
 					{
-						std::cout << "\nBYTES SEND: " << client.bytes_written << std::endl;
-						std::cout << "\nAfter writing client set to READY\n";
 						cleanResponse(client);
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);

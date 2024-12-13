@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 23:23:06 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 09:31:39 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -123,5 +123,4 @@ void Epoll::cleanResponse(t_clients &client)
 
 	client._write_offset = 0;
 	client._readingFile = false;
-	client.bytes_written = 0;
 }

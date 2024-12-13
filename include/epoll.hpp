@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 23:22:55 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/13 09:31:21 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -65,7 +65,6 @@ typedef struct s_clients
 	s_httpSend _responseClient;
 	size_t _write_offset;
 	bool _readingFile;
-	size_t bytes_written;
 	s_clients(Epoll &epoll, Server &server);
 	~s_clients() {};
 
