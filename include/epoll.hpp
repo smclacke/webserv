@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 14:57:35 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/30 17:20:17 by sarah-mclac   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,10 +22,11 @@ class Socket;
 class httpHandler;
 class Epoll;
 
-#define BAD_CGI "HTTP/1.1 500 Internal Server Error\r\n\r\n"
-#define BAD_SIZE 39
-#define GOOD_CGI "HTTP/1.1 200 OK\r\n\r\n"
-#define GOOD_SIZE 20
+/** @todo using any of these? */
+//#define BAD_CGI "HTTP/1.1 500 Internal Server Error\r\n\r\n"
+//#define BAD_SIZE 39
+//#define GOOD_CGI "HTTP/1.1 200 OK\r\n\r\n"
+//#define GOOD_SIZE 20
 
 enum class eSocket;
 struct s_cgi;
@@ -58,7 +59,6 @@ typedef struct s_clients
 
 	std::shared_ptr<httpHandler> http;
 	struct s_cgi cgi;
-	// std::string								_requestClient; // what has julius done
 
 	/** Write */
 	s_httpSend _responseClient;

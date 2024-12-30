@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/19 15:05:16 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/30 17:29:42 by sarah-mclac   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,53 +14,54 @@
 #define WEB_HPP
 
 /** @todo check what of you we can get rid of */
+
 // CPP includes
-#include <iomanip>
 #include <sstream>
+#include <iostream>
 #include <fstream>
 #include <string>
-#include <limits>
 #include <cstring>
-#include <iostream>
-#include <cstdlib>
-#include <cstdio>
 #include <memory>	  // shared pointers header
 #include <filesystem> // for directory checking
+#include <atomic>	// checking the kill signal
 #include <optional>
-#include <atomic>
+//#include <cstdio>
+//#include <iomanip>
+//#include <limits>
+//#include <cstdlib>
 
 // CPP containers
 #include <algorithm>
 #include <map>
-#include <set>
 #include <vector>
 #include <iterator>
 #include <list>
 #include <deque>
-#include <utility>
 #include <unordered_map>
-#include <unordered_set>
+//#include <utility>
+//#include <set>
+//#include <unordered_set>
 
 // Network includes
-#include <netinet/in.h> // for sockaddr_in
+#include <netinet/in.h> // for sockaddr_in structure
 #include <sys/socket.h> // for socket functions
-#include <sys/epoll.h>
-#include <sys/ioctl.h> // for nonblocking stuff..
-#include <arpa/inet.h>
-#include <sys/select.h> // for select()
-#include <sys/types.h>
+#include <sys/epoll.h> // for epoll()
+#include <arpa/inet.h> // for nonblocking sockets
 #include <sys/wait.h>
+//#include <sys/ioctl.h> // for nonblocking sockets
+//#include <sys/select.h> // for select()
+//#include <sys/types.h>
 
 // C includes
 #include <unistd.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <fcntl.h>
-#include <time.h>
-#include <limits.h>
+#include <fcntl.h>		// for files
+#include <time.h>		// client timeouts
 #include <errno.h>
 #include <csignal>
+//#include <stdio.h>
+//#include <stdlib.h>
+//#include <string.h>
+//#include <limits.h>
 
 /* forward declarations*/
 struct s_location;
