@@ -1,0 +1,52 @@
+************************************
+Server class built for: server2
+************************************
+
+addServersToEpoll(): added: server2 to epoll
+makeNewConnection(): accepted new client connection, server: server2, fd: 6
+generateResponse(): HTTP request received: 
+GET /images/webserv/large_image.html HTTP/1.1
+Host: localhost:9999
+Sec-Fetch-Site: same-origin
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Upgrade-Insecure-Requests: 1
+Sec-Fetch-Mode: navigate
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15
+Referer: http://localhost:9999/
+Sec-Fetch-Dest: document
+Accept-Language: en-GB,en;q=0.9
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 55
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /images/webserv/large_image_test.png HTTP/1.1
+Host: localhost:9999
+Sec-Fetch-Site: same-origin
+Accept-Encoding: gzip, deflate
+Connection: keep-alive
+Sec-Fetch-Mode: no-cors
+Accept: image/webp,image/avif,image/jxl,image/heic,image/heic-sequence,video/*;q=0.8,image/png,image/svg+xml,image/*;q=0.8,*/*;q=0.5
+User-Agent: Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.6 Safari/605.1.15
+Referer: http://localhost:9999/images/webserv/large_image.html
+Sec-Fetch-Dest: image
+Accept-Language: en-GB,en;q=0.9
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 496928
+Content-Type: image/png
+
+
+handleClientClose(): Removed client from Epoll, server: server2

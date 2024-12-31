@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/31 15:06:13 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/12/31 15:57:34 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,7 +81,6 @@ s_httpSend httpHandler::writeResponse(void)
 		if (_response.readFile == false)
 			responseStream << _response.body.str();
 		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
-		std::cout << "Response = " << response.msg << std::endl;
 		_server.logMessage("writeResponse(): response: ");
 		_server.logMessage(response.msg);
 		return (response);
