@@ -1,5 +1,0 @@
-************************************
-Server class built for: server3
-************************************
-
-addServersToEpoll(): added: server3 to epoll
