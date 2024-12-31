@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2024/12/10 16:42:06 by smclacke      ########   odam.nl          #
+#    Updated: 2024/12/31 15:06:27 by juliusdebaa   ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -71,13 +71,18 @@ clean:
 		$(RM) -r $(OBJDIR); \
 	fi
 
-fclean: clean
+fclean: clean clearLogs
 	@if [ -f "$(NAME)" ]; then \
 		printf "\033[1;34m--------------\n removing $(NAME) \n--------------\n\033[0m"; \
 		$(RM) $(NAME); \
 	fi
 
+clearLogs:
+	@if [ -d "./logs/" ]; then \
+		printf "\033[1;34m--------------\n removing log files \n--------------\n\033[0m"; \
+		$(RM) -r ./logs/*; \
+	fi
 
 re: fclean all
 
-.PHONY: clean fclean re run all
+.PHONY: clean fclean re run all clearLogs

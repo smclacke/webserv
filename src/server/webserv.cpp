@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/31 14:27:30 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2024/12/31 15:05:27 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -79,6 +79,7 @@ void Webserv::addServersToEpoll()
 		_epoll.addToEpoll(serverSockfd);
 		_epoll.setEvent(event);
 		_epoll.setServer(currentServer);
+		currentServer->logMessage("addServersToEpoll(): added: " + currentServer->getServerName() + " to epoll");
 	}
 }
 
