@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/19 15:12:49 by jde-baai      ########   odam.nl         */
+/*   Updated: 2024/12/31 15:55:42 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -184,6 +184,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 		setNonBlocking(clientfd);
 		server.addClient(clientfd, clientAddr, addrLen, *this);
 		addToEpoll(clientfd);
+		server._server->logMessage("makeNewConnection(): accepted new client connection, server: " + server._server->getServerName() + ", fd: " + std::to_string(fd));
 	}
 }
 

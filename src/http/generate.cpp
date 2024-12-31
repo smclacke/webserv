@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 13:07:47 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/31 15:57:34 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,11 +18,9 @@
  */
 s_httpSend httpHandler::generateResponse(void)
 {
-	std::cout << "\n***********************\n";
-	std::cout << "generate response called for :\n"
-			  << _request.path << "\n"
-			  << "METHOD = " << httpMethodToStringFunc(_request.method) << "\n"
-			  << "\n***********************\n";
+	_server.logMessage("generateResponse(): HTTP request received: ");
+	_server.logMessage(_request.head.str());
+	_server.logMessage(_request.body.content.str());
 	auto it = _request.headers.find(eRequestHeader::Connection);
 	if (it != _request.headers.end())
 	{
@@ -42,6 +40,7 @@ s_httpSend httpHandler::writeResponse(void)
 {
 	if (_response.cgi)
 	{
+		_server.logMessage("writeResponse(): response is cgi script");
 		s_httpSend response = {"", _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
 		return (response);
 	}
@@ -82,12 +81,15 @@ s_httpSend httpHandler::writeResponse(void)
 		if (_response.readFile == false)
 			responseStream << _response.body.str();
 		s_httpSend response = {responseStream.str(), _response.keepalive, _response.readFile, _response.readFd, _response.cgi};
-		std::cout << "Response = " << response.msg << std::endl;
+		_server.logMessage("writeResponse(): response: ");
+		_server.logMessage(response.msg);
 		return (response);
 	}
 	else
 	{
 		s_httpSend response = {internalError("Unknown response type"), false, false, -1, false};
+		_server.logMessage("writeResponse(): response: ");
+		_server.logMessage(response.msg);
 		return (response);
 	}
 }
