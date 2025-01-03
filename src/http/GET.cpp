@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 09:37:45 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/03 14:46:43 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,19 +92,38 @@ void httpHandler::readFile()
 	{
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to read file: " + _request.path);
 	}
-	std::string type = contentType(_request.path);
 	auto acceptedH = findHeaderValue(_request, eRequestHeader::Accept);
 	if (acceptedH.has_value())
 	{
-		if (acceptedH.value() != "*/*" && acceptedH.value().find(type) == std::string::npos)
+		if (!isContentTypeAccepted(_request.path, acceptedH.value()))
 		{
 			return setErrorResponse(eHttpStatusCode::NotAcceptable, "File extension doesn't match the requested Accept header");
 		}
 	}
 	// Read the file content
-	_response.headers[eResponseHeader::ContentType] = type;
+	_response.headers[eResponseHeader::ContentType] = contentType(_request.path);
 	openFile();
 	return;
+}
+
+bool httpHandler::isContentTypeAccepted(const std::string &filePath, const std::string &acceptHeader)
+{
+	std::string type = contentType(filePath);
+	std::istringstream stream(acceptHeader);
+	std::string mediaRange;
+	while (std::getline(stream, mediaRange, ','))
+	{
+		mediaRange.erase(0, mediaRange.find_first_not_of(" \t"));
+		mediaRange.erase(mediaRange.find_last_not_of(" \t") + 1);
+
+		auto semicolonPos = mediaRange.find(';');
+		std::string mediaType = (semicolonPos == std::string::npos) ? mediaRange : mediaRange.substr(0, semicolonPos);
+		if (mediaType == "*/*" || mediaType == type || (mediaType.back() == '*' && type.find(mediaType.substr(0, mediaType.size() - 1)) == 0))
+		{
+			return true;
+		}
+	}
+	return false;
 }
 
 /**

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/11 14:07:28 by smclacke      ########   odam.nl         */
+/*   Updated: 2024/12/31 14:49:28 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,7 +29,7 @@ Server::Server(void) : _port(8080)
 {
 	_serverName = "default_server";
 	_host = "127.0.0.1";
-	_errorPage.push_back({ "/404.html", 404 });
+	_errorPage.push_back({"/404.html", 404});
 	_clientMaxBodySize = 10;
 	s_location loc;
 	loc.allowed_methods.push_back(eHttpMethod::GET);
@@ -44,7 +44,7 @@ Server::Server(void) : _port(8080)
 	_serverSocket = std::make_shared<Socket>(*this);
 }
 
-Server& Server::operator=(const Server& rhs)
+Server &Server::operator=(const Server &rhs)
 {
 	if (this != &rhs)
 	{
@@ -59,7 +59,21 @@ Server& Server::operator=(const Server& rhs)
 	return *this;
 }
 
-Server::Server(std::ifstream& file, int& line_n) : _serverName("Default_name"), _root("")
+void Server::finalizeServerSetup(int line_n)
+{
+	if (_location.size() == 0)
+		addLocation(addDefaultLoc(_clientMaxBodySize));
+	checkErrorPages();
+	if (_host.empty())
+		throw eConf("No listen directive provided before end of Server", line_n);
+	_serverSocket = std::make_shared<Socket>(*this);
+	_logFile.open("./logs/" + _serverName + "_log.txt", std::ios::out | std::ios::app);
+	if (!_logFile.is_open())
+		throw std::runtime_error("Failed to open _log file for server: " + _serverName);
+	logMessage("************************************\nServer class built for: " + _serverName + "\n************************************\n");
+}
+
+Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -72,12 +86,7 @@ Server::Server(std::ifstream& file, int& line_n) : _serverName("Default_name"), 
 		{
 			if (line.size() != 1)
 				throw eConf("Unexpected text with closing }", line_n);
-			if (_location.size() == 0)
-				addLocation(addDefaultLoc(_clientMaxBodySize));
-			checkErrorPages();
-			if (_host.empty())
-				throw eConf("No listen directive provided before end of Server", line_n);
-			_serverSocket = std::make_shared<Socket>(*this);
+			finalizeServerSetup(line_n);
 			return;
 		}
 		size_t pos = line.find("location");
@@ -98,15 +107,29 @@ Server::Server(std::ifstream& file, int& line_n) : _serverName("Default_name"), 
 
 // destructor
 
-Server::~Server() {}
+Server::~Server(void)
+{
+	if (_logFile.is_open())
+	{
+		_logFile.close();
+	}
+}
 
 /* member functions */
+
+void Server::logMessage(const std::string &message)
+{
+	if (_logFile.is_open())
+	{
+		_logFile << message << std::endl;
+	}
+}
 
 /**
  * @brief finds if the HHTP methods exists
  * @return invalid if it doesnt exist otherwise the Method
  */
-eHttpMethod Server::allowedHttpMethod(std::string& str)
+eHttpMethod Server::allowedHttpMethod(std::string &str)
 {
 	if (str.empty())
 		return (eHttpMethod::INVALID);
@@ -124,12 +147,12 @@ void Server::printServer(void)
 	std::cout << "Root: " << _root << std::endl;
 	std::cout << "Client Max Body Size: " << _clientMaxBodySize << "byte" << std::endl;
 	std::cout << "Error Pages:" << _errorPage.size() << std::endl;
-	for (const auto& errorPage : _errorPage)
+	for (const auto &errorPage : _errorPage)
 	{
 		std::cout << "  Path: " << errorPage.path << ", Code: " << errorPage.code << std::endl;
 	}
 	std::cout << "Locations:" << _location.size() << std::endl;
-	for (const auto& location : _location)
+	for (const auto &location : _location)
 	{
 		std::cout << "  Path: " << location.path << std::endl;
 		std::cout << "  Root: " << location.root << std::endl;
@@ -147,7 +170,7 @@ void Server::printServer(void)
 		std::cout << "  Index Files: ";
 		if (!location.index_files.empty())
 		{
-			for (const auto& file : location.index_files)
+			for (const auto &file : location.index_files)
 			{
 				std::cout << file;
 				if (&file != &location.index_files.back())
@@ -173,7 +196,7 @@ void Server::printServer(void)
 
 /* directives */
 
-void Server::parseServerName(std::stringstream& ss, int line_n)
+void Server::parseServerName(std::stringstream &ss, int line_n)
 {
 	std::string name;
 	std::string unexpected;
@@ -186,7 +209,7 @@ void Server::parseServerName(std::stringstream& ss, int line_n)
 	setServerName(name);
 }
 
-void Server::parseListen(std::stringstream& ss, int line_n)
+void Server::parseListen(std::stringstream &ss, int line_n)
 {
 	std::string value;
 	std::string unexpected;
@@ -224,7 +247,7 @@ void Server::parseListen(std::stringstream& ss, int line_n)
 	setPort(std::stoi(portStr));
 }
 
-void Server::parseErrorPage(std::stringstream& ss, int line_n)
+void Server::parseErrorPage(std::stringstream &ss, int line_n)
 {
 	std::string error_code;
 	std::string path;
@@ -248,7 +271,7 @@ void Server::parseErrorPage(std::stringstream& ss, int line_n)
 
 void Server::checkErrorPages(void)
 {
-	for (auto& page : _errorPage)
+	for (auto &page : _errorPage)
 	{
 		std::string combinedPath = "." + _root + page.path;
 		if (!std::filesystem::exists(combinedPath))
@@ -257,7 +280,7 @@ void Server::checkErrorPages(void)
 	}
 }
 
-void Server::parseClientMaxBody(std::stringstream& ss, int line_n)
+void Server::parseClientMaxBody(std::stringstream &ss, int line_n)
 {
 	std::string size;
 	std::string unexpected;
@@ -281,7 +304,7 @@ void Server::parseClientMaxBody(std::stringstream& ss, int line_n)
 	setClientMaxBodySize(maxBodySize);
 }
 
-void Server::parseRoot(std::stringstream& ss, int line_n)
+void Server::parseRoot(std::stringstream &ss, int line_n)
 {
 	std::string root, rootpath;
 	std::string unexpected;
@@ -347,49 +370,49 @@ void Server::setServerSocket(std::shared_ptr<Socket> serverSocket)
 }
 
 /* getters */
-const std::string& Server::getServerName(void) const
+const std::string &Server::getServerName(void) const
 {
 	return _serverName;
 }
 
-const std::string& Server::getHost(void) const
+const std::string &Server::getHost(void) const
 {
 	return _host;
 }
 
-const int& Server::getPort(void) const
+const int &Server::getPort(void) const
 {
 	return _port;
 }
 
-const std::string& Server::getRoot(void) const
+const std::string &Server::getRoot(void) const
 {
 	return _root;
 }
 
-const std::vector<s_ePage>& Server::getErrorPage(void) const
+const std::vector<s_ePage> &Server::getErrorPage(void) const
 {
 	return _errorPage;
 }
 
-const size_t& Server::getClientMaxBodySize(void) const
+const size_t &Server::getClientMaxBodySize(void) const
 {
 	return _clientMaxBodySize;
 }
 
-const std::vector<s_location>& Server::getLocation(void) const
+const std::vector<s_location> &Server::getLocation(void) const
 {
 	return _location;
 }
 
-std::shared_ptr<Socket>& Server::getServerSocket(void)
+std::shared_ptr<Socket> &Server::getServerSocket(void)
 {
 	return _serverSocket;
 }
 
 std::optional<s_ePage> Server::findErrorPage(int code) const
 {
-	for (auto& page : _errorPage)
+	for (auto &page : _errorPage)
 	{
 		if (page.code == code)
 		{

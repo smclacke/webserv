@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 15:17:27 by julius        ########   odam.nl         */
+/*   Updated: 2024/12/31 15:26:44 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,10 +27,6 @@ void httpHandler::parseHead(void)
 		std::cerr << "Received empty HTTP request" << std::endl;
 		return setErrorResponse(eHttpStatusCode::BadRequest, "Empty HTTP request");
 	}
-
-	std::cout << "\n======= REQUEST HEADERS =======\n"
-			  << _request.head.str() << "\n======= END REQ HEADERS =======\n";
-
 	parseRequestLine();
 	if (_statusCode > eHttpStatusCode::Accepted)
 		return;

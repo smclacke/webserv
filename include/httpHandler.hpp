@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/13 11:32:58 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/03 14:46:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -131,6 +131,7 @@ private:
 	void getUriEncoded(void);
 	bool getDirectory(void);
 	void readFile(void);
+	bool isContentTypeAccepted(const std::string &filePath, const std::string &acceptHeader);
 	void openFile(void);
 	// POST METHOD
 	void postMethod(void);
