@@ -1,0 +1,192 @@
+************************************
+Server class built for: server2
+************************************
+
+addServersToEpoll(): added: server2 to epoll
+makeNewConnection(): accepted new client connection, server: server2, fd: 6
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1441
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:9999/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /images/webserv/large_image.html HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:9999/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 55
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /images/webserv/large_image_test.png HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:9999/images/webserv/large_image.html
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 406 Not Acceptable
+Content-Length: 56
+Connection: keep-alive
+
+File extension doesn't match the requested Accept header
+************************************
+Server class built for: server2
+************************************
+
+addServersToEpoll(): added: server2 to epoll
+makeNewConnection(): accepted new client connection, server: server2, fd: 6
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1441
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /images/webserv/large_image.html HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:9999/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 55
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /images/webserv/large_image_test.png HTTP/1.1
+Host: localhost:9999
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:9999/images/webserv/large_image.html
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7
+
+
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 496928
+Content-Type: image/png
+
+
