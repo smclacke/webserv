@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/13 15:27:02 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/03 15:58:42 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,7 +33,7 @@ void Epoll::handleCgiRead(s_cgi &cgi)
 	bytesRead = read(cgi.cgiOUT[0], buffer, READ_BUFFER_SIZE - 1);
 	if (bytesRead < 0)
 	{
-		std::cerr << "read() cgi failed\n"; /** @todo remove after testing*/
+		std::cerr << "handleCgiRead(): read from cgiOUT[0] failed\n";
 		cgi.state = cgiState::ERROR;
 		return;
 	}
@@ -76,6 +76,7 @@ void Epoll::handleCgiWrite(s_cgi &cgi)
 	int bytesWritten = write(cgi.cgiIN[1], cgi.input.c_str() + cgi.write_offset, sendlen);
 	if (bytesWritten < 0)
 	{
+		std::cerr << "handleCgiWrite(): write() to cgiIN[1] failed\n";
 		cgi.state = cgiState::ERROR;
 		return;
 	}
@@ -164,6 +165,7 @@ void httpHandler::cgiResponse()
 	}
 	else
 	{
+		std::cerr << "fork() failed\n";
 		_response.cgi = false;
 		_cgi.closeAllPipes();
 		setErrorResponse(eHttpStatusCode::InternalServerError, "failed to fork");
