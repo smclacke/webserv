@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/31 15:05:27 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/05 11:35:16 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -69,17 +69,15 @@ Webserv::~Webserv(void)
 /* member functions */
 void Webserv::addServersToEpoll()
 {
-	for (size_t i = 0; i < getServerCount(); ++i)
+	for (auto server : _servers)
 	{
-		std::shared_ptr<Server> currentServer = getServer(i);
-		int serverSockfd = currentServer->getServerSocket()->getSockfd();
+		int serverSockfd = server->getServerSocket()->getSockfd();
 		struct epoll_event event;
-
 		event.data.fd = serverSockfd;
 		_epoll.addToEpoll(serverSockfd);
 		_epoll.setEvent(event);
-		_epoll.setServer(currentServer);
-		currentServer->logMessage("addServersToEpoll(): added: " + currentServer->getServerName() + " to epoll");
+		_epoll.setServer(server);
+		server->logMessage("addServersToEpoll(): added: " + server->getServerName() + " to epoll");
 	}
 }
 
@@ -119,8 +117,7 @@ void Webserv::monitorServers()
 			continue;
 		for (int i = 0; i < numEvents; ++i)
 		{
-			int fd = _epoll.getAllEvents()[i].data.fd;
-			_epoll.processEvent(fd, _epoll.getAllEvents()[i]);
+			_epoll.processEvent(_epoll.getAllEvents()[i].data.fd, _epoll.getAllEvents()[i]);
 		}
 	}
 	removeServersFromEpoll();

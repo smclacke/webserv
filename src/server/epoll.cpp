@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/03 16:06:35 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/05 12:44:41 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -186,15 +186,26 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 }
 
+void Epoll::checkForNewConnection(int fd, t_serverData &serverData, epoll_event &event)
+{
+	for (const auto &client : serverData._clients)
+	{
+		if (fd == client._fd)
+		{
+			return;
+		}
+	}
+	if (fd == serverData._server->getServerSocket()->getSockfd() && (event.events & EPOLLIN))
+	{
+		makeNewConnection(fd, serverData);
+	}
+}
+
 void Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
 	{
-		if (fd == serverData._server->getServerSocket()->getSockfd())
-		{
-			if (event.events & EPOLLIN)
-				makeNewConnection(fd, serverData);
-		}
+		checkForNewConnection(fd, serverData, event);
 		for (auto &client : serverData._clients)
 		{
 			if (fd == client._fd)
@@ -241,7 +252,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				if (client._connectionClose)
 					handleClientClose(serverData, client);
 			}
-			if (fd == client.cgi.cgiIN[1] || fd == client.cgi.cgiOUT[0])
+			else if (fd == client.cgi.cgiIN[1] || fd == client.cgi.cgiOUT[0])
 				cgiEvent(fd, client, event);
 		}
 	}
