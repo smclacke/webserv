@@ -40,3 +40,6 @@ bin/
 
 # Ignore env
 .env
+
+logs/*
+!logs/.gitkeep
