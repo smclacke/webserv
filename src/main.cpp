@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 22:50:41 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/05 13:11:31 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,12 +18,14 @@
 // Atomic flag to indicate when to stop the program
 std::atomic<bool> keepRunning(true);
 
-// Signal handler function
+/**
+ * @brief ends the program when ^C is received
+ */
 void signalHandler(int signum)
 {
 	(void)signum;
-	std::cout << "\n";
-	keepRunning = false; // Set the flag to false to exit the loop
+	std::cout << "\nprogram terminated by signal\n";
+	keepRunning = false;
 }
 
 int main(int argc, char **argv)
@@ -31,10 +33,12 @@ int main(int argc, char **argv)
 	std::signal(SIGINT, signalHandler);
 	try
 	{
-		verifyInput(argc, argv);
-		std::string config = "";
+		if (argc > 2)
+			throw std::runtime_error("too many inputs, provide 1 *.conf file");
+		std::string config = "./config_files/default.conf";
 		if (argc == 2)
 			config = std::string(argv[1]);
+		verifyInput(config);
 		Webserv wserv(config, keepRunning);
 		wserv.monitorServers();
 	}

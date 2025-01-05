@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 16:40:38 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/11/15 18:10:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/05 13:12:12 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -68,14 +68,8 @@ static void check_server_brackets(std::ifstream &file, std::string line, int &li
 }
 
 /** checks if every server and location block has an opening and a closing bracket */
-void verifyInput(int ac, char **av)
+void verifyInput(std::string &filename)
 {
-	/* input checks */
-	if (ac == 1)
-		return;
-	if (ac > 2)
-		throw std::runtime_error("too many inputs, provide 1 *.conf file");
-	std::string filename = std::string(av[1]);
 	if (filename.length() < 5 || filename.substr(filename.length() - 5) != ".conf")
 		throw std::runtime_error("\"" + filename + "\" does not end with .conf");
 	std::ifstream file(filename);
