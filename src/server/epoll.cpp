@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/05 12:44:41 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/06 17:56:10 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,6 +171,11 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	struct sockaddr_in clientAddr;
 	socklen_t addrLen = sizeof(clientAddr);
 
+	if (server._clients.size() >= 10)
+	{
+		server._server.get()->logMessage("makeNewConnection(): too many clients, denying connection");
+		return;
+	}
 	int clientfd = accept(fd, (struct sockaddr *)&clientAddr, &addrLen);
 	if (clientfd < 0)
 	{

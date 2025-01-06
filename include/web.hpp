@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/05 13:11:57 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/06 17:36:11 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -120,6 +120,7 @@ struct s_cgi
 	std::string output;
 	bool httpOutput; // defines if the output should be http formatted
 
+	s_cgi(void) : env(), scriptname(), cgiIN{-1, -1}, cgiOUT{-1, -1}, state(cgiState::BEGIN), complete(false), input(), write_offset(0), pid(-1), client_fd(-1), output(), httpOutput(false) {}
 	void clearCgi(void);
 	void closeAllPipes(void);
 };
