@@ -26,3 +26,6 @@ BASIC
 
 3) 
 	sometimes when things dont work, prog exits without error message
+
+4) 
+	rapid siege and browser testing somehow triggered CGI and then crashed everything
