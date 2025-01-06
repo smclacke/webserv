@@ -29,3 +29,6 @@ BASIC
 
 4) 
 	rapid siege and browser testing somehow triggered CGI and then crashed everything
+
+5) 	
+	memory still having issues.. related to images? if i keep clicking images, it goes up, then run siege with c10 and i get like +300
