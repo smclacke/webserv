@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/31 15:55:42 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/05 12:44:41 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,15 +46,13 @@ void Epoll::handleRead(t_clients &client)
 
 	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
 
-	// Error
 	if (bytesRead < 0)
 	{
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
+		std::cerr << "handleRead(): recv() failed" << std::endl;
 		return;
 	}
-
-	// Disconnected
 	else if (bytesRead == 0)
 	{
 		client._clientState = clientState::CLOSE;
@@ -93,9 +91,9 @@ void Epoll::handleWrite(t_clients &client)
 	// Error
 	if (bytesWritten < 0)
 	{
-		std::cerr << "Write to client failed\n";
 		client._clientState = clientState::ERROR;
 		client._connectionClose = true;
+		std::cerr << "handleWrite: send() to client failed\n";
 		return;
 	}
 
@@ -145,7 +143,7 @@ void Epoll::handleFile(t_clients &client)
 	int bytesRead = read(client._responseClient.readFd, buffer, READ_BUFFER_SIZE);
 	if (bytesRead < 0)
 	{
-		std::cerr << "Reading from file failed\n";
+		std::cerr << "handleFile(): Reading from file failed\n";
 		operationFailed(client);
 		return;
 	}
@@ -161,7 +159,7 @@ void Epoll::handleFile(t_clients &client)
 	int bytesSent = send(client._fd, buffer, bytesRead, 0);
 	if (bytesSent < 0)
 	{
-		std::cerr << "Write to client failed\n";
+		std::cerr << "handleFile(): write to client failed\n";
 		operationFailed(client);
 		return;
 	}
@@ -188,15 +186,26 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	}
 }
 
+void Epoll::checkForNewConnection(int fd, t_serverData &serverData, epoll_event &event)
+{
+	for (const auto &client : serverData._clients)
+	{
+		if (fd == client._fd)
+		{
+			return;
+		}
+	}
+	if (fd == serverData._server->getServerSocket()->getSockfd() && (event.events & EPOLLIN))
+	{
+		makeNewConnection(fd, serverData);
+	}
+}
+
 void Epoll::processEvent(int fd, epoll_event &event)
 {
 	for (auto &serverData : _serverData)
 	{
-		if (fd == serverData._server->getServerSocket()->getSockfd())
-		{
-			if (event.events & EPOLLIN)
-				makeNewConnection(fd, serverData);
-		}
+		checkForNewConnection(fd, serverData, event);
 		for (auto &client : serverData._clients)
 		{
 			if (fd == client._fd)
@@ -243,7 +252,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 				if (client._connectionClose)
 					handleClientClose(serverData, client);
 			}
-			if (fd == client.cgi.cgiIN[1] || fd == client.cgi.cgiOUT[0])
+			else if (fd == client.cgi.cgiIN[1] || fd == client.cgi.cgiOUT[0])
 				cgiEvent(fd, client, event);
 		}
 	}

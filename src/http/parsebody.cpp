@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/12 15:05:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/03 17:40:48 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ void httpHandler::addToBody(std::string &buffer)
 	}
 	if (_request.body.contentType == eContentType::chunked)
 	{
+		std::cout << "Parsing chunked body: " << buffer << std::endl;
 		parseChunkedBody(buffer);
 		return;
 	}
@@ -68,24 +69,29 @@ void httpHandler::parseChunkedBody(std::string &buffer)
 {
 	std::string line;
 	std::istringstream bufferStream(buffer);
-	size_t chunkSize = 0;
 
 	while (std::getline(bufferStream, line))
 	{
 		if (!line.empty() && line.back() == '\r')
 			line.pop_back();
 
-		if (chunkSize == 0)
+		if (_request.body.nextChunkSize == 0)
 		{
 			std::istringstream chunkSizeStream(line);
-			chunkSizeStream >> std::hex >> chunkSize;
+			if (!(chunkSizeStream >> std::hex >> _request.body.nextChunkSize))
+			{
+				setErrorResponse(eHttpStatusCode::BadRequest, "Invalid chunk size");
+				_request.keepReading = false;
+				return;
+			}
 
-			if (chunkSize == 0)
+			if (_request.body.nextChunkSize == 0)
 			{
 				_request.keepReading = false;
 				return;
 			}
-			if (_request.body.totalChunked + chunkSize > _request.loc.client_body_buffer_size)
+
+			if (_request.body.totalChunked + _request.body.nextChunkSize > _request.loc.client_body_buffer_size)
 			{
 				setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Chunked body size exceeds client max body size");
 				_request.keepReading = false;
@@ -94,16 +100,12 @@ void httpHandler::parseChunkedBody(std::string &buffer)
 		}
 		else
 		{
-			// Read the chunk data
-			std::string chunkData(chunkSize, '\0');
-			bufferStream.read(&chunkData[0], chunkSize);
+			// Read the actual chunk data
+			size_t dataStored = (line.size() >= _request.body.nextChunkSize) ? _request.body.nextChunkSize : line.size();
+			std::string chunkData = line.substr(0, _request.body.nextChunkSize);
 			_request.body.content << chunkData;
-
-			_request.body.totalChunked += chunkSize;
-			chunkSize = 0;
-			// Read the trailing \r\n after the chunk data
-			std::getline(bufferStream, line);
+			_request.body.nextChunkSize -= dataStored;
 		}
 	}
-	_request.body.nextChunkSize = chunkSize;
+	_request.keepReading = false;
 }

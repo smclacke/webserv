@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/31 15:39:30 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/05 12:32:23 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -104,11 +104,8 @@ void Epoll::handleClientClose(t_serverData &server, t_clients &client)
 {
 	epoll_ctl(_epfd, EPOLL_CTL_DEL, client._fd, nullptr);
 	protectedClose(client._fd);
-	client._responseClient.msg.clear();
-	client._write_offset = 0;
-	client._clientState = clientState::CLOSED;
 	server.removeClient(client);
-	server._server->logMessage("handleClientClose(): Removed client from Epoll, server: " + server._server->getServerName());
+	server._server->logMessage("handleClientClose(): Removed a client from Epoll, server: " + server._server->getServerName());
 }
 
 void Epoll::operationFailed(t_clients &client)

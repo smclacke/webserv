@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/30 17:29:42 by sarah-mclac   ########   odam.nl         */
+/*   Updated: 2025/01/06 15:26:20 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -127,7 +127,7 @@ struct s_cgi
 
 /* parser */
 void lineStrip(std::string &line);
-void verifyInput(int ac, char **av);
+void verifyInput(std::string &filename);
 s_location addDefaultLoc(size_t servermaxsize);
 
 /* general utils */

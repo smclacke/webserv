@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/04 14:46:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/12 11:40:10 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/05 12:41:28 by julius        ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,7 +14,7 @@
 #include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
 
-void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll)
+void s_serverData::addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll)
 {
 	auto newClient = t_clients(epoll, *_server);
 	newClient._fd = sock;
@@ -29,7 +29,7 @@ void	s_serverData::addClient(int sock, struct sockaddr_in &addr, int len, Epoll 
 	_clients.push_back(newClient);
 }
 
-void	s_serverData::removeClient(t_clients &client)
+void s_serverData::removeClient(t_clients &client)
 {
 	auto it = std::find_if(_clients.begin(), _clients.end(), [&client](t_clients &c)
 						   { return &c == &client; });
@@ -37,7 +37,7 @@ void	s_serverData::removeClient(t_clients &client)
 	if (it != _clients.end())
 		_clients.erase(it);
 	else
-		std::cerr << "Error: Client not found in _clients deque\n";
+		std::cerr << "removeClient(): error: Client not found in _clients deque\n";
 }
 
 s_clients::s_clients(Epoll &epoll, Server &server)

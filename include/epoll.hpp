@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2024/12/30 17:20:17 by sarah-mclac   ########   odam.nl         */
+/*   Updated: 2025/01/06 15:26:10 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,6 +101,7 @@ public:
 	void handleWrite(t_clients &client);
 	void handleFile(t_clients &client);
 	void makeNewConnection(int fd, t_serverData &server);
+	void checkForNewConnection(int fd, t_serverData &serverData, epoll_event &event);
 	void processEvent(int fd, epoll_event &event);
 	void cgiEvent(int &fd, t_clients &client, epoll_event &event);
 
