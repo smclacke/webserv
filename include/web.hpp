@@ -6,14 +6,12 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/06 15:26:20 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/06 18:12:32 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #ifndef WEB_HPP
 #define WEB_HPP
-
-/** @todo check what of you we can get rid of */
 
 // CPP includes
 #include <sstream>
@@ -25,10 +23,6 @@
 #include <filesystem> // for directory checking
 #include <atomic>	// checking the kill signal
 #include <optional>
-//#include <cstdio>
-//#include <iomanip>
-//#include <limits>
-//#include <cstdlib>
 
 // CPP containers
 #include <algorithm>
@@ -38,9 +32,6 @@
 #include <list>
 #include <deque>
 #include <unordered_map>
-//#include <utility>
-//#include <set>
-//#include <unordered_set>
 
 // Network includes
 #include <netinet/in.h> // for sockaddr_in structure
@@ -48,9 +39,6 @@
 #include <sys/epoll.h> // for epoll()
 #include <arpa/inet.h> // for nonblocking sockets
 #include <sys/wait.h>
-//#include <sys/ioctl.h> // for nonblocking sockets
-//#include <sys/select.h> // for select()
-//#include <sys/types.h>
 
 // C includes
 #include <unistd.h>
@@ -58,10 +46,6 @@
 #include <time.h>		// client timeouts
 #include <errno.h>
 #include <csignal>
-//#include <stdio.h>
-//#include <stdlib.h>
-//#include <string.h>
-//#include <limits.h>
 
 /* forward declarations*/
 struct s_location;

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/04 14:46:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/05 12:41:28 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/06 18:27:09 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,6 +43,4 @@ void s_serverData::removeClient(t_clients &client)
 s_clients::s_clients(Epoll &epoll, Server &server)
 	: _fd(-1), _addLen(0), _clientState(clientState::BEGIN), _connectionClose(false),
 	  http(std::make_shared<httpHandler>(server, epoll)), _write_offset(0), _readingFile(false)
-{
-	// Initialize other members if necessary
-}
+{}

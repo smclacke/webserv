@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/05 11:35:16 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/06 18:28:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -74,7 +74,7 @@ void Webserv::addServersToEpoll()
 		int serverSockfd = server->getServerSocket()->getSockfd();
 		struct epoll_event event;
 		event.data.fd = serverSockfd;
-		_epoll.addToEpoll(serverSockfd);
+		_epoll.addINEpoll(serverSockfd);
 		_epoll.setEvent(event);
 		_epoll.setServer(server);
 		server->logMessage("addServersToEpoll(): added: " + server->getServerName() + " to epoll");

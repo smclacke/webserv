@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/03 14:46:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/06 18:11:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -87,83 +87,83 @@ class Epoll;
 
 class httpHandler
 {
-private:
-	Server &_server;
-	Epoll &_epoll;
-	eHttpStatusCode _statusCode;
-	s_request _request;
-	s_response _response;
-	s_cgi _cgi;
+	private:
+		Server &_server;
+		Epoll &_epoll;
+		eHttpStatusCode _statusCode;
+		s_request _request;
+		s_response _response;
+		s_cgi _cgi;
 
-	// headers to strings and back
-	eRequestHeader toEHeader(const std::string &header);
-	std::string EheaderToString(const eRequestHeader &header);
-	std::string responseHeaderToString(const eResponseHeader &header);
-	std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
-	// utils
-	std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
-	std::string contentType(const std::string &filePath);
-	void setErrorResponse(eHttpStatusCode code, std::string msg);
-	void CallErrorPage(std::string &path);
-	bool generateEnv(void);
-	// parse request+ headers
-	void parseHead(void);
-	void parseRequestLine(void);
-	bool checkMethod(void);
-	bool checkRedirect(void);
-	void checkPath(void);
-	std::string buildCgiPath(void);
-	std::string buildPath(void);
-	void parseHeaders(void);
-	void setContent(void);
-	// parse body
-	void addToBody(std::string &buffer);
-	void parseChunkedBody(std::string &buffer);
-	void parseFixedLengthBody(std::string &buffer);
-	void parseformData(std::string &buffer);
-	// response
-	s_httpSend writeResponse(void);
-	void generateDirectoryListing(void);
-	/* Response */
-	void callMethod(void);
-	// GET METHOD
-	void getMethod(void);
-	void getUriEncoded(void);
-	bool getDirectory(void);
-	void readFile(void);
-	bool isContentTypeAccepted(const std::string &filePath, const std::string &acceptHeader);
-	void openFile(void);
-	// POST METHOD
-	void postMethod(void);
-	void generateEmptyFile(void);
-	void postMultiForm(void);
-	void parseMultipartBody(std::list<std::string> &files);
-	std::string extractHeaderValue(const std::string &headers, const std::string &key);
-	std::string extractFilename(const std::string &contentDisposition);
-	std::string getTempFilePath(const std::string &filename);
-	void postUrlEncoded(void);
-	void postApplication(void);
-	void plainText(void);
-	// DELETE METHOD
-	void stdDelete(void);
-	// cgi Response
-	void cgiResponse();
+		// headers to strings and back
+		eRequestHeader toEHeader(const std::string &header);
+		std::string EheaderToString(const eRequestHeader &header);
+		std::string responseHeaderToString(const eResponseHeader &header);
+		std::optional<std::string> findHeaderValue(const s_request &request, eRequestHeader headerKey);
+		// utils
+		std::optional<s_location> findLongestPrefixMatch(const std::string &requestUri, const std::vector<s_location> &locationBlocks);
+		std::string contentType(const std::string &filePath);
+		void setErrorResponse(eHttpStatusCode code, std::string msg);
+		void CallErrorPage(std::string &path);
+		bool generateEnv(void);
+		// parse request+ headers
+		void parseHead(void);
+		void parseRequestLine(void);
+		bool checkMethod(void);
+		bool checkRedirect(void);
+		void checkPath(void);
+		std::string buildCgiPath(void);
+		std::string buildPath(void);
+		void parseHeaders(void);
+		void setContent(void);
+		// parse body
+		void addToBody(std::string &buffer);
+		void parseChunkedBody(std::string &buffer);
+		void parseFixedLengthBody(std::string &buffer);
+		void parseformData(std::string &buffer);
+		// response
+		s_httpSend writeResponse(void);
+		void generateDirectoryListing(void);
+		/* Response */
+		void callMethod(void);
+		// GET METHOD
+		void getMethod(void);
+		void getUriEncoded(void);
+		bool getDirectory(void);
+		void readFile(void);
+		bool isContentTypeAccepted(const std::string &filePath, const std::string &acceptHeader);
+		void openFile(void);
+		// POST METHOD
+		void postMethod(void);
+		void generateEmptyFile(void);
+		void postMultiForm(void);
+		void parseMultipartBody(std::list<std::string> &files);
+		std::string extractHeaderValue(const std::string &headers, const std::string &key);
+		std::string extractFilename(const std::string &contentDisposition);
+		std::string getTempFilePath(const std::string &filename);
+		void postUrlEncoded(void);
+		void postApplication(void);
+		void plainText(void);
+		// DELETE METHOD
+		void stdDelete(void);
+		// cgi Response
+		void cgiResponse();
 
-public:
-	/* constructor and deconstructor */
-	httpHandler(Server &server, Epoll &epoll);
-	~httpHandler(void);
+	public:
+		/* constructor and deconstructor */
+		httpHandler(Server &server, Epoll &epoll);
+		~httpHandler(void);
 
-	/* member functions */
-	void clearHandler(void);
-	void httpClearCgi(void);
-	void addStringBuffer(std::string buffer);
-	s_httpSend generateResponse(void);
+		/* member functions */
+		void clearHandler(void);
+		void httpClearCgi(void);
+		void addStringBuffer(std::string buffer);
+		s_httpSend generateResponse(void);
 
-	/* for epoll read operations */
-	s_cgi getCGI();
-	bool getKeepReading(void) const;
-	size_t getReadSize(void) const;
+		/* for epoll read operations */
+		s_cgi getCGI();
+		bool getKeepReading(void) const;
+		size_t getReadSize(void) const;
 };
 
 std::string httpMethodToStringFunc(eHttpMethod method);

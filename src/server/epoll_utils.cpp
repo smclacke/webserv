@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/05 12:32:23 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/06 18:15:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,7 +15,7 @@
 #include "../../include/httpHandler.hpp"
 
 /* Epoll utils */
-void Epoll::addToEpoll(int fd)
+void Epoll::addINEpoll(int fd)
 {
 	struct epoll_event event;
 	event.events = EPOLLIN;
