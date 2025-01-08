@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/19 15:05:43 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/06 17:57:05 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -54,7 +54,6 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 
 httpHandler::~httpHandler(void)
 {
-	//_cgi.clearCgi();
 }
 
 void httpHandler::clearHandler(void)

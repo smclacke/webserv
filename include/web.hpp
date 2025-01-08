@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/06 18:12:32 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/08 15:20:31 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -21,7 +21,7 @@
 #include <cstring>
 #include <memory>	  // shared pointers header
 #include <filesystem> // for directory checking
-#include <atomic>	// checking the kill signal
+#include <atomic>	  // checking the kill signal
 #include <optional>
 
 // CPP containers
@@ -36,14 +36,14 @@
 // Network includes
 #include <netinet/in.h> // for sockaddr_in structure
 #include <sys/socket.h> // for socket functions
-#include <sys/epoll.h> // for epoll()
-#include <arpa/inet.h> // for nonblocking sockets
+#include <sys/epoll.h>	// for epoll()
+#include <arpa/inet.h>	// for nonblocking sockets
 #include <sys/wait.h>
 
 // C includes
 #include <unistd.h>
-#include <fcntl.h>		// for files
-#include <time.h>		// client timeouts
+#include <fcntl.h> // for files
+#include <time.h>  // client timeouts
 #include <errno.h>
 #include <csignal>
 
@@ -105,6 +105,7 @@ struct s_cgi
 	std::string output;
 	bool httpOutput; // defines if the output should be http formatted
 
+	s_cgi(void) : env(), scriptname(), cgiIN{-1, -1}, cgiOUT{-1, -1}, state(cgiState::BEGIN), complete(false), input(), write_offset(0), pid(-1), client_fd(-1), output(), httpOutput(false) {}
 	void clearCgi(void);
 	void closeAllPipes(void);
 };
