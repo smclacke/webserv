@@ -44,4 +44,11 @@ BASIC
 	if no space between server end bracket and next server block, server does weird shit
 		still kind of works but the basic testing 1 was caused by there being no space
 		and it throwing 404 for images
-		
+		-- v unclear what is happening here but something changed when i changed the spaces? or im high
+
+
+
+**dont_know_what_to_call_this**
+
+1) 
+	when adding "return 301 /new-route; #redirects request from old route to new-route wiht a 301 status" to test.conf server 9999, images always has 404
