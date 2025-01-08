@@ -33,22 +33,24 @@ BASIC
 5) 	
 	memory still having issues.. related to images? if i keep clicking images, it goes up, then run siege with c10 and i get like +300
 
-6) 	
-	if rapid refresh, server crashes, sometimes with "handleFile(): write to client failed", sometimes nothing
 
 
+**discoveries/challenges**
 
-**discoveries**
+1) 	
+	spaces inbetween server blocks were causing different behaviours with images in browser
 
-1) 	OR NOT?? wtf
-	if no space between server end bracket and next server block, server does weird shit
-		still kind of works but the basic testing 1 was caused by there being no space
-		and it throwing 404 for images
-		-- v unclear what is happening here but something changed when i changed the spaces? or im high
+2) 
+	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
 
+3) 	
+	how to translate curl post + delete requests to html for action buttons in browser
 
+4) 	
+	if rapid refresh on big image, server crashes, sometimes with "handleFile(): write to client failed", sometimes nothing - doesnt seem to be an issue with other pages...
 
-**dont_know_what_to_call_this**
+5) 
+	trying to add back the 'oldimagesdir' redirecting in new conf but being weird
 
-1) 
-	when adding "return 301 /new-route; #redirects request from old route to new-route wiht a 301 status" to test.conf server 9999, images always has 404
+6) 
+	cgi - http 0.9 ???
