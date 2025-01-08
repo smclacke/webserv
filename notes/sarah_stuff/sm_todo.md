@@ -44,3 +44,4 @@ BASIC
 	if no space between server end bracket and next server block, server does weird shit
 		still kind of works but the basic testing 1 was caused by there being no space
 		and it throwing 404 for images
+		
