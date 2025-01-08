@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/03 15:58:42 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/06 18:30:03 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -160,7 +160,7 @@ void httpHandler::cgiResponse()
 		_epoll.setNonBlocking(_cgi.cgiIN[1]);
 		_epoll.setNonBlocking(_cgi.cgiOUT[0]);
 		_epoll.addOUTEpoll(_cgi.cgiIN[1]);
-		_epoll.addToEpoll(_cgi.cgiOUT[0]);
+		_epoll.addINEpoll(_cgi.cgiOUT[0]);
 		_response.cgi = true;
 	}
 	else

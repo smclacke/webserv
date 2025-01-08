@@ -6,15 +6,13 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/06 17:56:10 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/08 15:20:16 by juliusdebaa   ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/web.hpp"
 #include "../../include/epoll.hpp"
 #include "../../include/httpHandler.hpp"
-
-/** @todo check cgi stuff here */
 
 /* constructors */
 Epoll::Epoll() : _epfd(0), _numEvents(MAX_EVENTS)
@@ -45,7 +43,7 @@ void Epoll::handleRead(t_clients &client)
 	memset(buffer, 0, sizeof(buffer));
 
 	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
-
+	// Error
 	if (bytesRead < 0)
 	{
 		client._clientState = clientState::ERROR;
@@ -53,12 +51,14 @@ void Epoll::handleRead(t_clients &client)
 		std::cerr << "handleRead(): recv() failed" << std::endl;
 		return;
 	}
+	// Disconnected
 	else if (bytesRead == 0)
 	{
 		client._clientState = clientState::CLOSE;
 		client._connectionClose = true;
 		return;
 	}
+	// Finished
 	buffer[readSize - 1] = '\0';
 	std::string buf = buffer;
 	client.http->addStringBuffer(buf);
@@ -96,7 +96,6 @@ void Epoll::handleWrite(t_clients &client)
 		std::cerr << "handleWrite: send() to client failed\n";
 		return;
 	}
-
 	// Disconnected
 	else if (bytesWritten == 0)
 	{
@@ -104,9 +103,7 @@ void Epoll::handleWrite(t_clients &client)
 		client._connectionClose = true;
 		return;
 	}
-
 	client._write_offset += bytesWritten;
-
 	// Finished
 	if (client._write_offset >= client._responseClient.msg.length())
 	{
@@ -186,7 +183,7 @@ void Epoll::makeNewConnection(int fd, t_serverData &server)
 	{
 		setNonBlocking(clientfd);
 		server.addClient(clientfd, clientAddr, addrLen, *this);
-		addToEpoll(clientfd);
+		addINEpoll(clientfd);
 		server._server->logMessage("makeNewConnection(): accepted new client connection, server: " + server._server->getServerName() + ", fd: " + std::to_string(fd));
 	}
 }
@@ -196,14 +193,10 @@ void Epoll::checkForNewConnection(int fd, t_serverData &serverData, epoll_event 
 	for (const auto &client : serverData._clients)
 	{
 		if (fd == client._fd)
-		{
 			return;
-		}
 	}
 	if (fd == serverData._server->getServerSocket()->getSockfd() && (event.events & EPOLLIN))
-	{
 		makeNewConnection(fd, serverData);
-	}
 }
 
 void Epoll::processEvent(int fd, epoll_event &event)
@@ -227,12 +220,9 @@ void Epoll::processEvent(int fd, epoll_event &event)
 							client.cgi = client.http->getCGI();
 							client.cgi.client_fd = client._fd;
 							client._responseClient.clearHttpSend();
-							// modifyInANDOut(client.cgi.client_fd);
 						}
 						else
-						{
 							modifyEvent(client._fd, EPOLLOUT);
-						}
 						client.http->clearHandler();
 						updateClientClock(client);
 					}
@@ -267,16 +257,16 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 {
 	if (fd == client.cgi.cgiIN[1])
 	{
-		std::cout << "CGI IN event triggerd" << std::endl;
+		std::cout << "CGI IN event triggerd" << std::endl; /** @todo remove after testing*/
 		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
-			std::cout << "CGI-IN EPOLLHUP event triggerd" << std::endl;
+			std::cout << "CGI-IN EPOLLHUP event triggerd" << std::endl; /** @todo remove after testing*/
 			epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiIN[1], nullptr);
 			protectedClose(client.cgi.cgiIN[1]);
 		}
 		if (event.events & EPOLLOUT && fd == client.cgi.cgiIN[1])
 		{
-			std::cout << "CGI-IN EPOLLOUT event triggerd" << std::endl;
+			std::cout << "CGI-IN EPOLLOUT event triggerd" << std::endl; /** @todo remove after testing*/
 			handleCgiWrite(client.cgi);
 			if (client.cgi.state == cgiState::ERROR)
 			{
@@ -310,7 +300,7 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 	{
 		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
-			std::cout << "CGI-OUT EPOLLHUP event triggerd" << std::endl;
+			std::cout << "CGI-OUT EPOLLHUP event triggerd" << std::endl; /** @todo remove after testing*/
 			epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiOUT[0], nullptr);
 			protectedClose(client.cgi.cgiOUT[0]);
 			modifyEvent(client.cgi.client_fd, EPOLLOUT);
@@ -335,7 +325,7 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 		}
 		if (event.events & EPOLLIN && fd == client.cgi.cgiOUT[0])
 		{
-			std::cout << "CGI-OUT EPOLLIN event triggerd" << std::endl;
+			std::cout << "CGI-OUT EPOLLIN event triggerd" << std::endl; /** @todo remove after testing*/
 			handleCgiRead(client.cgi);
 			if (client.cgi.state == cgiState::ERROR)
 			{
@@ -404,7 +394,7 @@ std::shared_ptr<Server> Epoll::getServer(size_t i)
 
 std::vector<epoll_event> &Epoll::getAllEvents()
 {
-	return _events;
+	return this->_events;
 }
 
 struct epoll_event &Epoll::getEvent()
@@ -425,7 +415,7 @@ void Epoll::setNumEvents(int numEvents)
 
 void Epoll::setEventMax()
 {
-	_events.resize(MAX_EVENTS);
+	this->_events.resize(MAX_EVENTS);
 }
 
 void Epoll::setEvent(struct epoll_event &event)

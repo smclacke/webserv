@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2025/01/06 17:57:22 by jde-baai      ########   odam.nl          #
+#    Updated: 2025/01/08 15:19:38 by juliusdebaa   ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -18,7 +18,6 @@ FLAGS += -Wall -Wextra -Werror
 FLAGS += -g -fsanitize=address
 
 OBJDIR := objs
-TPP_FILES := web.tpp
 HEADER_FILES := server.hpp error.hpp httpHandler.hpp httpConstants.hpp socket.hpp webserv.hpp web.hpp epoll.hpp
 
 
@@ -46,7 +45,7 @@ SRC_FILES := main.cpp					\
 
 
 SRC := $(addprefix src/, $(SRC_FILES))
-HEADER := $(addprefix include/, $(HEADER_FILES) $(TPP_FILES))
+HEADER := $(addprefix include/, $(HEADER_FILES))
 OBJS := $(SRC:%.cpp=$(OBJDIR)/%.o)
 
 all: $(NAME)
