@@ -18,7 +18,7 @@
 
 BASIC
 
-1) 	
+1) 	(test.conf) - is this supposed to happen? - also cat.conf giving 404 on 9999 images
 	triple check redirects, 9999 was doing something weird but 4242 was ok?
 
 2) 	
@@ -32,3 +32,15 @@ BASIC
 
 5) 	
 	memory still having issues.. related to images? if i keep clicking images, it goes up, then run siege with c10 and i get like +300
+
+6) 	
+	if rapid refresh, server crashes, sometimes with "handleFile(): write to client failed", sometimes nothing
+
+
+
+**discoveries**
+
+1) 	OR NOT?? wtf
+	if no space between server end bracket and next server block, server does weird shit
+		still kind of works but the basic testing 1 was caused by there being no space
+		and it throwing 404 for images
