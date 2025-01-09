@@ -2,17 +2,13 @@
 <html lang="en">
 	<head>
 		<body>
-			<button onclick="window.location.href='pages/basic/webserv.html'">Webserv image</button>
+			<h2>Post</h2>
+				<h3>Select file to upload :</h3> 
+				<form action="/post/post" class="post" method="post" enctype="multipart/form-data">
+					<input type="file" name="fileToPost" id="fileToPost">
+					<input type="submit" value="post" name="submit">
+				</form>
+				<br><br>
 		</body>
 	</head>
-	</html>
-	
-
-	<!--action = ? HOW DO THIS??-->
-	<!--<h2>Upload</h2>
-		<h3>Select file to upload :</h3> 
-		<form action="serv_stuff/pages/post" class="upload" method="post" enctype="multipart/form-data">
-			<input type="file" name="fileToUpload" id="fileToUpload">
-			<input type="submit" value="Upload" name="submit">
-		</form>
-		<br><br>-->
+</html>
