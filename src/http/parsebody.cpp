@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/09 15:44:08 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/09 18:03:20 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,6 +42,11 @@ void httpHandler::parseFixedLengthBody(std::string &buffer)
 	{
 		_request.keepReading = false;
 	}
+	if (_request.body.content.str().size() >= _request.loc.client_body_buffer_size)
+	{
+		setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Form data size exceeds client max body size");
+		_request.keepReading = false;
+	}
 }
 
 void httpHandler::parseformData(std::string &buffer)
@@ -50,10 +55,22 @@ void httpHandler::parseformData(std::string &buffer)
 	if (_request.body.formDelimiter.empty())
 	{
 		_request.keepReading = false;
+		return;
 	}
 	// Check if the end delimiter is in the buffer
 	if (_request.body.content.str().find(_request.body.formDelimiter + "--") != std::string::npos)
 	{
+		_request.keepReading = false;
+		return;
+	}
+	if (_request.body.content.str().size() >= _request.body.contentLen)
+	{
+		_request.keepReading = false;
+		return;
+	}
+	if (_request.body.content.str().size() >= _request.loc.client_body_buffer_size)
+	{
+		setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Form data size exceeds client max body size");
 		_request.keepReading = false;
 	}
 }
