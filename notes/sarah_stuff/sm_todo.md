@@ -14,14 +14,6 @@
 
 -------------------
 
-**important change**
-
-100) 
-	parser.cpp
-	check_path()
-	last if - access != 0 (!!!!!!!!)
-
-
 **testing**
 
 BASIC
@@ -51,9 +43,6 @@ BASIC
 2) 
 	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
 
-3) 	
-	how to translate curl post + delete requests to html for action buttons in browser
-
 4) 	
 	if rapid refresh on big image, server crashes, sometimes with "handleFile(): write to client failed", sometimes nothing - doesnt seem to be an issue with other pages...
 
@@ -62,3 +51,4 @@ BASIC
 
 6) 
 	cgi - http 0.9 ???
+
