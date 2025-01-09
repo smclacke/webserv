@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/03 17:40:48 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/09 15:44:08 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,13 +17,13 @@ void httpHandler::addToBody(std::string &buffer)
 {
 	if (_request.body.contentType == eContentType::noContent)
 	{
-		setErrorResponse(eHttpStatusCode::BadRequest, "unexpected dedbody encountered");
+		setErrorResponse(eHttpStatusCode::BadRequest, "unexpected body encountered");
 		_request.keepReading = false;
 		return;
 	}
-	if (_request.body.contentType == eContentType::contentLength)
+	if (_request.body.chunked == true)
 	{
-		parseFixedLengthBody(buffer);
+		parseChunkedBody(buffer);
 		return;
 	}
 	if (_request.body.contentType == eContentType::formData)
@@ -31,14 +31,7 @@ void httpHandler::addToBody(std::string &buffer)
 		parseformData(buffer);
 		return;
 	}
-	if (_request.body.contentType == eContentType::chunked)
-	{
-		std::cout << "Parsing chunked body: " << buffer << std::endl;
-		parseChunkedBody(buffer);
-		return;
-	}
-	setErrorResponse(eHttpStatusCode::InternalServerError, "reached unexpected point");
-	_request.keepReading = false;
+	parseFixedLengthBody(buffer); // for regular content-len and applications / uri encoded
 	return;
 }
 
