@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/31 15:26:44 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/09 16:23:25 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -171,13 +171,19 @@ void httpHandler::checkPath(void)
 	_request.path = buildPath();
 	if (_statusCode == eHttpStatusCode::Forbidden)
 		return;
-	if (!std::filesystem::exists(_request.path))
+	if (_request.method == eHttpMethod::GET || _request.method == eHttpMethod::DELETE)
 	{
-		return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
-	}
-	if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) == 0)
-	{
-		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to execute file, does not match cgi settings");
+		if (!std::filesystem::exists(_request.path))
+		{
+			return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
+		}
+		if (_request.method == eHttpMethod::GET)
+		{
+			if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) == 0)
+			{
+				return setErrorResponse(eHttpStatusCode::Forbidden, "attempt to GET executable file that doesn't match CGI");
+			}
+		}
 	}
 }
 
@@ -277,13 +283,31 @@ void httpHandler::parseHeaders(void)
 	}
 }
 
+/**
+ * @brief sets transfer encoding, content length and content type
+ */
 void httpHandler::setContent(void)
 {
 	auto contentLengthHeader = findHeaderValue(_request, eRequestHeader::ContentLength);
 	auto contentTypeHeader = findHeaderValue(_request, eRequestHeader::ContentType);
 	auto transferEncodingHeader = findHeaderValue(_request, eRequestHeader::TransferEncoding);
 
-	if (contentLengthHeader.has_value())
+	// setting tranferEncoding or Contentlength
+	if (transferEncodingHeader.has_value())
+	{
+		if (transferEncodingHeader.value() == "chunked")
+		{
+			_request.body.chunked = true;
+			_request.body.contentType = eContentType::contentLength;
+		}
+		else
+		{
+			_request.keepReading = false;
+			_request.body.contentType = eContentType::error;
+			return setErrorResponse(eHttpStatusCode::NotImplemented, "Transfer-Encoding type not implemented: " + transferEncodingHeader.value());
+		}
+	}
+	else if (contentLengthHeader.has_value())
 	{
 		_request.body.contentLen = std::stoul(contentLengthHeader.value());
 		if (_request.body.contentLen > _request.loc.client_body_buffer_size)
@@ -297,7 +321,17 @@ void httpHandler::setContent(void)
 			_request.body.contentType = eContentType::noContent;
 			return;
 		}
-		if (contentTypeHeader.has_value() && contentTypeHeader.value().find("multipart/form-data") != std::string::npos)
+		_request.body.contentType = eContentType::contentLength;
+	}
+	else
+	{
+		_request.body.contentType = eContentType::noContent;
+		return;
+	}
+	// setting contentType
+	if (contentTypeHeader.has_value())
+	{
+		if (contentTypeHeader.value().find("multipart/form-data") != std::string::npos)
 		{
 			size_t pos = contentTypeHeader.value().find("boundary=");
 			if (pos == std::string::npos)
@@ -313,31 +347,18 @@ void httpHandler::setContent(void)
 			_request.body.contentType = eContentType::formData;
 			return;
 		}
-		else if (contentTypeHeader.has_value() && contentTypeHeader.value().find("application/") != std::string::npos)
+		else if (contentTypeHeader.value().find("application/") != std::string::npos)
 		{
 			_request.body.contentType = eContentType::application;
 			return;
 		}
 		else
 		{
-			_request.body.contentType = eContentType::contentLength;
-			return;
-		}
-	}
-	else if (transferEncodingHeader.has_value())
-	{
-		if (transferEncodingHeader.value() == "chunked")
-		{
-			_request.body.contentType = eContentType::chunked;
-		}
-		else
-		{
+			_request.keepReading = false;
 			_request.body.contentType = eContentType::error;
-			return setErrorResponse(eHttpStatusCode::NotImplemented, "Transfer-Encoding type not implemented: " + transferEncodingHeader.value());
+			return setErrorResponse(eHttpStatusCode::NotImplemented, "contentType Header not implemented");
 		}
 	}
-	else
-	{
-		_request.body.contentType = eContentType::noContent;
-	}
+	_request.body.contentType = eContentType::undefined;
+	return;
 }
