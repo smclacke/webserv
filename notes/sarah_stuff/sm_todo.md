@@ -14,6 +14,14 @@
 
 -------------------
 
+**important change**
+
+100) 
+	parser.cpp
+	check_path()
+	last if - access != 0 (!!!!!!!!)
+
+
 **testing**
 
 BASIC

@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2024/12/31 15:26:44 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/09 12:27:41 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -175,7 +175,7 @@ void httpHandler::checkPath(void)
 	{
 		return setErrorResponse(eHttpStatusCode::NotFound, "Resource not found at path: " + _request.path);
 	}
-	if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) == 0)
+	if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) != 0)
 	{
 		return setErrorResponse(eHttpStatusCode::Forbidden, "No permission to execute file, does not match cgi settings");
 	}
