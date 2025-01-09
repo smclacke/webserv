@@ -1,14 +1,71 @@
 <!DOCTYPE html>
 <html lang="en">
-	<head>
-		<body>
-			<h2>Delete</h2>
-				<h3>Select file to delete :</h3> 
-				<form action="/delete/delete" class="delete" method="delete" enctype="text/html">
-					<input type="file" name="fileToDelete" id="fileToDelete">
-					<input type="submit" value="Delete" name="submit">
-				</form>
-				<br><br>
-		</body>
-	</head>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Delete Request Example</title>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('deleteForm');
+            form.addEventListener('submit', function(event) {
+                event.preventDefault(); // Prevent the default form submission
+
+                // Get the file name and path from the inputs
+                const fileInput = document.getElementById('file');
+                const fileName = fileInput.files[0]?.name;
+
+                const pathInput = document.getElementById('path');
+                const filePath = pathInput.value;
+
+                if (!fileName || !filePath) {
+                    alert('Please select a file and enter the file path.');
+                    return;
+                }
+
+                // Construct the URL for the DELETE request using the full path
+                const url = `${filePath}/${encodeURIComponent(fileName)}`; // Full path to the file
+                const referer = `${window.location.origin}${filePath}/${encodeURIComponent(fileName)}`; // Full referer URL
+
+                // Send the DELETE request with the Referer header
+                fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Referer': referer
+                    }
+                })
+                .then(response => {
+                    if (response.status === 204) {
+                        console.log('Success: No Content');
+                        alert('Delete request was successful!');
+                    } else {
+                        return response.json(); // Handle other response statuses with a body
+                    }
+                })
+                .then(data => {
+                    if (data) {
+                        console.log('Success:', data);
+                        alert('Delete request was successful!');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('There was an error with the delete request.');
+                });
+            });
+        });
+    </script>
+</head>
+<body>
+    <h2>Delete File</h2>
+    <form id="deleteForm">
+        <label for="path">Enter file path:</label>
+        <input type="text" id="path" name="path" placeholder="/path/to/directory" required>
+        <br><br>
+        <label for="file">Choose a file:</label>
+        <input type="file" id="file" name="file" required>
+        <br><br>
+        <input type="submit" value="Delete">
+    </form>
+</body>
 </html>
