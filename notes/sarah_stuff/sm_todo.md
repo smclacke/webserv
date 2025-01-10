@@ -25,7 +25,7 @@ BASIC
 	cgi timeout checking + test while(1) in the .cgi
 
 3) 
-	sometimes when things dont work, prog exits without error message
+	sometimes when things dont work, prog exits without error message + no log for removing sockets/connections/clients from epoll... when unable to load page
 
 4) 
 	rapid siege and browser testing somehow triggered CGI and then crashed everything

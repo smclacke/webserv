@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/08 15:20:31 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/10 15:14:41 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,6 +35,7 @@
 
 // Network includes
 #include <netinet/in.h> // for sockaddr_in structure
+#include <netinet/tcp.h> // for setsockopt()
 #include <sys/socket.h> // for socket functions
 #include <sys/epoll.h>	// for epoll()
 #include <arpa/inet.h>	// for nonblocking sockets
