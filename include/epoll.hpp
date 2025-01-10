@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/06 18:15:37 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/10 12:20:27 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -51,7 +51,7 @@ typedef struct s_clients
 	std::unordered_map<int, timePoint> _clientTime;
 	bool _connectionClose;
 
-	std::shared_ptr<httpHandler> http;
+	std::unique_ptr<httpHandler> http;
 	struct s_cgi cgi;
 	s_httpSend _responseClient;
 	size_t _write_offset;
@@ -75,57 +75,57 @@ typedef struct s_serverData
 
 class Epoll
 {
-	private:
-		int _epfd;
-		std::vector<t_serverData> _serverData;
-		int _numEvents;
-		struct epoll_event _event;
-		std::vector<epoll_event> _events;
+private:
+	int _epfd;
+	std::vector<t_serverData> _serverData;
+	int _numEvents;
+	struct epoll_event _event;
+	std::vector<epoll_event> _events;
 
-	public:
-		Epoll();
-		~Epoll();
+public:
+	Epoll();
+	~Epoll();
 
-		/* methods */
-		void initEpoll();
-		void handleCgiRead(s_cgi &cgi);
-		void handleCgiWrite(s_cgi &cgi);
-		void handleRead(t_clients &client);
-		void handleWrite(t_clients &client);
-		void handleFile(t_clients &client);
-		void makeNewConnection(int fd, t_serverData &server);
-		void checkForNewConnection(int fd, t_serverData &serverData, epoll_event &event);
-		void processEvent(int fd, epoll_event &event);
-		void cgiEvent(int &fd, t_clients &client, epoll_event &event);
+	/* methods */
+	void initEpoll();
+	void handleCgiRead(s_cgi &cgi);
+	void handleCgiWrite(s_cgi &cgi);
+	void handleRead(t_clients &client);
+	void handleWrite(t_clients &client);
+	void handleFile(t_clients &client);
+	void makeNewConnection(int fd, t_serverData &server);
+	void checkForNewConnection(int fd, t_serverData &serverData, epoll_event &event);
+	void processEvent(int fd, epoll_event &event);
+	void cgiEvent(int &fd, t_clients &client, epoll_event &event);
 
-		/* getters */
-		int getEpfd() const;
-		int getNumEvents() const;
-		std::vector<t_serverData> &getAllServers();
-		std::shared_ptr<Server> getServer(size_t i);
-		std::vector<epoll_event> &getAllEvents();
-		struct epoll_event &getEvent();
+	/* getters */
+	int getEpfd() const;
+	int getNumEvents() const;
+	std::vector<t_serverData> &getAllServers();
+	std::shared_ptr<Server> getServer(size_t i);
+	std::vector<epoll_event> &getAllEvents();
+	struct epoll_event &getEvent();
 
-		/* setters */
-		void setEpfd(int fd);
-		void setNumEvents(int numEvents);
-		void setEventMax();
-		void setEvent(struct epoll_event &event);
-		void setServer(std::shared_ptr<Server>);
+	/* setters */
+	void setEpfd(int fd);
+	void setNumEvents(int numEvents);
+	void setEventMax();
+	void setEvent(struct epoll_event &event);
+	void setServer(std::shared_ptr<Server>);
 
-		/* utils -> epoll_utils.cpp */
-		void addINEpoll(int fd);
-		void addOUTEpoll(int fd);
-		void modifyEvent(int fd, uint32_t events);
-		void modifyInANDOut(int fd);
-		void setNonBlocking(int connection);
-		void updateClientClock(t_clients &client);
-		void clientTimeCheck(t_clients &client);
-		void closeDelete(int fd);
-		void removeCGIFromEpoll(t_clients &client);
-		void handleClientClose(t_serverData &server, t_clients &client);
-		void operationFailed(t_clients &client);
-		void cleanResponse(t_clients &client);
+	/* utils -> epoll_utils.cpp */
+	void addINEpoll(int fd);
+	void addOUTEpoll(int fd);
+	void modifyEvent(int fd, uint32_t events);
+	void modifyInANDOut(int fd);
+	void setNonBlocking(int connection);
+	void updateClientClock(t_clients &client);
+	void clientTimeCheck(t_clients &client);
+	void closeDelete(int fd);
+	void removeCGIFromEpoll(t_clients &client);
+	void handleClientClose(t_serverData &server, t_clients &client);
+	void operationFailed(t_clients &client);
+	void cleanResponse(t_clients &client);
 };
 
 #endif /* EPOLL_HPP */
