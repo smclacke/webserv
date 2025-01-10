@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/10 12:20:27 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/10 12:49:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "socket.hpp"
 #include "web.hpp"
+#include "httpHandler.hpp"
 
 class Webserv;
 class Server;
@@ -58,6 +59,10 @@ typedef struct s_clients
 	bool _readingFile;
 
 	s_clients(Epoll &epoll, Server &server);
+	s_clients(const s_clients &) = delete;
+	s_clients &operator=(const s_clients &) = delete;
+	s_clients(s_clients &&other) noexcept;
+	s_clients &operator=(s_clients &&other) noexcept;
 	~s_clients() {};
 
 } t_clients;
@@ -65,7 +70,7 @@ typedef struct s_clients
 typedef struct s_serverData
 {
 	std::shared_ptr<Server> _server;
-	std::deque<t_clients> _clients;
+	std::vector<t_clients> _clients;
 
 	/* methods */
 	void addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
