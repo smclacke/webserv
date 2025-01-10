@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/09 15:33:45 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/10 16:43:12 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -37,6 +37,8 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	_request.body.nextChunkSize = 0;
 	_request.body.totalChunked = 0;
 	_request.body.formDelimiter.clear();
+	_request.bufferVec.clear();
+	_request.body.contentVec.clear();
 	//	response
 	_response.headers.clear();
 	resetStringStream(_response.body);
@@ -78,6 +80,8 @@ void httpHandler::clearHandler(void)
 	_request.body.nextChunkSize = 0;
 	_request.body.totalChunked = 0;
 	_request.body.formDelimiter.clear();
+	_request.bufferVec.clear();
+	_request.body.contentVec.clear();
 	//	response
 	_response.headers.clear();
 	resetStringStream(_response.body);
@@ -212,24 +216,26 @@ void httpHandler::setErrorResponse(eHttpStatusCode code, std::string msg)
  * end of ContentLength / Chunked=0/r/n/ / wwwFormDelimiter
  *
  */
-void httpHandler::addStringBuffer(std::string buffer)
+void httpHandler::addStringBuffer(char *buffer, size_t bytesRead)
 {
 	if (!_request.headCompleted)
 	{
-		_request.head << buffer;
-		size_t pos = _request.head.str().find("\r\n\r\n");
-		if (pos != std::string::npos)
+		// Insert new data into the buffer vector
+		_request.bufferVec.insert(_request.bufferVec.end(), buffer, buffer + bytesRead);
+
+		// Define the pattern to search for the end of the HTTP header
+		static const char headerEndPattern[] = "\r\n\r\n";
+		auto headEnd = std::search(
+			_request.bufferVec.begin(),
+			_request.bufferVec.end(),
+			std::begin(headerEndPattern),
+			std::end(headerEndPattern) - 1);
+
+		if (headEnd != _request.bufferVec.end())
 		{
 			_request.headCompleted = true;
-			std::string buf = "";
-			if (pos + 4 < _request.head.str().size())
-			{
-				buf = _request.head.str().substr(pos + 4);
-				std::string headStr = _request.head.str();
-				headStr.erase(pos + 4);
-				_request.head.clear();
-				_request.head.str(headStr);
-			}
+			std::string tempHead(_request.bufferVec.begin(), headEnd);
+			_request.head << tempHead;
 			parseHead();
 			if (_statusCode > eHttpStatusCode::Accepted)
 			{
@@ -242,22 +248,21 @@ void httpHandler::addStringBuffer(std::string buffer)
 				_request.keepReading = false;
 				return;
 			}
-			if (!buf.empty())
+
+			// Check if there is remaining data after the header
+			if (_request.bufferVec.size() > tempHead.size() + 4)
 			{
-				addToBody(buf);
+				// Create a vector for the remaining data
+				std::vector<char> tempVec(headEnd + 4, _request.bufferVec.end());
+				_request.bufferVec.clear();
+				addToBody(tempVec.data(), tempVec.size());
 			}
 		}
 		return;
 	}
 	else
 	{
-		if (_request.body.contentType == eContentType::error || _request.body.contentType == eContentType::noContent)
-		{
-			setErrorResponse(eHttpStatusCode::InternalServerError, "unexpected body");
-			_request.keepReading = false;
-			return;
-		}
-		addToBody(buffer);
+		addToBody(buffer, bytesRead);
 	}
 }
 

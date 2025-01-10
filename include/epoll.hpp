@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/10 12:49:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/10 15:11:18 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,6 +57,7 @@ typedef struct s_clients
 	s_httpSend _responseClient;
 	size_t _write_offset;
 	bool _readingFile;
+	int bytesReadtotal;
 
 	s_clients(Epoll &epoll, Server &server);
 	s_clients(const s_clients &) = delete;
@@ -131,6 +132,8 @@ public:
 	void handleClientClose(t_serverData &server, t_clients &client);
 	void operationFailed(t_clients &client);
 	void cleanResponse(t_clients &client);
+
+	/* debugging @todo reomve */
 };
 
 #endif /* EPOLL_HPP */

@@ -1,19 +1,21 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        ::::::::            */
-/*   parsebody.cpp                                      :+:    :+:            */
+/*   parseBody.cpp                                      :+:    :+:            */
 /*                                                     +:+                    */
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 15:40:36 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/09 18:03:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/10 16:40:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../../include/httpHandler.hpp"
 #include "../../include/web.hpp"
 
-void httpHandler::addToBody(std::string &buffer)
+//_request.bufferVec.insert(_request.bufferVec.end(), buffer, buffer + bytesRead);
+
+void httpHandler::addToBody(char *buffer, size_t bytesRead)
 {
 	if (_request.body.contentType == eContentType::noContent)
 	{
@@ -28,54 +30,62 @@ void httpHandler::addToBody(std::string &buffer)
 	}
 	if (_request.body.contentType == eContentType::formData)
 	{
-		parseformData(buffer);
+		parseformData(buffer, bytesRead);
 		return;
 	}
-	parseFixedLengthBody(buffer); // for regular content-len and applications / uri encoded
+	parseFixedLengthBody(buffer, bytesRead); // for regular content-len and applications / uri encoded
 	return;
 }
 
-void httpHandler::parseFixedLengthBody(std::string &buffer)
+void httpHandler::parseFixedLengthBody(char *buffer, size_t bytesRead)
 {
-	_request.body.content << buffer;
-	if (_request.body.content.str().size() >= _request.body.contentLen)
+	if (_request.body.contentVec.size() + bytesRead >= _request.loc.client_body_buffer_size)
 	{
+		setErrorResponse(eHttpStatusCode::PayloadTooLarge, "body size exceeds client max body size");
 		_request.keepReading = false;
 	}
-	if (_request.body.content.str().size() >= _request.loc.client_body_buffer_size)
+	_request.body.contentVec.insert(_request.body.contentVec.end(), buffer, buffer + bytesRead);
+	if (_request.body.contentVec.size() >= _request.body.contentLen)
 	{
-		setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Form data size exceeds client max body size");
+		_request.body.content << std::string(_request.body.contentVec.data(), _request.body.contentVec.size());
 		_request.keepReading = false;
 	}
 }
 
-void httpHandler::parseformData(std::string &buffer)
+void httpHandler::parseformData(char *buffer, size_t bytesRead)
 {
-	_request.body.content << buffer;
-	if (_request.body.formDelimiter.empty())
+	if (_request.body.contentVec.size() + bytesRead >= _request.loc.client_body_buffer_size)
 	{
+		setErrorResponse(eHttpStatusCode::PayloadTooLarge, "body size exceeds client max body size");
 		_request.keepReading = false;
-		return;
 	}
+	_request.body.contentVec.insert(_request.body.contentVec.end(), buffer, buffer + bytesRead);
 	// Check if the end delimiter is in the buffer
-	if (_request.body.content.str().find(_request.body.formDelimiter + "--") != std::string::npos)
+	static const std::vector<char> delimiterVec = [this]()
 	{
+		std::string delimiter = _request.body.formDelimiter + "--";
+		return std::vector<char>(delimiter.begin(), delimiter.end());
+	}();
+	auto it = std::search(
+		_request.body.contentVec.begin(),
+		_request.body.contentVec.end(),
+		delimiterVec.begin(),
+		delimiterVec.end());
+	if (it != _request.body.contentVec.end())
+	{
+		_request.body.content << std::string(_request.body.contentVec.data(), _request.body.contentVec.size());
 		_request.keepReading = false;
 		return;
 	}
-	if (_request.body.content.str().size() >= _request.body.contentLen)
+	if (_request.body.contentVec.size() >= _request.body.contentLen)
 	{
+		_request.body.content << std::string(_request.body.contentVec.data(), _request.body.contentVec.size());
 		_request.keepReading = false;
 		return;
-	}
-	if (_request.body.content.str().size() >= _request.loc.client_body_buffer_size)
-	{
-		setErrorResponse(eHttpStatusCode::PayloadTooLarge, "Form data size exceeds client max body size");
-		_request.keepReading = false;
 	}
 }
 
-void httpHandler::parseChunkedBody(std::string &buffer)
+void httpHandler::parseChunkedBody(char *buffer)
 {
 	std::string line;
 	std::istringstream bufferStream(buffer);
@@ -97,6 +107,7 @@ void httpHandler::parseChunkedBody(std::string &buffer)
 
 			if (_request.body.nextChunkSize == 0)
 			{
+				_request.body.content << std::string(_request.body.contentVec.data(), _request.body.contentVec.size());
 				_request.keepReading = false;
 				return;
 			}
@@ -112,10 +123,14 @@ void httpHandler::parseChunkedBody(std::string &buffer)
 		{
 			// Read the actual chunk data
 			size_t dataStored = (line.size() >= _request.body.nextChunkSize) ? _request.body.nextChunkSize : line.size();
-			std::string chunkData = line.substr(0, _request.body.nextChunkSize);
-			_request.body.content << chunkData;
+			std::string chunkData = line.substr(0, dataStored);
+
+			// Append chunk data to contentVec
+			_request.body.contentVec.insert(_request.body.contentVec.end(), chunkData.begin(), chunkData.end());
+
 			_request.body.nextChunkSize -= dataStored;
 		}
 	}
+	_request.body.content << std::string(_request.body.contentVec.data(), _request.body.contentVec.size());
 	_request.keepReading = false;
 }

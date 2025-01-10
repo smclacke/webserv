@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/04 14:46:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/10 12:50:07 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/10 14:45:56 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ void s_serverData::removeClient(t_clients &client)
 s_clients::s_clients(Epoll &epoll, Server &server)
 	: _fd(-1), _addr(), _addLen(0), _clientState(clientState::BEGIN), _clientTime(), _connectionClose(false),
 	  http(std::make_unique<httpHandler>(server, epoll)), cgi(), _responseClient(),
-	  _write_offset(0), _readingFile(false)
+	  _write_offset(0), _readingFile(false), bytesReadtotal(0)
 {
 }
 
@@ -52,7 +52,7 @@ s_clients::s_clients(s_clients &&other) noexcept
 	  _clientTime(std::move(other._clientTime)), _connectionClose(other._connectionClose),
 	  http(std::move(other.http)), cgi(other.cgi),
 	  _responseClient(std::move(other._responseClient)), _write_offset(other._write_offset),
-	  _readingFile(other._readingFile)
+	  _readingFile(other._readingFile), bytesReadtotal(other.bytesReadtotal)
 {
 	other._fd = -1;
 }
@@ -73,6 +73,7 @@ s_clients &s_clients::operator=(s_clients &&other) noexcept
 		_responseClient = std::move(other._responseClient);
 		_write_offset = other._write_offset;
 		_readingFile = other._readingFile;
+		bytesReadtotal = other.bytesReadtotal;
 
 		other._fd = -1;
 	}

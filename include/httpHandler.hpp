@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/09 16:23:20 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/10 16:39:02 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,6 +38,7 @@ enum class eContentType
 
 struct s_content
 {
+	std::vector<char> contentVec;
 	std::stringstream content;
 	eContentType contentType;
 	size_t contentLen;
@@ -69,6 +70,7 @@ struct s_request
 	std::string uriQuery;
 	std::stringstream head;
 	bool headCompleted;
+	std::vector<char> bufferVec;
 	s_content body;
 };
 
@@ -117,10 +119,10 @@ private:
 	void parseHeaders(void);
 	void setContent(void);
 	// parse body
-	void addToBody(std::string &buffer);
-	void parseChunkedBody(std::string &buffer);
-	void parseFixedLengthBody(std::string &buffer);
-	void parseformData(std::string &buffer);
+	void addToBody(char *buffer, size_t bytesRead);
+	void parseChunkedBody(char *buffer);
+	void parseFixedLengthBody(char *buffer, size_t bytesRead);
+	void parseformData(char *buffer, size_t bytesRead);
 	// response
 	s_httpSend writeResponse(void);
 	void generateDirectoryListing(void);
@@ -158,7 +160,7 @@ public:
 	/* member functions */
 	void clearHandler(void);
 	void httpClearCgi(void);
-	void addStringBuffer(std::string buffer);
+	void addStringBuffer(char *buffer, size_t bytesRead);
 	s_httpSend generateResponse(void);
 
 	/* for epoll read operations */
