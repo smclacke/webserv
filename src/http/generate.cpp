@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:52:04 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 16:50:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 18:51:59 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -38,7 +38,6 @@ s_httpSend httpHandler::generateResponse(void)
  */
 s_httpSend httpHandler::writeResponse(void)
 {
-	std::cout << "responsecgi = " << _response.cgi << "\n";
 	if (_response.cgi)
 	{
 		_server.logMessage("writeResponse(): response is cgi script");
