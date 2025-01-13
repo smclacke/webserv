@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/08 15:20:16 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/10 15:18:21 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,8 @@ void Epoll::handleRead(t_clients &client)
 	int bytesRead = 0;
 	memset(buffer, 0, sizeof(buffer));
 
-	bytesRead = recv(client._fd, buffer, readSize - 1, 0);
+	bytesRead = recv(client._fd, buffer, readSize, 0);
+	client.bytesReadtotal += bytesRead;
 	// Error
 	if (bytesRead < 0)
 	{
@@ -58,16 +59,14 @@ void Epoll::handleRead(t_clients &client)
 		client._connectionClose = true;
 		return;
 	}
-	// Finished
-	buffer[readSize - 1] = '\0';
-	std::string buf = buffer;
-	client.http->addStringBuffer(buf);
+	client.http->addStringBuffer(buffer, bytesRead);
 	if (client.http->getKeepReading())
 		return;
 	else
 	{
 		client._clientState = clientState::READY;
 		client._connectionClose = false;
+		client.bytesReadtotal = 0;
 	}
 }
 
