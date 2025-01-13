@@ -18,20 +18,11 @@
 2) 	
 	cgi timeout checking + test while(1) in the .cgi
 
-4) 
-	rapid siege and browser testing somehow triggered CGI and then crashed everything
-
-5) 	
-	memory still having issues.. related to images? if i keep clicking images, it goes up, then run siege with c10 and i get like +300
-
 6) 
 	cats->2345 open in browser, webserv immediately quits...
 
 
 **CHECK**
-
-1) 	
-	spaces inbetween server blocks were causing different behaviours with images in browser
 
 2) 
 	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
@@ -40,5 +31,28 @@
 
 **CGI**
 
-11) 
-	no time out
+timeout notes:
+
+// cgiResponse()
+{
+	// variables
+	time_t start_time, current_time;
+	int timeout = 3;
+	time(&start_time);
+
+	// in cgi parent
+	while (1)
+	{
+		time(&current_time);
+		if ((current_time - start_time) >= timeout)
+		{
+			// http response timeout
+			std::cout << "timeout occurred\n";
+			kill(_cgi.pid, SIGKILL);
+			waitpid(_cgi.pid, NULL, WNOHANG);
+			break ;
+		}
+		sleep (1);
+	}
+}
+

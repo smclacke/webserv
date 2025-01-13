@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 17:52:56 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 18:40:21 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,6 +218,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						client._responseClient = client.http->generateResponse();
 						if (client._responseClient.cgi)
 						{
+							client._clientHasCgi = true;
 							client.cgi = client.http->getCGI();
 							client.cgi.client_fd = client._fd;
 							client._responseClient.clearHttpSend();

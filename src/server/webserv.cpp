@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 17:52:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 18:44:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,12 +98,29 @@ void Webserv::monitorServers()
 	_epoll.initEpoll();
 	addServersToEpoll();
 
+	time_t start_time, current_time;
+	int timeout = 3;
+	time(&start_time);
+
 	while (_keepRunning)
 	{
 		for (auto &servers : _epoll.getAllServers())
 		{
 			for (auto &client : servers._clients)
+			{
 				_epoll.clientTimeCheck(client);
+				//if (client._clientHasCgi == true)
+				//{
+				//	time(&current_time);
+				//	if ((current_time - start_time) >= timeout)
+				//	{
+				//		/** @todo  http response timeout */
+				//		std::cout << "timeout occurred\n";
+				//		kill(client.cgi.pid, SIGKILL);
+				//		waitpid(client.cgi.pid, NULL, WNOHANG);
+				//	}
+				//}
+			}
 		}
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
 		if (numEvents == -1 || numEvents > MAX_EVENTS)

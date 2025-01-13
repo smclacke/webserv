@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 13:35:46 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 18:40:12 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -110,6 +110,7 @@ void Epoll::handleClientClose(t_serverData &server, t_clients &client)
 
 void Epoll::operationFailed(t_clients &client)
 {
+	client._clientHasCgi = false;
 	client._readingFile = false;
 	client._responseClient.readfile = false;
 	client._clientState = clientState::ERROR;
@@ -130,4 +131,5 @@ void Epoll::cleanResponse(t_clients &client)
 
 	client._write_offset = 0;
 	client._readingFile = false;
+	client._clientHasCgi = false;
 }

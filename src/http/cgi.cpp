@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:36:06 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 18:24:46 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -91,6 +91,7 @@ void Epoll::handleCgiWrite(s_cgi &cgi)
 		cgi.state = cgiState::READY;
 	}
 }
+
 
 void httpHandler::cgiResponse()
 {
