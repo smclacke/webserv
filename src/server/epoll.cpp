@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:33:00 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:41:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,7 +217,6 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					{
 						client._clientState = clientState::BEGIN;
 						client._responseClient = client.http->generateResponse();
-						std::cout << "CGI bool = " << client._responseClient.cgi << "\n";
 						if (client._responseClient.cgi)
 						{
 							client.cgi = client.http->getCGI();
@@ -282,14 +281,15 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 				}
 				client.cgi.output = internalError("cgi error");
 				client._responseClient.clearHttpSend();
-				if (client.cgi.httpOutput)
-				{
+				///** @todo check this bool! */
+				//if (client.cgi.httpOutput)
+				//{
 					client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
 					client._responseClient.msg.append("Content-Length: 0\r\n");
 					client._responseClient.msg.append("\r\n");
-				}
-				else
-					client._responseClient.msg = client.cgi.output;
+				//}
+				//else
+				//	client._responseClient.msg = client.cgi.output;
 				client.cgi.clearCgi();
 			}
 			if (client.cgi.state == cgiState::READY)
@@ -317,12 +317,12 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 					client.cgi.output = internalError("cgi executed");
 			}
 			client._responseClient.clearHttpSend();
-			if (client.cgi.httpOutput)
-			{
+			//if (client.cgi.httpOutput)
+			//{
 				client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
 				client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
 				client._responseClient.msg.append("\r\n");
-			}
+			//}
 			client._responseClient.msg.append(client.cgi.output);
 			client.cgi.clearCgi();
 		}
@@ -339,12 +339,12 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 				waitpid(client.cgi.pid, &status, 0);
 				client.cgi.output = internalError("cgi error");
 				client._responseClient.clearHttpSend();
-				if (client.cgi.httpOutput)
-				{
+				//if (client.cgi.httpOutput)
+				//{
 					client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
 					client._responseClient.msg.append("Content-Length: 0\r\n");
 					client._responseClient.msg.append("\r\n");
-				}
+				//}
 				client._responseClient.msg = client.cgi.output;
 				client.cgi.clearCgi();
 			}
@@ -361,12 +361,12 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 						client.cgi.output = internalError("cgi bad exitstatus");
 				}
 				client._responseClient.clearHttpSend();
-				if (client.cgi.httpOutput)
-				{
+				//if (client.cgi.httpOutput)
+				//{
 					client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
 					client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
 					client._responseClient.msg.append("\r\n");
-				}
+				//}
 				client._responseClient.msg.append(client.cgi.output);
 				client.cgi.clearCgi();
 			}

@@ -40,20 +40,5 @@
 
 **CGI**
 
-6) 
-	cgi - http 0.9
-
-7) 
-	_response cgi bool not set anywhere?
-
-8) 
-	location cgi ext in default location init = "" 
-
-9) 
-	going into "attempt to GET eecutable file..." error cause _request.cgiReq not true
-
-10) 
-	stuck on loading if can get past errors
-
 11) 
 	no time out

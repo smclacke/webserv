@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:34:30 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:22:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,7 +17,6 @@
  */
 void httpHandler::getMethod(void)
 {
-	std::cout << "cgiReg bool = " << _request.cgiReq << "\n";
 	if (_request.cgiReq == true)
 	{
 		generateEnv();
