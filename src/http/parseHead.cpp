@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/09 16:23:25 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:23:34 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -199,7 +199,6 @@ std::string httpHandler::buildPath(void)
 	std::string locpath = _request.loc.path;
 	if (locpath == "/")
 		locpath = "";
-
 	if (!_request.loc.cgi_ext.empty())
 	{
 		size_t pos = _request.uri.find_last_of('.');
@@ -232,7 +231,7 @@ std::string httpHandler::buildCgiPath(void)
 {
 	std::string outPath;
 	std::string uri = _request.uri;
-	std::string locpath;
+	std::string locpath = _request.loc.path;
 	if (locpath == "/")
 		locpath = "";
 

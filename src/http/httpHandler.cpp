@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:48:57 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:53:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -52,7 +52,7 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	_cgi.cgiOUT[0] = -1;
 	_cgi.cgiOUT[1] = -1;
 	_cgi.state = cgiState::BEGIN;
-	_cgi.httpOutput = false;
+	_cgi.htmlOutput = false;
 }
 
 httpHandler::~httpHandler(void)
@@ -294,7 +294,7 @@ void s_cgi::clearCgi(void)
 	state = cgiState::BEGIN;
 	write_offset = 0;
 	output = false;
-	httpOutput = false;
+	htmlOutput = false;
 	input.clear();
 	output.clear();
 	closeAllPipes();

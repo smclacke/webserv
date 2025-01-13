@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:49:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:52:56 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -195,7 +195,9 @@ void Epoll::checkForNewConnection(int fd, t_serverData &serverData, epoll_event 
 			return;
 	}
 	if (fd == serverData._server->getServerSocket()->getSockfd() && (event.events & EPOLLIN))
+	{
 		makeNewConnection(fd, serverData);
+	}
 }
 
 void Epoll::processEvent(int fd, epoll_event &event)
@@ -223,8 +225,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						else
 							modifyEvent(client._fd, EPOLLOUT);
 						client.http->clearHandler();
-						updateClientClock(client);
 					}
+					updateClientClock(client);
 				}
 				if (event.events & EPOLLOUT)
 				{
@@ -234,8 +236,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						cleanResponse(client);
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
+						updateClientClock(client);
 					}
-					updateClientClock(client);
 				}
 				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 				{
@@ -243,7 +245,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					cleanResponse(client);
 					client.http->clearHandler();
 				}
-				if (client._connectionClose)
+				if (client._connectionClose || client._clientState == clientState::ERROR)
 					handleClientClose(serverData, client);
 			}
 			else if (fd == client.cgi.cgiIN[1] || fd == client.cgi.cgiOUT[0])
@@ -278,14 +280,9 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 				}
 				client.cgi.output = internalError("cgi error");
 				client._responseClient.clearHttpSend();
-				if (client.cgi.httpOutput)
-				{
-					client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
-					client._responseClient.msg.append("Content-Length: 0\r\n");
-					client._responseClient.msg.append("\r\n");
-				}
-				else
-					client._responseClient.msg = client.cgi.output;
+				client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
+				client._responseClient.msg.append("Content-Length: 0\r\n");
+				client._responseClient.msg.append("\r\n");
 				client.cgi.clearCgi();
 			}
 			if (client.cgi.state == cgiState::READY)
@@ -313,12 +310,12 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 					client.cgi.output = internalError("cgi executed");
 			}
 			client._responseClient.clearHttpSend();
-			if (client.cgi.httpOutput)
-			{
-				client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
-				client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
-				client._responseClient.msg.append("\r\n");
-			}
+			client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
+			client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
+			///** @todo check this bool! */
+			if (client.cgi.htmlOutput)
+				client._responseClient.msg.append("Content-Type: text/html\r\n");
+			client._responseClient.msg.append("\r\n");		
 			client._responseClient.msg.append(client.cgi.output);
 			client.cgi.clearCgi();
 		}
@@ -335,12 +332,9 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 				waitpid(client.cgi.pid, &status, 0);
 				client.cgi.output = internalError("cgi error");
 				client._responseClient.clearHttpSend();
-				if (client.cgi.httpOutput)
-				{
-					client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
-					client._responseClient.msg.append("Content-Length: 0\r\n");
-					client._responseClient.msg.append("\r\n");
-				}
+				client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
+				client._responseClient.msg.append("Content-Length: 0\r\n");		
+				client._responseClient.msg.append("\r\n");
 				client._responseClient.msg = client.cgi.output;
 				client.cgi.clearCgi();
 			}
@@ -357,12 +351,11 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 						client.cgi.output = internalError("cgi bad exitstatus");
 				}
 				client._responseClient.clearHttpSend();
-				if (client.cgi.httpOutput)
-				{
-					client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
-					client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
-					client._responseClient.msg.append("\r\n");
-				}
+				client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
+				client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
+				if (client.cgi.htmlOutput)
+					client._responseClient.msg.append("Content-Type: text/html\r\n");
+				client._responseClient.msg.append("\r\n");
 				client._responseClient.msg.append(client.cgi.output);
 				client.cgi.clearCgi();
 			}

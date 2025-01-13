@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 14:44:34 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:52:44 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,6 +40,10 @@ void Socket::openServerSocket(const Server &servInstance)
 	}
 
 	if (setsockopt(_sockfd, SOL_SOCKET, SO_REUSEADDR, &_reuseaddr, sizeof(_reuseaddr)) < 0)
+		throw std::runtime_error("setsockopt()\n");
+
+	int nodelay = 1;
+    if (setsockopt(_sockfd, IPPROTO_TCP, TCP_NODELAY, &nodelay, sizeof(nodelay)) < 0)
 		throw std::runtime_error("setsockopt()\n");
 
 	memset(&_sockaddr, 0, sizeof(_sockaddr));
