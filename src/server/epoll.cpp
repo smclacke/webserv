@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/10 15:39:44 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 13:43:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -196,7 +196,9 @@ void Epoll::checkForNewConnection(int fd, t_serverData &serverData, epoll_event 
 			return;
 	}
 	if (fd == serverData._server->getServerSocket()->getSockfd() && (event.events & EPOLLIN))
+	{
 		makeNewConnection(fd, serverData);
+	}
 }
 
 void Epoll::processEvent(int fd, epoll_event &event)
@@ -235,8 +237,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						cleanResponse(client);
 						client._clientState = clientState::BEGIN;
 						modifyEvent(client._fd, EPOLLIN);
+						updateClientClock(client);
 					}
-					updateClientClock(client);
 				}
 				if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 				{
@@ -244,7 +246,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					cleanResponse(client);
 					client.http->clearHandler();
 				}
-				if (client._connectionClose)
+				if (client._connectionClose || client._clientState == clientState::ERROR)
 					handleClientClose(serverData, client);
 			}
 			else if (fd == client.cgi.cgiIN[1] || fd == client.cgi.cgiOUT[0])

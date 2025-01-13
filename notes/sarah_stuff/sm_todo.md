@@ -9,23 +9,14 @@
 	add descriptions/briefs
 
 3) 	
-	the big to do from jdebaai
-
+	sometimes when things dont work, prog exits without error message + no log for removing sockets/connections/clients from epoll... when unable to load page
 
 -------------------
 
 **testing**
 
-BASIC
-
-1) 	(test.conf) - is this supposed to happen? - also cat.conf giving 404 on 9999 images
-	triple check redirects, 9999 was doing something weird but 4242 was ok?
-
 2) 	
 	cgi timeout checking + test while(1) in the .cgi
-
-3) 
-	sometimes when things dont work, prog exits without error message + no log for removing sockets/connections/clients from epoll... when unable to load page
 
 4) 
 	rapid siege and browser testing somehow triggered CGI and then crashed everything
@@ -35,7 +26,7 @@ BASIC
 
 
 
-**discoveries/challenges**
+**CHECK**
 
 1) 	
 	spaces inbetween server blocks were causing different behaviours with images in browser
@@ -43,12 +34,6 @@ BASIC
 2) 
 	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
 
-4) 	
-	if rapid refresh on big image, server crashes, sometimes with "handleFile(): write to client failed", sometimes nothing - doesnt seem to be an issue with other pages...
-
-5) 
-	trying to add back the 'oldimagesdir' redirecting in new conf but being weird
-
 6) 
-	cgi - http 0.9 ???
+	cgi - http 0.9 ??? + test/example cases set up
 

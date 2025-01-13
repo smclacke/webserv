@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/10 15:21:25 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 12:15:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,7 +106,7 @@ void Webserv::monitorServers()
 				_epoll.clientTimeCheck(client);
 		}
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);
-		if (numEvents == -1)
+		if (numEvents == -1 || numEvents > MAX_EVENTS)
 		{
 			if (_keepRunning == false)
 				return;

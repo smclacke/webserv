@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2025/01/08 15:19:38 by juliusdebaa   ########   odam.nl          #
+#    Updated: 2025/01/13 13:36:41 by smclacke      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -14,7 +14,7 @@ NAME:= webserv
 CC:= c++
 
 FLAGS := -std=c++20
-FLAGS += -Wall -Wextra -Werror 
+FLAGS += -Wall -Wextra -Werror -O3
 FLAGS += -g -fsanitize=address
 
 OBJDIR := objs
