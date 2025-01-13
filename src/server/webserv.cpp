@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 19:26:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 19:33:53 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,10 +98,7 @@ void Webserv::monitorServers()
 	_epoll.initEpoll();
 	addServersToEpoll();
 
-	/** @note THIS COMMENTED CODE CAUSES LOGOUT... 
-	 *  kill with SIGKILL or SIGQUIT cause logout.... :'(
-	 * 	this is the same as what we had in cgiResponse()
-	 * 	clientHasCgi boolean working nicely tho
+	/** @note kill() causes logout :'(.. 
 	*/
 	
 	time_t start_time, current_time;
@@ -123,10 +120,9 @@ void Webserv::monitorServers()
 					{
 					/** @todo  http response timeout */
 						std::cout << "timeout occurred\n";
+
+						//kill(client.cgi.pid, SIGINT);
 						waitpid(client.cgi.pid, NULL, WNOHANG);
-						//close(client.cgi.pid);
-						
-						kill(client.cgi.pid, SIGTERM);
 					}
 				}
 			}
@@ -135,18 +131,14 @@ void Webserv::monitorServers()
 		if (numEvents == -1 || numEvents > MAX_EVENTS)
 		{
 			if (_keepRunning == false)
-			{
 				return;
-			}
 			removeServersFromEpoll();
 			throw std::runtime_error("epoll_wait()\n");
 		}
 		else if (numEvents == 0)
 			continue;
 		for (int i = 0; i < numEvents; ++i)
-		{
 			_epoll.processEvent(_epoll.getAllEvents()[i].data.fd, _epoll.getAllEvents()[i]);
-		}
 	}
 	removeServersFromEpoll();
 }
