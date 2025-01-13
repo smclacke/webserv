@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 13:47:50 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/08 15:20:00 by juliusdebaa   ########   odam.nl         */
+/*   Updated: 2025/01/13 14:44:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -106,4 +106,21 @@ void Socket::setSockaddr(struct sockaddr_in &sockaddr)
 void Socket::setAddrlen(socklen_t &addrlen)
 {
 	this->_addrlen = addrlen;
+}
+
+/* debugging */
+
+void Socket::logClassData(void) const
+{
+	std::cout << "\n------------ Socket Data Log ------------" << std::endl;
+	std::cout << "Socket File Descriptor: " << _sockfd << std::endl;
+	std::cout << "Max Connections: " << _maxConnections << std::endl;
+	std::cout << "Socket Address Length: " << _addrlen << std::endl;
+	std::cout << "Reuse Address Flag: " << _reuseaddr << std::endl;
+	std::cout << "Flags: " << _flags << std::endl;
+
+	// Log the sockaddr_in structure details
+	std::cout << "Socket Address Family: " << _sockaddr.sin_family << std::endl;
+	std::cout << "Socket Port: " << ntohs(_sockaddr.sin_port) << std::endl;
+	std::cout << "Socket Address: " << inet_ntoa(_sockaddr.sin_addr) << std::endl;
 }

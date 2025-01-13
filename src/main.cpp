@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/05 13:11:31 by julius        ########   odam.nl         */
+/*   Updated: 2025/01/13 15:25:08 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -41,6 +41,9 @@ int main(int argc, char **argv)
 		verifyInput(config);
 		Webserv wserv(config, keepRunning);
 		wserv.monitorServers();
+		std::cout << "\n\n**********************************************\n**********************************************\n"
+				  << std::endl;
+		wserv.logClassData();
 	}
 	catch (eConf &e)
 	{

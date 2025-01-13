@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/06 18:28:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:23:02 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,6 +98,9 @@ void Webserv::monitorServers()
 	_epoll.initEpoll();
 	addServersToEpoll();
 
+	std::cout << "\n\n**********************************************\n**********************************************\n"
+			  << std::endl;
+	logClassData();
 	while (_keepRunning)
 	{
 		for (auto &servers : _epoll.getAllServers())
@@ -109,7 +112,12 @@ void Webserv::monitorServers()
 		if (numEvents == -1)
 		{
 			if (_keepRunning == false)
+			{
+				std::cout << "\n\n**********************************************\n**********************************************\n"
+						  << std::endl;
+				logClassData();
 				return;
+			}
 			removeServersFromEpoll();
 			throw std::runtime_error("epoll_wait()\n");
 		}
@@ -120,6 +128,9 @@ void Webserv::monitorServers()
 			_epoll.processEvent(_epoll.getAllEvents()[i].data.fd, _epoll.getAllEvents()[i]);
 		}
 	}
+	std::cout << "\n\n**********************************************\n**********************************************\n"
+			  << std::endl;
+	logClassData();
 	removeServersFromEpoll();
 }
 
@@ -159,4 +170,27 @@ std::shared_ptr<Server> Webserv::getServer(std::string name)
 Epoll &Webserv::getEpoll()
 {
 	return this->_epoll;
+}
+
+void Webserv::logClassData(void) const
+{
+	std::cout << "\n------------ Webserv Data Log ------------" << std::endl;
+
+	// Log the number of servers
+	std::cout << "Number of Servers: " << _servers.size() << std::endl;
+
+	// Log the state of the epoll instance
+	std::cout << "Epoll Instance: " << &_epoll << std::endl; // Address of the epoll instance
+
+	// Log the keepRunning flag
+	std::cout << "Keep Running Flag: " << _keepRunning.load() << std::endl;
+
+	std::cout << "Webserv() calling the servers" << std::endl;
+	for (auto &server : _servers)
+	{
+		server->logClassData();
+	}
+
+	std::cout << "Webserv() calling the Epoll" << std::endl;
+	_epoll.logClassData();
 }

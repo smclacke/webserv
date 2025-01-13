@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/06 17:56:23 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 14:48:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -420,4 +420,43 @@ std::optional<s_ePage> Server::findErrorPage(int code) const
 		}
 	}
 	return std::nullopt;
+}
+
+/* debugging */
+
+void Server::logClassData(void) const
+{
+	std::cout << "\n------------ Server Data Log ------------" << std::endl;
+	std::cout << "Server Name: " << _serverName << std::endl;
+	std::cout << "Host: " << _host << std::endl;
+	std::cout << "Port: " << _port << std::endl;
+	std::cout << "Root: " << _root << std::endl;
+	std::cout << "Client Max Body Size: " << _clientMaxBodySize << std::endl;
+
+	// Log the size of the error pages vector
+	std::cout << "Number of Error Pages: " << _errorPage.size() << std::endl;
+
+	// Log the size of the location vector
+	std::cout << "Number of Locations: " << _location.size() << std::endl;
+
+	// Log the size of the log file (if open)
+	if (_logFile.is_open())
+	{
+		std::cout << "Log File is open." << std::endl;
+	}
+	else
+	{
+		std::cout << "Log File is not open." << std::endl;
+	}
+
+	// Log the server socket status
+	if (_serverSocket)
+	{
+		std::cout << "Server Socket is initialized." << std::endl;
+		_serverSocket->logClassData();
+	}
+	else
+	{
+		std::cout << "Server Socket is not initialized." << std::endl;
+	}
 }
