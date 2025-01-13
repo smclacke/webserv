@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/03 17:38:59 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/09 16:29:22 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,23 +34,28 @@ void httpHandler::postMethod(void)
 	{
 		return postApplication();
 	}
-	else if (_request.body.contentType == eContentType::contentLength)
+	else if (_request.body.contentType == eContentType::contentLength || _request.body.contentType == eContentType::undefined)
 	{
 		return plainText();
 	}
+	setErrorResponse(eHttpStatusCode::NotImplemented, "POST request type not implemented");
 	return;
 }
-
 // --------- multiform
 
 void httpHandler::generateEmptyFile()
 {
 	std::fstream file;
-	file.open(_request.path);
+	file.open(_request.path, std::ios::in | std::ios::out | std::ios::app); // Open for reading and writing, create if doesn't exist
 	if (!file.is_open())
 	{
-		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");
-		return;
+		file.clear();							 // Clear any error flags
+		file.open(_request.path, std::ios::out); // Create the file
+		if (!file.is_open())
+		{
+			setErrorResponse(eHttpStatusCode::InternalServerError, "failed to open or create file");
+			return;
+		}
 	}
 	file.close();
 	_response.body.clear();
@@ -175,19 +180,41 @@ std::string httpHandler::extractFilename(const std::string &contentDisposition)
 
 std::string httpHandler::getTempFilePath(const std::string &filename)
 {
-	if (_request.loc.root.empty())
-		return (_request.path + _request.loc.upload_dir + "/" + filename);
-	else
-		return (_request.path + _request.loc.upload_dir + "/" + filename);
+	return (_request.path + _request.loc.upload_dir + "/" + filename);
 }
 
 // ---------- url encoded
+
+/**
+ * @brief checks if the file is exists, is not a directory and is executable
+ */
+bool httpHandler::checkExecRights(void)
+{
+	if (!std::filesystem::exists(_request.path))
+	{
+		setErrorResponse(eHttpStatusCode::NotFound, "target file not found");
+		return (false);
+	}
+	if (std::filesystem::is_directory(_request.path))
+	{
+		setErrorResponse(eHttpStatusCode::BadRequest, "executable POST request on directory");
+		return (false);
+	}
+	if (access(_request.path.c_str(), X_OK) != 0)
+	{
+		setErrorResponse(eHttpStatusCode::Forbidden, "the script you are trying to execute is not executable");
+		return (false);
+	}
+	return (true);
+}
 
 /**
  * @brief processes the Url encoded POST request
  */
 void httpHandler::postUrlEncoded(void)
 {
+	if (!checkExecRights())
+		return;
 	if (_request.uriEncoded == false)
 		return setErrorResponse(eHttpStatusCode::InternalServerError, "Expected uri query, no ? found");
 	if (!_request.cgiReq)
@@ -211,10 +238,10 @@ void httpHandler::postUrlEncoded(void)
 
 void httpHandler::postApplication(void)
 {
+	if (!checkExecRights())
+		return;
 	if (!_request.cgiReq)
 		return setErrorResponse(eHttpStatusCode::Forbidden, "POST requests with content_type application/* only allowed as cqi request");
-	// set contentType
-	// set contentType
 	auto contentOpt = findHeaderValue(_request, eRequestHeader::ContentType);
 	if (!contentOpt.has_value())
 	{

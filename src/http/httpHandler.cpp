@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/06 17:57:05 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/09 15:33:45 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ httpHandler::httpHandler(Server &server, Epoll &epoll) : _server(server), _epoll
 	resetStringStream(_request.body.content);
 	_request.body.contentType = eContentType::error;
 	_request.body.contentLen = 0;
+	_request.body.chunked = false;
 	_request.body.nextChunkSize = 0;
 	_request.body.totalChunked = 0;
 	_request.body.formDelimiter.clear();
@@ -73,6 +74,7 @@ void httpHandler::clearHandler(void)
 	resetStringStream(_request.body.content);
 	_request.body.contentType = eContentType::error;
 	_request.body.contentLen = 0;
+	_request.body.chunked = false;
 	_request.body.nextChunkSize = 0;
 	_request.body.totalChunked = 0;
 	_request.body.formDelimiter.clear();
@@ -264,7 +266,7 @@ void httpHandler::addStringBuffer(std::string buffer)
  */
 size_t httpHandler::getReadSize(void) const
 {
-	if (_request.body.contentType == eContentType::chunked && _request.body.nextChunkSize != 0)
+	if (_request.body.chunked == true && _request.body.nextChunkSize != 0)
 		return (_request.body.nextChunkSize);
 	return (READ_BUFFER_SIZE);
 }
