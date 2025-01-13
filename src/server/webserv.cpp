@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:23:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 16:12:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,9 +98,6 @@ void Webserv::monitorServers()
 	_epoll.initEpoll();
 	addServersToEpoll();
 
-	std::cout << "\n\n**********************************************\n**********************************************\n"
-			  << std::endl;
-	logClassData();
 	while (_keepRunning)
 	{
 		for (auto &servers : _epoll.getAllServers())
@@ -113,9 +110,6 @@ void Webserv::monitorServers()
 		{
 			if (_keepRunning == false)
 			{
-				std::cout << "\n\n**********************************************\n**********************************************\n"
-						  << std::endl;
-				logClassData();
 				return;
 			}
 			removeServersFromEpoll();
@@ -128,9 +122,6 @@ void Webserv::monitorServers()
 			_epoll.processEvent(_epoll.getAllEvents()[i].data.fd, _epoll.getAllEvents()[i]);
 		}
 	}
-	std::cout << "\n\n**********************************************\n**********************************************\n"
-			  << std::endl;
-	logClassData();
 	removeServersFromEpoll();
 }
 
