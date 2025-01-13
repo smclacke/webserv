@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:20:05 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:33:00 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -227,8 +227,8 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						else
 							modifyEvent(client._fd, EPOLLOUT);
 						client.http->clearHandler();
-						updateClientClock(client);
 					}
+					updateClientClock(client);
 				}
 				if (event.events & EPOLLOUT)
 				{

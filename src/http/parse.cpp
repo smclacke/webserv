@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:21:38 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 16:05:30 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -202,7 +202,7 @@ std::string httpHandler::buildPath(void)
 
 	if (!_request.loc.cgi_ext.empty())
 	{
-		_response.cgi = true;
+		//_response.cgi = true;
 		size_t pos = _request.uri.find_last_of('.');
 		if (pos != std::string::npos)
 		{

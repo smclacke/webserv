@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/06 18:30:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:36:06 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -155,6 +155,7 @@ void httpHandler::cgiResponse()
 	}
 	else if (_cgi.pid > 0) // parent: only writes to input and reads from output
 	{
+		std::cout << "parent cgi\n";
 		protectedClose(_cgi.cgiIN[0]);
 		protectedClose(_cgi.cgiOUT[1]);
 		_epoll.setNonBlocking(_cgi.cgiIN[1]);
