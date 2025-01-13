@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/10 15:18:21 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:49:04 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -428,4 +428,26 @@ void Epoll::setServer(std::shared_ptr<Server> server)
 	newServerData._server = server;
 
 	this->_serverData.push_back(std::move(newServerData));
+}
+
+/* debugging */
+
+void Epoll::logClassData(void) const
+{
+	std::cout << "\n------------ Epoll Data Log ------------" << std::endl;
+	std::cout << "Epoll File Descriptor: " << _epfd << std::endl;
+	std::cout << "Number of Events: " << _numEvents << std::endl;
+	std::cout << "Number of Servers: " << _serverData.size() << std::endl;
+	std::cout << "Number of Events in Vector: " << _events.size() << std::endl;
+
+	for (const auto &serverData : _serverData)
+	{
+		std::cout << "Server: " << serverData._server->getServerName() << std::endl;
+		std::cout << "Number of Clients: " << serverData._clients.size() << std::endl;
+		for (auto &client : serverData._clients)
+		{
+			if (client.http)
+				client.http->logClassData();
+		}
+	}
 }

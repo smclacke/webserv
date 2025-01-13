@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/19 17:21:12 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/10 16:43:12 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:48:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -329,4 +329,34 @@ void s_httpSend::clearHttpSend(void)
 	readfile = false;
 	readFd = -1;
 	cgi = false;
+}
+
+/* debugging */
+
+void httpHandler::logClassData(void) const
+{
+	std::cout << "\n------------ httpHandler Data Log ------------" << std::endl;
+	std::cout << "Status Code: " << static_cast<int>(_statusCode) << std::endl;
+
+	// Request data
+	std::cout << "Request Method: " << static_cast<int>(_request.method) << std::endl;
+	std::cout << "Request URI: " << _request.uri << std::endl;
+	std::cout << "Request Path: " << _request.path << std::endl;
+	std::cout << "Request Headers: " << std::endl;
+	std::cout << "Number of Request Headers: " << _request.headers.size() << std::endl;
+	std::cout << "Request Body Length: " << _request.body.contentLen << std::endl;
+	std::cout << "Request Body Content Size: " << _request.body.content.str().size() << std::endl; // Added line
+	std::cout << "Request Body Content: " << _request.body.content.str() << std::endl;
+
+	// Response data
+	std::cout << "Number of Response Headers: " << _response.headers.size() << std::endl;
+	std::cout << "Response Body Size: " << _response.body.str().size() << std::endl; // Added line
+	std::cout << "Response Body: " << _response.body.str() << std::endl;
+
+	// CGI data
+	std::cout << "CGI State: " << static_cast<int>(_cgi.state) << std::endl;
+	std::cout << "CGI Input Size: " << _cgi.input.size() << std::endl; // Added line
+	std::cout << "CGI Input: " << _cgi.input << std::endl;
+	std::cout << "CGI Output Size: " << _cgi.output.size() << std::endl; // Added line
+	std::cout << "CGI Output: " << _cgi.output << std::endl;
 }

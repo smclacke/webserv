@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/10 16:39:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:48:50 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -167,6 +167,9 @@ public:
 	s_cgi getCGI();
 	bool getKeepReading(void) const;
 	size_t getReadSize(void) const;
+
+	/* debugging */
+	void logClassData(void) const;
 };
 
 std::string httpMethodToStringFunc(eHttpMethod method);

@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/10 15:11:18 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:48:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,7 +133,8 @@ public:
 	void operationFailed(t_clients &client);
 	void cleanResponse(t_clients &client);
 
-	/* debugging @todo reomve */
+	/* debugging */
+	void logClassData(void) const;
 };
 
 #endif /* EPOLL_HPP */
