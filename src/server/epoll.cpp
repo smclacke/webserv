@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 13:43:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:20:05 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -217,6 +217,7 @@ void Epoll::processEvent(int fd, epoll_event &event)
 					{
 						client._clientState = clientState::BEGIN;
 						client._responseClient = client.http->generateResponse();
+						std::cout << "CGI bool = " << client._responseClient.cgi << "\n";
 						if (client._responseClient.cgi)
 						{
 							client.cgi = client.http->getCGI();

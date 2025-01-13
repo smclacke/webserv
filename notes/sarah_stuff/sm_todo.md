@@ -24,6 +24,8 @@
 5) 	
 	memory still having issues.. related to images? if i keep clicking images, it goes up, then run siege with c10 and i get like +300
 
+6) 
+	cats->2345 open in browser, webserv immediately quits...
 
 
 **CHECK**
@@ -34,6 +36,24 @@
 2) 
 	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
 
-6) 
-	cgi - http 0.9 ??? + test/example cases set up
 
+
+**CGI**
+
+6) 
+	cgi - http 0.9
+
+7) 
+	_response cgi bool not set anywhere?
+
+8) 
+	location cgi ext in default location init = "" 
+
+9) 
+	going into "attempt to GET eecutable file..." error cause _request.cgiReq not true
+
+10) 
+	stuck on loading if can get past errors
+
+11) 
+	no time out
