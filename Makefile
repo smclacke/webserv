@@ -6,7 +6,7 @@
 #    By: smclacke <smclacke@student.codam.nl>         +#+                      #
 #                                                    +#+                       #
 #    Created: 2024/10/22 13:46:36 by smclacke      #+#    #+#                  #
-#    Updated: 2025/01/08 15:19:38 by juliusdebaa   ########   odam.nl          #
+#    Updated: 2025/01/10 13:43:22 by jde-baai      ########   odam.nl          #
 #                                                                              #
 # **************************************************************************** #
 
@@ -26,8 +26,8 @@ SRC_FILES := main.cpp					\
 			http/generate.cpp			\
 			http/generateUtils.cpp		\
 			http/httpHandler.cpp		\
-			http/parse.cpp				\
-			http/parsebody.cpp			\
+			http/parseHead.cpp				\
+			http/parseBody.cpp			\
 			http/GET.cpp				\
 			http/POST.cpp				\
 			http/DELETE.cpp				\

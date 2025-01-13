@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 14:30:06 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/13 15:48:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -15,6 +15,7 @@
 
 #include "socket.hpp"
 #include "web.hpp"
+#include "httpHandler.hpp"
 
 class Webserv;
 class Server;
@@ -51,13 +52,18 @@ typedef struct s_clients
 	std::unordered_map<int, timePoint> _clientTime;
 	bool _connectionClose;
 
-	std::shared_ptr<httpHandler> http;
+	std::unique_ptr<httpHandler> http;
 	struct s_cgi cgi;
 	s_httpSend _responseClient;
 	size_t _write_offset;
 	bool _readingFile;
+	int bytesReadtotal;
 
 	s_clients(Epoll &epoll, Server &server);
+	s_clients(const s_clients &) = delete;
+	s_clients &operator=(const s_clients &) = delete;
+	s_clients(s_clients &&other) noexcept;
+	s_clients &operator=(s_clients &&other) noexcept;
 	~s_clients() {};
 
 } t_clients;
@@ -65,7 +71,7 @@ typedef struct s_clients
 typedef struct s_serverData
 {
 	std::shared_ptr<Server> _server;
-	std::deque<t_clients> _clients;
+	std::vector<t_clients> _clients;
 
 	/* methods */
 	void addClient(int sock, struct sockaddr_in &addr, int len, Epoll &epoll);
