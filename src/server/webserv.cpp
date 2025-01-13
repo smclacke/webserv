@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 19:24:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 19:26:02 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,8 +102,6 @@ void Webserv::monitorServers()
 	 *  kill with SIGKILL or SIGQUIT cause logout.... :'(
 	 * 	this is the same as what we had in cgiResponse()
 	 * 	clientHasCgi boolean working nicely tho
-	 * 
-	 * @todo can't use time(), gotta c++ this 
 	*/
 	
 	time_t start_time, current_time;
