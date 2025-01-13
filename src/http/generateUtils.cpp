@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2025/01/13 17:36:59 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/13 17:50:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -234,18 +234,16 @@ bool httpHandler::generateEnv(void)
 		setErrorResponse(eHttpStatusCode::InternalServerError, "malloc error");
 		return false;
 	}
-	// set the httpOutput variable;
+	// set the htmlOutput variable;
 	/** @todo check this later **/
-	//std::optional<std::string> acceptHeader = findHeaderValue(_request, eRequestHeader::Accept);
-	//if (acceptHeader.has_value())
-	//{
-	//	if (acceptHeader.value().find("html") != std::string::npos)
-	//	{
-	//		_cgi.httpOutput = true;
-	//	}
-	//}
-	//if (_request.loc.cgi_ext == ".cgi")
-	//	_cgi.httpOutput = true;
+	std::optional<std::string> acceptHeader = findHeaderValue(_request, eRequestHeader::Accept);
+	if (acceptHeader.has_value())
+	{
+		if (acceptHeader.value().find("html") != std::string::npos)
+		{
+			_cgi.htmlOutput = true;
+		}
+	}
 	return true;
 }
 
