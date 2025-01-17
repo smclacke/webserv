@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/17 15:30:42 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/17 16:26:36 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -249,7 +249,6 @@ std::string httpHandler::buildCgiPath(void)
 	}
 	outPath = "." + uri;
 	_request.cgiReq = true;
-	std::cout << "cgi path = " << outPath << "\n"; /** @todo get here and check path */
 	return outPath;
 }
 

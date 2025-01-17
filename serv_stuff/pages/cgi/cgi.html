@@ -6,11 +6,36 @@
    </head>
 
    <body>
-        <form action="/page/test.cgi" method="post">
-            
-            <br/>
-
-            <input type="Submit" value="CGI script" />
+		<br>
+		<h2>Get cgi</h2>
+		<form action="/" method="GET" enctype="multipart/form-data" >
+			<input type="Submit" value="CGI script" />
+			<input filename="/page/test.cgi" />
+			<br/>
+		</form>
+		
+		<!--<br>
+		<h2>Post cgi</h2>
+		<form action="/page/test.cgi" method="POST" enctype="multipart/form-data" >
+				<input type="Submit" value="CGI script" />
+				<br/>
+			</form>
+		-->
+		<!--<br>
+		<h2>Get php</h2>
+        <form action="/test.php" method="GET" enctype="multipart/form-data" >
+            <input type="Submit" value="PHP script" />
+			<br/>
         </form>
+		
+		<br>
+		<h2>Post php</h2>
+        <form action="/test.php" method="POST" enctype="multipart/form-data" >
+            <input type="Submit" value="PHP script" />
+			<br/>
+        </form>-->
+
+		<br/>
    </body>
 </html>
+
