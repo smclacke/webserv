@@ -1,6 +1,11 @@
 #!/usr/bin/php
 <?php
 
+//while(true)
+//{
+
+//}
+
    echo "Content-Type: text/html\n";
    echo "<html>";
    echo "<head>";

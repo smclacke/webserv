@@ -20,16 +20,12 @@
 5) 
 	test chunked
 
-
-
-
 11111) 
 	i think php post isnt being created in code the same as cgi
 	so print statement "wrote content to file" comes up rather than giving the 'cgi' response
 		when doing php
 
 		also, post.php file being created in pages... BECAUSE its like a normal post request....
-
 
 33333) 
 	if cgi script (at least for get) doesnt have X rights, its stuck on loading
@@ -38,3 +34,9 @@
 	sometimes php get doesnt have the content, only "Content-Type: plain/text"
 	then on reloading it appears
 	
+55555) 
+	Traceback (most recent call last):
+  File "/home/smclacke/Desktop/webserv/./serv_stuff/var/www/cgi_path/get.cgi", line 6, in <module>
+    while (1):
+KeyboardInterrupt
+^^^ being printed in the terminal after successful timeout error
