@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/20 16:40:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 20:49:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -258,17 +258,14 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 {
 	if (fd == client.cgi.cgiIN[1])
 	{
-		std::cout << "CGI IN event triggerd" << std::endl; /** @todo remove after testing*/
 		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
-			std::cout << "CGI-IN EPOLLHUP event triggerd" << std::endl; /** @todo remove after testing*/
 			protectedChildProcessEnd(client.cgi.pid);
 			removeCgiFromClient(client);
 			// modify client event to EPOLLOUT
 		}
 		if (event.events & EPOLLOUT && fd == client.cgi.cgiIN[1])
 		{
-			std::cout << "CGI-IN EPOLLOUT event triggerd" << std::endl; /** @todo remove after testing*/
 			handleCgiWrite(client.cgi);
 			if (client.cgi.state == cgiState::ERROR)
 			{
@@ -289,7 +286,6 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 	{
 		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
-			std::cout << "CGI-OUT EPOLLHUP event triggerd" << std::endl; /** @todo remove after testing*/
 			protectedChildProcessEnd(client.cgi.pid);
 			removeCgiFromClient(client);
 			client._responseClient.clearHttpSend();
@@ -298,7 +294,6 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 		}
 		if (event.events & EPOLLIN && fd == client.cgi.cgiOUT[0])
 		{
-			std::cout << "CGI-OUT EPOLLIN event triggerd" << std::endl; /** @todo remove after testing*/
 			handleCgiRead(client.cgi);
 			if (client.cgi.state == cgiState::ERROR)
 			{

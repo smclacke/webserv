@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/20 16:39:40 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 20:51:39 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -124,19 +124,15 @@ void httpHandler::cgiResponse()
 		char *argv[] = {scriptName, nullptr};
 		if (dup2(_cgi.cgiIN[0], STDIN_FILENO) < 0 || dup2(_cgi.cgiOUT[1], STDOUT_FILENO) < 0)
 		{
-			std::cerr << "dup2() cgi failed\n"; /** @todo remove after testing*/
 			_cgi.closeAllPipes();
 			freeStrings(scriptName, scriptPath);
 			std::exit(EXIT_FAILURE);
 		}
 		protectedClose(_cgi.cgiIN[1]);
 		protectedClose(_cgi.cgiOUT[0]);
-		std::cerr << "execve(" << scriptPath << ")\n"; /** @todo remove after testing*/
-		std::cerr << "execve(" << argv[0] << ")\n";	   /** @todo remove after testing*/
 		if (execve(scriptPath, argv, _cgi.env.data()) == -1)
 		{
 			perror("execve failed why:");
-			std::cerr << "execve failed\n"; /** @todo remove after testing*/
 			freeStrings(scriptName, scriptPath);
 			_cgi.closeAllPipes();
 			std::exit(EXIT_FAILURE);
@@ -148,7 +144,6 @@ void httpHandler::cgiResponse()
 	else if (_cgi.pid > 0) // parent: only writes to input and reads from output
 	{
 		_response.cgi = true;
-		std::cout << "parent cgi\n";
 		protectedClose(_cgi.cgiIN[0]);
 		protectedClose(_cgi.cgiOUT[1]);
 		_epoll.setNonBlocking(_cgi.cgiIN[1]);
