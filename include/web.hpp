@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 17:50:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:12:40 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,17 +34,18 @@
 #include <unordered_map>
 
 // Network includes
-#include <netinet/in.h> // for sockaddr_in structure
+#include <netinet/in.h>	 // for sockaddr_in structure
 #include <netinet/tcp.h> // for setsockopt()
-#include <sys/socket.h> // for socket functions
-#include <sys/epoll.h>	// for epoll()
-#include <arpa/inet.h>	// for nonblocking sockets
+#include <sys/socket.h>	 // for socket functions
+#include <sys/epoll.h>	 // for epoll()
+#include <arpa/inet.h>	 // for nonblocking sockets
 #include <sys/wait.h>
 
 // C includes
 #include <unistd.h>
 #include <fcntl.h> // for files
 #include <time.h>  // client timeouts
+#include <sys/time.h>
 #include <errno.h>
 #include <csignal>
 
@@ -62,6 +63,7 @@ enum class eSocket
 
 #define READ_BUFFER_SIZE 100
 #define WRITE_BUFFER_SIZE 100
+#define CGI_TIMEOUT 3
 
 /* http */
 /**
@@ -101,12 +103,16 @@ struct s_cgi
 	bool complete;
 	std::string input;
 	size_t write_offset;
-	pid_t pid = -1;
+	// pid
+	pid_t pid;
+	time_t start;
+
 	int client_fd;
 	std::string output;
-	bool htmlOutput; // defines if the output should be http formatted
+	/** @todo remove htmlOutput, its supposed to be just inside cgi */
+	bool htmlOutput;
 
-	s_cgi(void) : env(), scriptname(), cgiIN{-1, -1}, cgiOUT{-1, -1}, state(cgiState::BEGIN), complete(false), input(), write_offset(0), pid(-1), client_fd(-1), output(), htmlOutput(false) {}
+	s_cgi(void) : env(), scriptname(), cgiIN{-1, -1}, cgiOUT{-1, -1}, state(cgiState::BEGIN), complete(false), input(), write_offset(0), pid(-1), start(0), client_fd(-1), output(), htmlOutput(false) {}
 	void clearCgi(void);
 	void closeAllPipes(void);
 };
@@ -118,5 +124,7 @@ s_location addDefaultLoc(size_t servermaxsize);
 
 /* general utils */
 void protectedClose(int fd);
+
+void protectedChildProcessEnd(pid_t &pid);
 
 #endif /* WEB_HPP */

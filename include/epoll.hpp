@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 18:38:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:10:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -57,7 +57,6 @@ typedef struct s_clients
 	s_httpSend _responseClient;
 	size_t _write_offset;
 	bool _readingFile;
-	bool _clientHasCgi;
 	int bytesReadtotal;
 
 	s_clients(Epoll &epoll, Server &server);
@@ -104,6 +103,8 @@ public:
 	void checkForNewConnection(int fd, t_serverData &serverData, epoll_event &event);
 	void processEvent(int fd, epoll_event &event);
 	void cgiEvent(int &fd, t_clients &client, epoll_event &event);
+	void removeCgiFromClient(t_clients &client);
+	void clientCgiTimeCheck(t_clients &client);
 
 	/* getters */
 	int getEpfd() const;

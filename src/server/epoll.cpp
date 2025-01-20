@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:02:59 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 18:40:21 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:26:16 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -218,7 +218,6 @@ void Epoll::processEvent(int fd, epoll_event &event)
 						client._responseClient = client.http->generateResponse();
 						if (client._responseClient.cgi)
 						{
-							client._clientHasCgi = true;
 							client.cgi = client.http->getCGI();
 							client.cgi.client_fd = client._fd;
 							client._responseClient.clearHttpSend();
@@ -263,8 +262,9 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
 			std::cout << "CGI-IN EPOLLHUP event triggerd" << std::endl; /** @todo remove after testing*/
-			epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiIN[1], nullptr);
-			protectedClose(client.cgi.cgiIN[1]);
+			protectedChildProcessEnd(client.cgi.pid);
+			removeCgiFromClient(client);
+			// modify client event to EPOLLOUT
 		}
 		if (event.events & EPOLLOUT && fd == client.cgi.cgiIN[1])
 		{
@@ -272,19 +272,11 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 			handleCgiWrite(client.cgi);
 			if (client.cgi.state == cgiState::ERROR)
 			{
-				removeCGIFromEpoll(client);
-				modifyEvent(client.cgi.client_fd, EPOLLOUT);
-				int status;
-				if (client.cgi.pid != -1)
-				{
-					waitpid(client.cgi.pid, &status, 0);
-				}
-				client.cgi.output = internalError("cgi error");
+				protectedChildProcessEnd(client.cgi.pid);
+				removeCgiFromClient(client);
 				client._responseClient.clearHttpSend();
-				client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
-				client._responseClient.msg.append("Content-Length: 0\r\n");
-				client._responseClient.msg.append("\r\n");
-				client.cgi.clearCgi();
+				client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\nContent-Length: 0\r\n\r\n";
+				// modify client event to EPOLLOUT
 			}
 			if (client.cgi.state == cgiState::READY)
 			{
@@ -298,27 +290,11 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 		if (event.events & EPOLLHUP || event.events & EPOLLRDHUP || event.events & EPOLLERR)
 		{
 			std::cout << "CGI-OUT EPOLLHUP event triggerd" << std::endl; /** @todo remove after testing*/
-			epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiOUT[0], nullptr);
-			protectedClose(client.cgi.cgiOUT[0]);
-			modifyEvent(client.cgi.client_fd, EPOLLOUT);
-			int status;
-			if (client.cgi.pid != -1)
-			{
-				waitpid(client.cgi.pid, &status, 0);
-				if (WEXITSTATUS(status) != 0)
-					client.cgi.output = internalError("cgi bad exitstatus");
-				if (client.cgi.output.empty())
-					client.cgi.output = internalError("cgi executed");
-			}
+			protectedChildProcessEnd(client.cgi.pid);
+			removeCgiFromClient(client);
 			client._responseClient.clearHttpSend();
-			client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
-			client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
-			///** @todo check this bool! */
-			if (client.cgi.htmlOutput)
-				client._responseClient.msg.append("Content-Type: text/html\r\n");
-			client._responseClient.msg.append("\r\n");		
-			client._responseClient.msg.append(client.cgi.output);
-			client.cgi.clearCgi();
+			client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\nContent-Length: 0\r\n\r\n";
+			// modify client event to EPOLLOUT
 		}
 		if (event.events & EPOLLIN && fd == client.cgi.cgiOUT[0])
 		{
@@ -326,31 +302,23 @@ void Epoll::cgiEvent(int &fd, t_clients &client, epoll_event &event)
 			handleCgiRead(client.cgi);
 			if (client.cgi.state == cgiState::ERROR)
 			{
-				removeCGIFromEpoll(client);
-				protectedClose(client.cgi.cgiOUT[0]);
-				modifyEvent(client.cgi.client_fd, EPOLLOUT);
-				int status;
-				waitpid(client.cgi.pid, &status, 0);
-				client.cgi.output = internalError("cgi error");
+				protectedChildProcessEnd(client.cgi.pid);
+				removeCgiFromClient(client);
 				client._responseClient.clearHttpSend();
-				client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\n";
-				client._responseClient.msg.append("Content-Length: 0\r\n");		
-				client._responseClient.msg.append("\r\n");
-				client._responseClient.msg = client.cgi.output;
-				client.cgi.clearCgi();
+				client._responseClient.msg = "HTTP/1.1 500 Internal server error\r\nContent-Length: 0\r\n\r\n";
+				// modify client event to EPOLLOUT
 			}
 			if (client.cgi.state == cgiState::READY)
 			{
 				epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiOUT[0], nullptr);
 				protectedClose(client.cgi.cgiOUT[0]);
-				modifyEvent(client.cgi.client_fd, EPOLLOUT);
-				int status;
-				if (client.cgi.pid != -1)
+				if (client.cgi.cgiIN[1] != -1)
 				{
-					waitpid(client.cgi.pid, &status, 0);
-					if (WEXITSTATUS(status) != 0)
-						client.cgi.output = internalError("cgi bad exitstatus");
+					epoll_ctl(_epfd, EPOLL_CTL_DEL, client.cgi.cgiIN[1], nullptr);
+					protectedClose(client.cgi.cgiIN[1]);
 				}
+				modifyEvent(client.cgi.client_fd, EPOLLOUT);
+				protectedChildProcessEnd(client.cgi.pid);
 				client._responseClient.clearHttpSend();
 				client._responseClient.msg = "HTTP/1.1 200 OK\r\n";
 				client._responseClient.msg.append("Content-Length: " + std::to_string(client.cgi.output.size()) + "\r\n");
