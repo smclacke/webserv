@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/20 17:15:53 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/20 20:40:19 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -288,6 +288,5 @@ void httpHandler::plainText(void)
 	outFile << _request.body.content.str();
 	outFile.close();
 	_response.body.clear();
-	_response.body << "wrote content to file";
 	_statusCode = eHttpStatusCode::Created;
 }

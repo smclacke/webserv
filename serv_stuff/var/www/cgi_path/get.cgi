@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
 # Import the CGI module
-import sys
-
+import cgi
 
 #while (1):
 #	a = 1
