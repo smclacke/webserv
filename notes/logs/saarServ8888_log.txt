@@ -1,0 +1,1152 @@
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1687
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1687
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/test.php
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+handleClientClose(): Removed a client from Epoll, server: saarServ8888
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/test.php
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+handleClientClose(): Removed a client from Epoll, server: saarServ8888
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/test.php
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/test.php
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/test.php
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+handleClientClose(): Removed a client from Epoll, server: saarServ8888
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/test.php
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+handleClientClose(): Removed a client from Epoll, server: saarServ8888
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1687
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /cgi/cgi.html HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 840
+Content-Type: text/html
+
+
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1687
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /cgi/cgi.html HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 868
+Content-Type: text/html
+
+
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1683
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1685
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1757
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+************************************
+Server class built for: saarServ8888
+************************************
+
+addServersToEpoll(): added: saarServ8888 to epoll
+makeNewConnection(): accepted new client connection, server: saarServ8888, fd: 4
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1757
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /test.php HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script
+generateResponse(): HTTP request received: 
+GET / HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+Cache-Control: max-age=0
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: none
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 1757
+Content-Type: text/html
+
+
+generateResponse(): HTTP request received: 
+GET /resources/mustard.png HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 22732
+Content-Type: image/png
+
+
+generateResponse(): HTTP request received: 
+GET /favicon.ico HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua-platform: "Linux"
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: no-cors
+Sec-Fetch-Dest: image
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response: 
+HTTP/1.1 200 OK
+Connection: keep-alive
+Content-Length: 8984
+Content-Type: image/*
+
+
+generateResponse(): HTTP request received: 
+GET /page/test.cgi HTTP/1.1
+Host: localhost:8888
+Connection: keep-alive
+sec-ch-ua: "Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"
+sec-ch-ua-mobile: ?0
+sec-ch-ua-platform: "Linux"
+Upgrade-Insecure-Requests: 1
+User-Agent: Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36
+Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+Sec-Fetch-Site: same-origin
+Sec-Fetch-Mode: navigate
+Sec-Fetch-User: ?1
+Sec-Fetch-Dest: document
+Referer: http://localhost:8888/
+Accept-Encoding: gzip, deflate, br, zstd
+Accept-Language: en-GB,en;q=0.9,nl-NL;q=0.8,nl;q=0.7,de-GB;q=0.6,de;q=0.5,en-US;q=0.4
+
+writeResponse(): response is cgi script

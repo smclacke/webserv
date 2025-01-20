@@ -11,8 +11,6 @@ def main():
     capitalized_text = input_text.upper()
 
     # Send HTTP headers
-    
-
 
     print(capitalized_text)
 
