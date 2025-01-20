@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/20 16:22:02 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:40:26 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -98,13 +98,6 @@ void Webserv::monitorServers()
 	_epoll.initEpoll();
 	addServersToEpoll();
 
-	/** @note kill() causes logout :'(.. 
-	*/
-	
-	//time_t start_time, current_time;
-	//int timeout = 3;
-	//time(&start_time);
-
 	while (_keepRunning)
 	{
 		for (auto &servers : _epoll.getAllServers())
@@ -112,20 +105,7 @@ void Webserv::monitorServers()
 			for (auto &client : servers._clients)
 			{
 				_epoll.clientTimeCheck(client);
-				//if (client._clientHasCgi == true)
-				//{
-				//	std::cout << "client with cgi detected correctly\n";
-				//	//time(&current_time);
-				//	//waitpid(client.cgi.pid, NULL, WNOHANG);
-				//	if ((current_time - start_time) >= timeout && client.cgi.state != cgiState::READY)
-				//	{
-				//	/** @todo  http response timeout */
-				//		std::cout << "timeout occurred\n";
-				//		_epoll.handleTimeOut(client);
-				//		//kill(client.cgi.pid, SIGINT);
-				//		//waitpid(client.cgi.pid, NULL, WNOHANG);
-				//	}
-				//}
+				_epoll.clientCgiTimeCheck(client);
 			}
 		}
 		int numEvents = epoll_wait(_epoll.getEpfd(), _epoll.getAllEvents().data(), _epoll.getAllEvents().size(), TIMEOUT);

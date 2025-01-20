@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 17:53:29 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 17:22:18 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 13:29:29 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -20,7 +20,7 @@ void httpHandler::getMethod(void)
 	if (_request.cgiReq == true)
 	{
 		generateEnv();
-		cgiResponse();
+		return cgiResponse();
 	}
 	// uri encoded GET request
 	if (_request.uriEncoded == true)

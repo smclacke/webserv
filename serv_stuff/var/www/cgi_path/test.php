@@ -1,5 +1,7 @@
 #!/usr/bin/php
 <?php
+
+   
    // Send HTTP headers
    echo "Content-Type: text/html\n";
 

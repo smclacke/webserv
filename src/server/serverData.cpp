@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/04 14:46:58 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 18:40:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 14:25:30 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,6 @@ void s_serverData::addClient(int sock, struct sockaddr_in &addr, int len, Epoll 
 	newClient._connectionClose = false;
 	newClient._write_offset = 0;
 	newClient._readingFile = false;
-	newClient._clientHasCgi = false;
 
 	_clients.emplace_back(std::move(newClient));
 }
@@ -43,7 +42,7 @@ void s_serverData::removeClient(t_clients &client)
 s_clients::s_clients(Epoll &epoll, Server &server)
 	: _fd(-1), _addr(), _addLen(0), _clientState(clientState::BEGIN), _clientTime(), _connectionClose(false),
 	  http(std::make_unique<httpHandler>(server, epoll)), cgi(), _responseClient(),
-	  _write_offset(0), _readingFile(false), _clientHasCgi(false), bytesReadtotal(0)
+	  _write_offset(0), _readingFile(false), bytesReadtotal(0)
 {
 }
 
@@ -53,7 +52,7 @@ s_clients::s_clients(s_clients &&other) noexcept
 	  _clientTime(std::move(other._clientTime)), _connectionClose(other._connectionClose),
 	  http(std::move(other.http)), cgi(other.cgi),
 	  _responseClient(std::move(other._responseClient)), _write_offset(other._write_offset),
-	  _readingFile(other._readingFile), _clientHasCgi(other._clientHasCgi), bytesReadtotal(other.bytesReadtotal)
+	  _readingFile(other._readingFile), bytesReadtotal(other.bytesReadtotal)
 {
 	other._fd = -1;
 }
@@ -75,7 +74,6 @@ s_clients &s_clients::operator=(s_clients &&other) noexcept
 		_write_offset = other._write_offset;
 		_readingFile = other._readingFile;
 		bytesReadtotal = other.bytesReadtotal;
-		_clientHasCgi = other._clientHasCgi;
 
 		other._fd = -1;
 	}

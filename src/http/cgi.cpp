@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/12/10 16:03:33 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/20 16:25:19 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:39:40 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -92,7 +92,6 @@ void Epoll::handleCgiWrite(s_cgi &cgi)
 	}
 }
 
-
 void httpHandler::cgiResponse()
 {
 	if (pipe(_cgi.cgiIN) < 0 || pipe(_cgi.cgiOUT) < 0)
@@ -148,6 +147,7 @@ void httpHandler::cgiResponse()
 	}
 	else if (_cgi.pid > 0) // parent: only writes to input and reads from output
 	{
+		_response.cgi = true;
 		std::cout << "parent cgi\n";
 		protectedClose(_cgi.cgiIN[0]);
 		protectedClose(_cgi.cgiOUT[1]);
@@ -155,7 +155,32 @@ void httpHandler::cgiResponse()
 		_epoll.setNonBlocking(_cgi.cgiOUT[0]);
 		_epoll.addOUTEpoll(_cgi.cgiIN[1]);
 		_epoll.addINEpoll(_cgi.cgiOUT[0]);
-		_response.cgi = true;
+		int status;
+		pid_t result = waitpid(_cgi.pid, &status, WNOHANG);
+		if (result == 0)
+		{
+			time(&_cgi.start);
+			// Child process has not terminated yet
+			// in the webserv loop we check if its still running, call kill() and cll waitpid
+			// need to set time in the s_cgi struct.
+		}
+		else if (result == -1)
+		{
+			perror("waitpid failed");
+			_response.cgi = false;
+			_cgi.pid = -1;
+			_cgi.closeAllPipes();
+			return setErrorResponse(eHttpStatusCode::InternalServerError, "waitpid failed");
+		}
+		else
+		{
+			_cgi.pid = -1;
+			if (WIFEXITED(status) && WEXITSTATUS(status) != 0)
+			{
+				_response.cgi = false;
+				return setErrorResponse(eHttpStatusCode::InternalServerError, "cgi process bad existatus");
+			}
+		}
 	}
 	else
 	{
@@ -165,4 +190,23 @@ void httpHandler::cgiResponse()
 		setErrorResponse(eHttpStatusCode::InternalServerError, "failed to fork");
 		return;
 	}
+}
+
+void protectedChildProcessEnd(pid_t &pid)
+{
+	if (pid == -1)
+		return;
+	int status;
+	pid_t result = waitpid(pid, &status, WNOHANG);
+	if (result == 0) // its still running
+	{
+		kill(pid, SIGINT);
+		if (waitpid(pid, &status, 0) == -1)
+			std::cerr << "waitpid fail" << std::endl;
+	}
+	else if (result == -1)
+	{
+		std::cerr << "waitpid error" << std::endl;
+	}
+	// else -> waitpid cleared up the childProcess
 }
