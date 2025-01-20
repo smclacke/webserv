@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 
 # Import the CGI module
-import cgi
+import sys
 
-# Start the HTML output
+def main():
+    # Read input from STDIN
+    input_text = sys.stdin.read()
 
-while (1):
-	a = 1
+    # Capitalize all letters
+    capitalized_text = input_text.upper()
 
-print("Content-Type: text/html\n")
+    # Send HTTP headers
+    
 
-print("<html>")
-print("<head>")
-print("<title>Simple CGI Script</title>")
-print("</head>")
-print("<body>")
-print("<h1>Hello, World!</h1>")
-print("<p>This is a simple CGI script written in Python.</p>")
-print("</body>")
-print("</html>")
 
+    print(capitalized_text)
+
+
+
+if __name__ == "__main__":
+    main()

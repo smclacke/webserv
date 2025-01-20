@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/21 12:33:45 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 15:48:50 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/20 17:15:34 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -33,6 +33,7 @@ enum class eContentType
 	formData,
 	application,
 	contentLength,
+	plain,
 	undefined
 };
 

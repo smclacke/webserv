@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/17 16:53:33 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 17:15:53 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ void httpHandler::postMethod(void)
 	{
 		return postApplication();
 	}
-	else if (_request.body.contentType == eContentType::contentLength || _request.body.contentType == eContentType::undefined)
+	else if (_request.body.contentType == eContentType::contentLength || _request.body.contentType == eContentType::plain || _request.body.contentType == eContentType::undefined)
 	{
 		return plainText();
 	}
@@ -265,6 +265,19 @@ void httpHandler::postApplication(void)
 
 void httpHandler::plainText(void)
 {
+	// cgi
+	if (_request.cgiReq)
+	{
+		if (!generateEnv())
+			return;
+		if (!_request.body.content.str().empty())
+		{
+			resetStringStream(_response.body);
+			_response.body.str() = _request.body.content.str();
+		}
+		return cgiResponse();
+	}
+	// non cgi
 	std::ofstream outFile;
 	outFile.open(_request.path, std::ios::out);
 	if (!outFile.is_open())

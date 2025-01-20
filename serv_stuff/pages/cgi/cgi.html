@@ -1,40 +1,59 @@
 <!DOCTYPE html>
 <html>
-   <head>
-       <meta charset="UTF-8">
-       <title> CGI </title>
-   </head>
 
-   <body>
+<head>
+	<meta charset="UTF-8">
+	<title>Text Capitalizer</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+		}
 
-		<input src="/test.php">
+		h1,
+		h2 {
+			color: #333;
+		}
 
-		<!--<h2>Get cgi</h2>
-		<form action="/" method="GET" enctype="multipart/form-data" >
-			<input type="Submit" value="CGI script" />
-			<br/>
-		</form>-->
-		
-		<!--<br>
-		<h2>Post cgi</h2>
-			<input type="file" id="file" name="file" required>	
-			<input src="/test.php" value="CGI php script" />
-				<br/>
-			</form>-->
-		<!--<br>
-		<h2>Get php</h2>
-        <form action="/test.php" method="GET" enctype="multipart/form-data" >
-            <input type="Submit" value="PHP script" />
-			<br/>
-        </form>
-		
-		<br>
-		<h2>Post php</h2>
-        <form action="/test.php" method="POST" enctype="multipart/form-data" >
-            <input type="Submit" value="PHP script" />
-			<br/>
-        </form>-->
+		textarea {
+			width: 100%;
+		}
 
-		<br>
-   </body>
+		#result {
+			margin-top: 20px;
+			padding: 10px;
+			border: 1px solid #ccc;
+		}
+	</style>
+	<script>
+		function capitalizeText(event) {
+			event.preventDefault(); // Prevent form from submitting the traditional way
+
+			const text = event.target.querySelector('textarea[name="text"]').value;
+
+			fetch('/page/test.cgi', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'text/plain'
+				},
+				body: text
+			})
+				.then(response => response.text())
+				.then(data => {
+					document.getElementById('result').textContent = data;
+				})
+				.catch(error => console.error('Error:', error));
+		}
+	</script>
+</head>
+
+<body>
+	<h1>Enter Text to Capitalize</h1>
+	<form onsubmit="capitalizeText(event)">
+		<textarea name="text" rows="10" cols="30"></textarea><br>
+		<input type="submit" value="Capitalize">
+	</form>
+	<h2>Capitalized Text:</h2>
+	<div id="result"></div>
+</body>
+
 </html>
