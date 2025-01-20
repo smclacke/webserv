@@ -24,10 +24,20 @@
 
 **CHECK**
 
+7) 	
+	Limit the client body (use: curl -X POST -H "Content-Type: plain/text" --data "BODY IS HERE write something shorter or longer than body limit").
+
 2) 
 	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
 
+3) 
+	why on browser post goes to uploads dir and curl in serv_stuff dir
 
+4) 
+	test cgi post + try get cgi requests in browser working
+
+5) 
+	test chunked
 
 **CGI**
 

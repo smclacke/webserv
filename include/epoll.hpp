@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/30 17:40:39 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 18:38:54 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:11:33 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -133,6 +133,7 @@ public:
 	void handleClientClose(t_serverData &server, t_clients &client);
 	void operationFailed(t_clients &client);
 	void cleanResponse(t_clients &client);
+	void handleTimeOut(t_clients &client);
 
 	/* debugging */
 	void logClassData(void) const;
