@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/06 16:43:57 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 18:40:12 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/20 16:18:23 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -132,4 +132,12 @@ void Epoll::cleanResponse(t_clients &client)
 	client._write_offset = 0;
 	client._readingFile = false;
 	client._clientHasCgi = false;
+}
+
+void	Epoll::handleTimeOut(t_clients &client)
+{
+	std::cout << "kill the child\n";
+	kill(client.cgi.pid, 0);
+	waitpid(client.cgi.pid, NULL, WNOHANG);
+	// clean up
 }
