@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:21:02 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/20 16:10:02 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:37:31 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,7 +28,7 @@ private:
 
 public: /* constructors */
 	Webserv(std::atomic<bool> &keepRunning);
-	Webserv(std::string config, std::atomic<bool> &keepRunning);
+	Webserv(std::string config, std::atomic<bool> &keepRunning, bool logFile);
 	~Webserv(void);
 
 	/* member functions */

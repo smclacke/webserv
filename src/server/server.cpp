@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/23 12:54:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 16:04:47 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:35:16 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -59,7 +59,7 @@ Server &Server::operator=(const Server &rhs)
 	return *this;
 }
 
-void Server::finalizeServerSetup(int line_n)
+void Server::finalizeServerSetup(int line_n, bool logFile)
 {
 	if (_location.size() == 0)
 		addLocation(addDefaultLoc(_clientMaxBodySize));
@@ -67,13 +67,16 @@ void Server::finalizeServerSetup(int line_n)
 	if (_host.empty())
 		throw eConf("No listen directive provided before end of Server", line_n);
 	_serverSocket = std::make_shared<Socket>(*this);
-	_logFile.open("./logs/" + _serverName + "_log.txt", std::ios::out | std::ios::app);
-	if (!_logFile.is_open())
-		throw std::runtime_error("Failed to open _log file for server: " + _serverName);
+	if (logFile)
+	{		
+		_logFile.open("./logs/" + _serverName + "_log.txt", std::ios::out | std::ios::app);
+		if (!_logFile.is_open())
+			throw std::runtime_error("Failed to open _log file for server: " + _serverName);
+	}
 	logMessage("************************************\nServer class built for: " + _serverName + "\n************************************\n");
 }
 
-Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), _root("")
+Server::Server(std::ifstream &file, int &line_n, bool logFile) : _serverName("Default_name"), _root("")
 {
 	std::string line;
 	while (std::getline(file, line))
@@ -86,7 +89,7 @@ Server::Server(std::ifstream &file, int &line_n) : _serverName("Default_name"), 
 		{
 			if (line.size() != 1)
 				throw eConf("Unexpected text with closing }", line_n);
-			finalizeServerSetup(line_n);
+			finalizeServerSetup(line_n, logFile);
 			return;
 		}
 		size_t pos = line.find("location");

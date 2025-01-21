@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 17:38:18 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/13 19:10:55 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:38:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -39,7 +39,7 @@ int main(int argc, char **argv)
 		if (argc == 2)
 			config = std::string(argv[1]);
 		verifyInput(config);
-		Webserv wserv(config, keepRunning);
+		Webserv wserv(config, keepRunning, false);
 		wserv.monitorServers();
 	}
 	catch (eConf &e)

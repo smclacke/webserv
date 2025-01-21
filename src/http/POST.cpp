@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/28 18:07:23 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/21 15:06:47 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:29:18 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -278,8 +278,13 @@ void httpHandler::plainText(void)
 		return cgiResponse();
 	}
 	// non cgi
+	std::string filepath;
+	if (_request.loc.root.empty())
+		filepath = "." + _server.getRoot() + _request.loc.upload_dir + _request.uri;
+	else
+		filepath = "." + _request.loc.root + _request.loc.upload_dir + _request.uri;
 	std::ofstream outFile;
-	outFile.open("." + _request.loc.root + _request.loc.upload_dir + _request.uri, std::ios::out);
+	outFile.open(filepath, std::ios::out);
 	if (!outFile.is_open())
 	{
 		setErrorResponse(eHttpStatusCode::InternalServerError, "couldn't open file");

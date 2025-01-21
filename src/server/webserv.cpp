@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 15:22:59 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/20 16:40:26 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:38:17 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -24,7 +24,7 @@ Webserv::Webserv(std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
 	_servers.push_back(default_server);
 }
 
-Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunning(keepRunning)
+Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning, bool logFile) : _keepRunning(keepRunning)
 {
 	std::cout << "Webserv booting up" << std::endl;
 	if (config.empty())
@@ -47,7 +47,7 @@ Webserv::Webserv(std::string config, std::atomic<bool> &keepRunning) : _keepRunn
 			continue;
 		if (line.find("server") != std::string::npos || line.find("Server") != std::string::npos) // check both
 		{
-			auto nServer = std::make_shared<Server>(file, line_n);
+			auto nServer = std::make_shared<Server>(file, line_n, logFile);
 			_servers.push_back(nServer);
 			if (_servers.size() == 10)
 			{

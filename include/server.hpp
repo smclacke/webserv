@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/22 17:17:28 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/13 14:41:04 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:36:04 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -99,12 +99,12 @@ private:
 	void parseErrorPage(std::stringstream &ss, int line_n);
 	void parseClientMaxBody(std::stringstream &ss, int line_n);
 	void checkErrorPages(void);
-	void finalizeServerSetup(int line_n);
+	void finalizeServerSetup(int line_n, bool logFile);
 
 public:
 	Server(void);
 	Server &operator=(const Server &rhs);
-	Server(std::ifstream &file, int &line_n);
+	Server(std::ifstream &file, int &line_n, bool logFile);
 	~Server(void);
 
 	/* Member functions */
