@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Simple Webserver</title>
+	<style>
+		body {
+			font-family: Arial, sans-serif;
+			text-align: center;
+			margin: 20px;
+			background-color: rgb(0, 255, 28);
+		}
+
+		button {
+			margin: 10px;
+			padding: 10px 20px;
+			font-size: 16px;
+		}
+
+		img {
+			margin-top: 20px;
+			max-width: 100%;
+			height: auto;
+		}
+	</style>
+</head>
+
+<body>
+
+	<img src="./images/webserv/webserv.png" alt="Webserv image">
+
+	<br>
+	<p></p>
+	<h1>This is a simple webserver built by Sarah (smclacke) and Julius (jde-baai)</h1>
+	<p></p>
+	<br>
+
+	<p></p>
+	<h2>Here are some default images</h2>
+	<img src="/images/cats/cat1.png" alt="cat1">
+	<img src="/images/cats/cat2.png" alt="cat2">
+	<img src="/images/cats/cat3.png" alt="cat3">
+	<img src="/images/cats/orange.png" alt="orange cat">
+	<p></p>
+	<br>
+
+	<p></p>
+	<h2>Here is a link to a very big image</h2>
+	<button onclick="window.location.href='/images/webserv/large_image.html'">Scene</button>
+	<p></p>
+	<br>
+
+
+
+	<p></p>
+	<h2>Link to a page where you can GET, POST and delete your own images</h2>
+	<button onclick="window.location.href='/page/images.html'">GO</button>
+	<p></p>
+	<br>
+
+	<p></p>
+	<h2>link to a page with a calulcator</h2>
+	<button onclick="window.location.href='pages/calulcator.html'">Calculator</button>
+	<p></p>
+	<br>
+
+	<p></p>
+	<h2>here you can make a call to a cgi script (.cgi) that will provide a page with a GET request</h2>
+	<button onclick="window.location.href='/cgiscript/test_file.cgi'">CGI (get)</button>
+	<p></p>
+	<br>
+	<br>
+
+	<p></p>
+	<h2>here a link to a cgi script(.php) that will allow you to make POST requests to CGI</h2>
+	<button onclick="window.location.href='/page/capitalize.html'">CGI (post)</button>
+	<p></p>
+	<br>
+	<br>
+
+	<img src="../resources/mustard.png" alt="colman's mustard">
+
+
+</body>
+
+</html>

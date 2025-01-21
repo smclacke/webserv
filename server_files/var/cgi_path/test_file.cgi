@@ -3,11 +3,10 @@
 # Import the CGI module
 import cgi
 
-# Print the HTTP headers (ensure proper formatting)
-print("Content-Type: text/html\n")  # This specifies that the content is HTML
-print()  # This blank line separates headers from the body
+#while (1):
+#	a = 1
 
-# Start the HTML output
+
 print("<html>")
 print("<head>")
 print("<title>Simple CGI Script</title>")

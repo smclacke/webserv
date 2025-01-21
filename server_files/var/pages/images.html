@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Image Upload and Management</title>
+</head>
+
+<body>
+	<h1>Image Upload and Management</h1>
+	<h2>Will show you all images with a delete button next to them and an upload button at the bottom of the list</h2>
+
+	<div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 20px;">
+		<form onsubmit="uploadImage(event)">
+			<input type="file" name="image" accept="image/*" required>
+			<button type="submit">Upload</button>
+		</form>
+	</div>
+
+	<div id="imageList"></div>
+
+	<script>
+		function fetchImages() {
+			fetch('/varimages/uploads')
+				.then(response => response.text())
+				.then(data => {
+					const imageList = document.getElementById('imageList');
+					imageList.innerHTML = ''; // Clear existing images
+
+					// Split by newline character to handle filenames with spaces
+					const filenames = data.trim().split('\n');
+					filenames.forEach(filename => {
+						if (filename) { // Ensure filename is not empty
+							const img = document.createElement('img');
+							img.src = `/varimages/uploads/${filename}`;
+							img.alt = filename;
+							img.style.maxWidth = '200px'; // Optional: Set a max width for images
+
+							const deleteButton = document.createElement('button');
+							deleteButton.innerText = 'Delete';
+							deleteButton.onclick = () => deleteImage(filename);
+
+							const container = document.createElement('div');
+							container.style.borderBottom = '1px solid #ccc'; // Add separation line
+							container.style.padding = '10px 0'; // Add padding for better spacing
+							container.appendChild(img);
+							container.appendChild(deleteButton);
+
+							imageList.appendChild(container);
+						}
+					});
+				})
+				.catch(error => console.error('Error fetching images:', error));
+		}
+
+		function deleteImage(filename) {
+			fetch(`/varimages/uploads/${filename}`, {
+				method: 'DELETE'
+			})
+				.then(response => {
+					if (response.ok) {
+						fetchImages();
+					} else {
+						console.error('Error deleting image');
+					}
+				})
+				.catch(error => console.error('Error deleting image:', error));
+		}
+
+		function uploadImage(event) {
+			event.preventDefault();
+			const formData = new FormData(event.target);
+			fetch('/varimages/uploads', {
+				method: 'POST',
+				body: formData
+			})
+				.then(response => {
+					if (response.ok) {
+						fetchImages();
+					} else {
+						console.error('Error uploading image');
+					}
+				})
+				.catch(error => console.error('Error uploading image:', error));
+		}
+
+		window.onload = fetchImages;
+	</script>
+</body>
+
+</html>
