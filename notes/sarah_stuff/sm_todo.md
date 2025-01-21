@@ -30,3 +30,18 @@
 	sometimes php get doesnt have the content, only "Content-Type: plain/text"
 	then on reloading it appears
 	
+
+9999)     ---- possibly cant recreate but do some stress testing here
+	timeout occurred
+	handleWrite: send() to client failed
+	handleCgiWrite(): write() to cgiIN[1] failed
+
+	program terminated by signal
+	^C
+	program terminated by signal
+	handleCgiWrite(): write() to cgiIN[1] failed
+	waitpid error
+	free(): invalid pointer
+	[1]    76703 IOT instruction (core dumped)  ./webserv config_files/saar.conf
+
+	->> left while in post.cgi, got time out, then removed while from cgi, reload, "program terminated by signal", tried to reload home page, got the rest of the output, crash...

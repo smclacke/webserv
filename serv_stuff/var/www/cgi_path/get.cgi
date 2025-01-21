@@ -4,8 +4,8 @@ import sys
 sys.tracebacklimit = 0
 
 try:
-	while (1):
-		a = 1
+	#while (1):
+	#	a = 1
 
 	print("Content-Type: text/html\n")
 

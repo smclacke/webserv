@@ -1,10 +1,10 @@
 #!/usr/bin/php
 <?php
 
-while(true)
-{
+//while(true)
+//{
 
-}
+//}
 
    echo "Content-Type: text/html\n";
    echo "<html>";
