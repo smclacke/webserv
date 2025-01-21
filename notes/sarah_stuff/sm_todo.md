@@ -45,3 +45,6 @@
 	[1]    76703 IOT instruction (core dumped)  ./webserv config_files/saar.conf
 
 	->> left while in post.cgi, got time out, then removed while from cgi, reload, "program terminated by signal", tried to reload home page, got the rest of the output, crash...
+
+ --- so far cant fully recreate this, no crash yet, maybe ok to leave, its a really mean thing to do anyway
+	with loads of refreshing
