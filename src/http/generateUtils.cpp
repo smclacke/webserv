@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2025/01/21 12:41:18 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/21 14:37:57 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -50,9 +50,9 @@ void httpHandler::generateDirectoryListing(void)
 		{
 			_response.body << entry.path().filename().string();
 			if (html)
-				_response.body << "<br>\r\n";
+				_response.body << "<br>\n";
 			else
-				_response.body << "\r\n";
+				_response.body << "\n";
 		}
 		if (html)
 		{

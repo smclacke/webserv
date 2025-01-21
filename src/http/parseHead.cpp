@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/21 13:36:28 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/21 14:48:59 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -201,6 +201,10 @@ void httpHandler::checkPath(void)
 				return setErrorResponse(eHttpStatusCode::Forbidden, "attempt to POST executable file that doesn't match CGI");
 			}
 		}
+	}
+	if (_request.cgiReq == true && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) != 0)
+	{
+		return setErrorResponse(eHttpStatusCode::Forbidden, "no permission to execute CGI file");
 	}
 }
 
