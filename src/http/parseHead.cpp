@@ -6,7 +6,7 @@
 /*   By: jde-baai <jde-baai@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/05 14:48:41 by jde-baai      #+#    #+#                 */
-/*   Updated: 2025/01/20 17:15:39 by jde-baai      ########   odam.nl         */
+/*   Updated: 2025/01/21 13:36:28 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,7 +138,14 @@ bool httpHandler::checkRedirect(void)
 			setErrorResponse(eHttpStatusCode::InternalServerError, "redirect status code doesn't match any expected value");
 			return false;
 		}
-		_response.headers[eResponseHeader::Location] = _request.loc.redir_url;
+		std::string newloc;
+		std::string uri = _request.uri;
+		std::string locpath = _request.loc.path;
+		if (locpath == "/")
+			locpath = "";
+		uri.erase(0, locpath.length());
+		newloc = _request.loc.redir_url + uri;
+		_response.headers[eResponseHeader::Location] = newloc;
 		_response.headers[eResponseHeader::ContentLength] = "0";
 		return false;
 	}
@@ -182,6 +189,16 @@ void httpHandler::checkPath(void)
 			if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) == 0)
 			{
 				return setErrorResponse(eHttpStatusCode::Forbidden, "attempt to GET executable file that doesn't match CGI");
+			}
+		}
+	}
+	if (_request.method == eHttpMethod::POST)
+	{
+		if (std::filesystem::exists(_request.path))
+		{
+			if (_request.cgiReq == false && !std::filesystem::is_directory(_request.path) && access(_request.path.c_str(), X_OK) == 0)
+			{
+				return setErrorResponse(eHttpStatusCode::Forbidden, "attempt to POST executable file that doesn't match CGI");
 			}
 		}
 	}

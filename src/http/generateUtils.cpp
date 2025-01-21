@@ -6,7 +6,7 @@
 /*   By: juliusdebaaij <juliusdebaaij@student.co      +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/11/24 11:28:30 by juliusdebaa   #+#    #+#                 */
-/*   Updated: 2025/01/13 17:50:35 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/21 12:41:18 by jde-baai      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@
 
 void httpHandler::generateDirectoryListing(void)
 {
-	std::cout << "Generating directory listing" << std::endl;
 	std::optional<std::string> acceptHeader = findHeaderValue(_request, eRequestHeader::Accept);
 	bool html = false;
 	if (acceptHeader.has_value())
