@@ -7,8 +7,6 @@ try:
 	#while (1):
 	#	a = 1
 
-	print("Content-Type: text/html\n")
-
 	print("<html>")
 	print("<head>")
 	print("<title>Simple CGI Script</title>")

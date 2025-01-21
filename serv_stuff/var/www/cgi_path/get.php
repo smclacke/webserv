@@ -6,7 +6,6 @@
 
 //}
 
-   echo "Content-Type: text/html\n";
    echo "<html>";
    echo "<head>";
    echo "<title>Simple CGI Script</title>";
