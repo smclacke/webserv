@@ -6,7 +6,7 @@
 /*   By: smclacke <smclacke@student.codam.nl>         +#+                     */
 /*                                                   +#+                      */
 /*   Created: 2024/10/21 18:12:35 by smclacke      #+#    #+#                 */
-/*   Updated: 2025/01/21 13:20:03 by smclacke      ########   odam.nl         */
+/*   Updated: 2025/01/21 15:14:35 by smclacke      ########   odam.nl         */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -109,7 +109,6 @@ struct s_cgi
 
 	int client_fd;
 	std::string output;
-	/** @todo remove htmlOutput, its supposed to be just inside cgi */
 	bool htmlOutput;
 
 	s_cgi(void) : env(), scriptname(), cgiIN{-1, -1}, cgiOUT{-1, -1}, state(cgiState::BEGIN), complete(false), input(), write_offset(0), pid(-1), start(0), client_fd(-1), output(), htmlOutput(false) {}
