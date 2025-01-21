@@ -1,20 +1,20 @@
 #!/usr/bin/env python3
 
-# Import the CGI module
 import sys
+sys.tracebacklimit = 0
 
-def main():
-    # Read input from STDIN
-    input_text = sys.stdin.read()
+try:
+	#while (1):
+	#	a = 1
 
-    # Capitalize all letters
-    capitalized_text = input_text.upper()
+	# Read input from STDIN
+	input_text = sys.stdin.read()
 
-    # Send HTTP headers
+	# Capitalize all letters
+	capitalized_text = input_text.upper()
 
-    print(capitalized_text)
+	# Send HTTP headers
+	print(capitalized_text)
 
-
-
-if __name__ == "__main__":
-    main()
+except KeyboardInterrupt:
+	sys.exit(0)
