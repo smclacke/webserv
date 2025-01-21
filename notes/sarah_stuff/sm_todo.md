@@ -14,23 +14,19 @@
 7) 	
 	Limit the client body (use: curl -X POST -H "Content-Type: plain/text" --data "BODY IS HERE write something shorter or longer than body limit").
 
+2) 
+	when adding "return 301 /new-route; #redirects request from old route to new-route with a 301 status" to test.conf server 9999, images always has 404
+
+5) 
+	if permission denied for post, error in terminal but nothing in browser
+
 5) 
 	test chunked
 
 33333) 
 	if cgi script (at least for get) doesnt have X rights, its stuck on loading
 
-5) 
-	if permission denied for post, error in terminal but nothing in browser
-
 4444) 
 	sometimes php get doesnt have the content, only "Content-Type: plain/text"
 	then on reloading it appears
 	
-55555) 
-	Traceback (most recent call last):
-  File "/home/smclacke/Desktop/webserv/./serv_stuff/var/www/cgi_path/get.cgi", line 6, in <module>
-    while (1):
-KeyboardInterrupt
-^^^ being printed in the terminal after successful timeout error
-

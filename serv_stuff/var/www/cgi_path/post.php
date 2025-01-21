@@ -10,6 +10,11 @@ $capitalized_text = strtoupper($input_text);
 // Send HTTP headers
 header("Content-Type: text/plain");
 
+while(true)
+{
+
+}
+
 // Output the capitalized text
 echo $capitalized_text;
 
