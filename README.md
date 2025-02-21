@@ -47,19 +47,24 @@ HTTP requests are at the core of this project. An HTTP request has specific form
 
 *Simple GET request to get index.html*
 
->GET /index.html HTTP/1.1
+```
+GET /index.html HTTP/1.1
 Host: localhost:8080
 User-Agent: Mozilla/5.0
 Accept: text/html
 Connection: keep-alive
+```
 
 *Simple DELETE request to delete file.txt*
->DELETE /file.txt HTTP/1.1
+```
+DELETE /file.txt HTTP/1.1
 Host: localhost:8080
 Connection: keep-alive
+```
 
 *A POST request with Content-Type multipart/form-data*
->POST /upload.txt HTTP/1.1
+```
+POST /upload.txt HTTP/1.1
 Host: localhost:8080
 Content-Type: multipart/form-data; boundary=---------------------------974767299852498929531115
 Content-Length: 554
@@ -74,10 +79,11 @@ Content-Disposition: form-data; name="file"; filename="hello.txt"
 Content-Type: text/plain
 Hello World!
 -----------------------------974767299852498929531115--
+```
 
 
 The headers are built out of:
->METHOD URI HTTPversion
+>METHOD uri HTTPversion
 
 >Headers (can be any amount of headers)
 
@@ -104,11 +110,13 @@ These Content-Type settings cover a wide variety of body input for our simple we
 
 HTTP responses are formatted the following way:
 
->HTTP/1.1 200 OK
+```
+HTTP/1.1 200 OK
 Content-Type: text/html
 Content-Length: 13
 \r\n
 Hello, World!
+```
 
 With:
 >HTTP version + Status Code + Status Message
